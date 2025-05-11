@@ -1,0 +1,64 @@
+{
+"Hoja1":[
+ {
+  "sector": "Agricultura, cría y explotación de animales, aprovechamiento forestal, pesca y caza"
+ },
+ {
+  "sector": "Minería"
+ },
+ {
+  "sector": "Generación, transmisión y distribución de energía eléctrica, suministro de agua y de gas por ductos al consumidor final"
+ },
+ {
+  "sector": "Construcción"
+ },
+ {
+  "sector": "Industrias manufactureras"
+ },
+ {
+  "sector": "Comercio al por mayor"
+ },
+ {
+  "sector": "Comercio al por menor"
+ },
+ {
+  "sector": "Transportes, correos y almacenamiento"
+ },
+ {
+  "sector": "Información en medios masivos"
+ },
+ {
+  "sector": "Servicios financieros y de seguros"
+ },
+ {
+  "sector": "Servicios inmobiliarios y de alquiler de bienes muebles e intangibles"
+ },
+ {
+  "sector": "Servicios profesionales, científicos y técnicos"
+ },
+ {
+  "sector": "Corporativos"
+ },
+ {
+  "sector": "Servicios de apoyo a los negocios y manejo de desechos y servicios de remediación"
+ },
+ {
+  "sector": "Servicios educativos"
+ },
+ {
+  "sector": "Servicios de salud y de asistencia social"
+ },
+ {
+  "sector": "Servicios de esparcimiento culturales y deportivos, y otros servicios recreativos"
+ },
+ {
+  "sector": "Servicios de alojamiento temporal y de preparación de alimentos y bebidas"
+ },
+ {
+  "sector": "Otros servicios excepto actividades gubernamentales"
+ },
+ {
+  "sector": "Actividades legislativas, gubernamentales, de impartición de justicia y de organismos internacionales y extraterritoriales"
+ }
+]
+}

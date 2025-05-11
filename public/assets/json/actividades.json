@@ -1,0 +1,648 @@
+{
+"Hoja1":[
+ {
+  "actividad": "Agricultura",
+  "id_sector": 1
+ },
+ {
+  "actividad": "Cría y explotación de animales",
+  "id_sector": 1
+ },
+ {
+  "actividad": "Acuicultura",
+  "id_sector": 1
+ },
+ {
+  "actividad": "Aprovechamiento forestal",
+  "id_sector": 1
+ },
+ {
+  "actividad": "Pesca",
+  "id_sector": 1
+ },
+ {
+  "actividad": "Caza y captura",
+  "id_sector": 1
+ },
+ {
+  "actividad": "Servicios relacionados con las actividades agropecuarias y forestales",
+  "id_sector": 1
+ },
+ {
+  "actividad": "Extracción de petróleo y gas",
+  "id_sector": 2
+ },
+ {
+  "actividad": "Minería de carbón mineral",
+  "id_sector": 2
+ },
+ {
+  "actividad": "Minería de minerales metálicos",
+  "id_sector": 2
+ },
+ {
+  "actividad": "Minería de minerales no metálicos",
+  "id_sector": 2
+ },
+ {
+  "actividad": "Servicios relacionados con la minería",
+  "id_sector": 2
+ },
+ {
+  "actividad": "Perforación de pozos petroleros y de gas",
+  "id_sector": 2
+ },
+ {
+  "actividad": "Generación, transmisión y distribución de energía eléctrica",
+  "id_sector": 3
+ },
+ {
+  "actividad": "Captación, tratamiento y suministro de agua",
+  "id_sector": 3
+ },
+ {
+  "actividad": "Suministro de gas por ductos al consumidor final",
+  "id_sector": 3
+ },
+ {
+  "actividad": "Edificación residencial",
+  "id_sector": 4
+ },
+ {
+  "actividad": "Autoconstrucción residencial",
+  "id_sector": 4
+ },
+ {
+  "actividad": "Edificación no residencial",
+  "id_sector": 4
+ },
+ {
+  "actividad": "Construcción de obras de ingeniería civil",
+  "id_sector": 4
+ },
+ {
+  "actividad": "Trabajos especializados para la construcción",
+  "id_sector": 4
+ },
+ {
+  "actividad": "Trabajos de albañilería de instalaciones hidrosanitarias y eléctricas y de trabajos en exteriores",
+  "id_sector": 4
+ },
+ {
+  "actividad": "Industria alimentaria",
+  "id_sector": 5
+ },
+ {
+  "actividad": "Industria de las bebidas y del tabaco",
+  "id_sector": 5
+ },
+ {
+  "actividad": "Fabricación de insumos textiles y acabado de textiles",
+  "id_sector": 5
+ },
+ {
+  "actividad": "Fabricación de productos textiles, excepto prendas de vestir",
+  "id_sector": 5
+ },
+ {
+  "actividad": "Fabricación de prendas de vestir",
+  "id_sector": 5
+ },
+ {
+  "actividad": "Curtido y acabado de cuero y piel, y fabricación de productos de cuero, piel y materiales sucedáneos",
+  "id_sector": 5
+ },
+ {
+  "actividad": "Industria de la madera",
+  "id_sector": 5
+ },
+ {
+  "actividad": "Industria del papel",
+  "id_sector": 5
+ },
+ {
+  "actividad": "Impresión e industrias conexas",
+  "id_sector": 5
+ },
+ {
+  "actividad": "Fabricación de productos derivados del petróleo y del carbón",
+  "id_sector": 5
+ },
+ {
+  "actividad": "Industria química",
+  "id_sector": 5
+ },
+ {
+  "actividad": "Industria del plástico y del hule",
+  "id_sector": 5
+ },
+ {
+  "actividad": "Fabricación de productos a base de minerales no metálicos",
+  "id_sector": 5
+ },
+ {
+  "actividad": "Industrias metálicas básicas",
+  "id_sector": 5
+ },
+ {
+  "actividad": "Fabricación de productos metálicos",
+  "id_sector": 5
+ },
+ {
+  "actividad": "Fabricación de maquinaria y equipo",
+  "id_sector": 5
+ },
+ {
+  "actividad": "Fabricación de equipo de computación, comunicación, medición y de otros equipos, componentes y accesorios electrónicos",
+  "id_sector": 5
+ },
+ {
+  "actividad": "Fabricación de accesorios, aparatos eléctricos y equipo de generación de energía eléctrica",
+  "id_sector": 5
+ },
+ {
+  "actividad": "Fabricación de equipo de transporte y partes para vehículos automotores",
+  "id_sector": 5
+ },
+ {
+  "actividad": "Fabricación de muebles, colchones y persianas",
+  "id_sector": 5
+ },
+ {
+  "actividad": "Otras industrias manufactureras",
+  "id_sector": 5
+ },
+ {
+  "actividad": "Comercio al por mayor de abarrotes, alimentos, bebidas, hielo y tabaco",
+  "id_sector": 6
+ },
+ {
+  "actividad": "Comercio al por mayor de productos textiles y calzado",
+  "id_sector": 6
+ },
+ {
+  "actividad": "Comercio al por mayor de productos farmacéuticos, de perfumería, artículos para el esparcimiento, electrodomésticos menores y aparatos de línea blanca",
+  "id_sector": 6
+ },
+ {
+  "actividad": "Comercio al por mayor de materias primas agropecuarias y forestales, para la industria, y materiales de desecho",
+  "id_sector": 6
+ },
+ {
+  "actividad": "Comercio al por mayor de maquinaria, equipo y mobiliario para actividades agropecuarias, industriales, de servicios y comerciales, y de otra maquinaria y equipo de uso general",
+  "id_sector": 6
+ },
+ {
+  "actividad": "Comercio al por mayor de camiones y de partes y refacciones nuevas para automóviles, camionetas y camiones",
+  "id_sector": 6
+ },
+ {
+  "actividad": "Intermediación de comercio al por mayor",
+  "id_sector": 6
+ },
+ {
+  "actividad": "Comercio al por menor de abarrotes, alimentos, bebidas, hielo y tabaco",
+  "id_sector": 7
+ },
+ {
+  "actividad": "Comercio ambulante de abarrotes, alimentos, bebidas, hielo y tabaco",
+  "id_sector": 7
+ },
+ {
+  "actividad": "Comercio al por menor en tiendas de autoservicio y departamentales",
+  "id_sector": 7
+ },
+ {
+  "actividad": "Comercio al por menor de productos textiles, bisutería, accesorios de vestir y calzado",
+  "id_sector": 7
+ },
+ {
+  "actividad": "Comercio ambulante de productos textiles, bisutería, accesorios de vestir y calzado",
+  "id_sector": 7
+ },
+ {
+  "actividad": "Comercio al por menor de artículos para el cuidado de la salud",
+  "id_sector": 7
+ },
+ {
+  "actividad": "Comercio ambulante de artículos para el cuidado de la salud",
+  "id_sector": 7
+ },
+ {
+  "actividad": "Comercio al por menor de artículos de papelería, para el esparcimiento y otros artículos de uso personal",
+  "id_sector": 7
+ },
+ {
+  "actividad": "Comercio ambulante de artículos de papelería, para el esparcimiento y otros artículos de uso personal",
+  "id_sector": 7
+ },
+ {
+  "actividad": "Comercio al por menor de enseres domésticos, computadoras, artículos para la decoración de interiores y de artículos usados",
+  "id_sector": 7
+ },
+ {
+  "actividad": "Comercio ambulante de muebles, artículos para el hogar y de artículos usados",
+  "id_sector": 7
+ },
+ {
+  "actividad": "Comercio al por menor de artículos de ferretería, tlapalería y vidrios",
+  "id_sector": 7
+ },
+ {
+  "actividad": "Comercio ambulante de artículos de ferretería, tlapalería",
+  "id_sector": 7
+ },
+ {
+  "actividad": "Comercio al por menor de vehículos de motor, refacciones, combustibles y lubricantes",
+  "id_sector": 7
+ },
+ {
+  "actividad": "Comercio ambulante de partes y refacciones para automóviles, camionetas y combustibles",
+  "id_sector": 7
+ },
+ {
+  "actividad": "Comercio al por menor exclusivamente a través de Internet, y catálogos impresos, televisión y similares",
+  "id_sector": 7
+ },
+ {
+  "actividad": "Transporte aéreo",
+  "id_sector": 8
+ },
+ {
+  "actividad": "Transporte por ferrocarril",
+  "id_sector": 8
+ },
+ {
+  "actividad": "Transporte por agua",
+  "id_sector": 8
+ },
+ {
+  "actividad": "Autotransporte de carga",
+  "id_sector": 8
+ },
+ {
+  "actividad": "Transporte terrestre de pasajeros, excepto por ferrocarril",
+  "id_sector": 8
+ },
+ {
+  "actividad": "Transporte por ductos",
+  "id_sector": 8
+ },
+ {
+  "actividad": "Transporte turístico",
+  "id_sector": 8
+ },
+ {
+  "actividad": "Servicios relacionados con el transporte",
+  "id_sector": 8
+ },
+ {
+  "actividad": "Servicios de reparación y limpieza exterior de aviones, barcos y trenes",
+  "id_sector": 8
+ },
+ {
+  "actividad": "Servicios postales",
+  "id_sector": 8
+ },
+ {
+  "actividad": "Servicios de mensajería y paquetería",
+  "id_sector": 8
+ },
+ {
+  "actividad": "Servicios de almacenamiento",
+  "id_sector": 8
+ },
+ {
+  "actividad": "Edición de periódicos, revistas, libros, software y otros materiales, y edición de estas publicaciones integrada con la impresión",
+  "id_sector": 9
+ },
+ {
+  "actividad": "Industria fílmica y del video, e industria del sonido",
+  "id_sector": 9
+ },
+ {
+  "actividad": "Radio y televisión",
+  "id_sector": 9
+ },
+ {
+  "actividad": "Otras telecomunicaciones",
+  "id_sector": 9
+ },
+ {
+  "actividad": "Procesamiento electrónico de información, hospedaje y otros servicios relacionados",
+  "id_sector": 9
+ },
+ {
+  "actividad": "Otros servicios de información",
+  "id_sector": 9
+ },
+ {
+  "actividad": "Banca central (Banco de México)",
+  "id_sector": 10
+ },
+ {
+  "actividad": "Banca múltiple, y administración de fondos y fideicomisos del sector privado",
+  "id_sector": 10
+ },
+ {
+  "actividad": "Otras instituciones de intermediación crediticia y financiera no bursátil del sector privado",
+  "id_sector": 10
+ },
+ {
+  "actividad": "Banca de desarrollo, y administración de fondos y fideicomisos del sector público",
+  "id_sector": 10
+ },
+ {
+  "actividad": "Actividades bursátiles, cambiarias y de inversión financiera",
+  "id_sector": 10
+ },
+ {
+  "actividad": "Compañías de fianzas, seguros y pensiones",
+  "id_sector": 10
+ },
+ {
+  "actividad": "Servicios inmobiliarios",
+  "id_sector": 11
+ },
+ {
+  "actividad": "Servicios de alquiler de automóviles, camiones y otros transportes terrestres",
+  "id_sector": 11
+ },
+ {
+  "actividad": "Servicios de alquiler y centros de alquiler de bienes muebles, excepto equipo de transporte terrestre",
+  "id_sector": 11
+ },
+ {
+  "actividad": "Servicios de alquiler de marcas registradas, patentes y franquicias",
+  "id_sector": 11
+ },
+ {
+  "actividad": "Servicios profesionales, científicos y técnicos",
+  "id_sector": 12
+ },
+ {
+  "actividad": "Servicios de investigación científica y desarrollo",
+  "id_sector": 12
+ },
+ {
+  "actividad": "Servicios veterinarios",
+  "id_sector": 12
+ },
+ {
+  "actividad": "Servicios de fotografía",
+  "id_sector": 12
+ },
+ {
+  "actividad": "Corporativos",
+  "id_sector": 13
+ },
+ {
+  "actividad": "Servicios de apoyo a los negocios, de empleo, apoyo secretarial y otros servicios de apoyo a los negocios",
+  "id_sector": 14
+ },
+ {
+  "actividad": "Limpieza interior de aviones, barcos y trenes",
+  "id_sector": 14
+ },
+ {
+  "actividad": "Servicios de limpieza y de instalación y mantenimiento de áreas verdes",
+  "id_sector": 14
+ },
+ {
+  "actividad": "Servicios de investigación, protección y seguridad",
+  "id_sector": 14
+ },
+ {
+  "actividad": "Agencias de viajes y servicios de reservaciones",
+  "id_sector": 14
+ },
+ {
+  "actividad": "Servicios combinados de apoyo a instalaciones",
+  "id_sector": 14
+ },
+ {
+  "actividad": "Manejo de desechos y servicios de remediación",
+  "id_sector": 14
+ },
+ {
+  "actividad": "Escuela de educación básica, media y especial pertenecientes al sector privado",
+  "id_sector": 15
+ },
+ {
+  "actividad": "Escuela de educación básica, media y especial pertenecientes al sector público",
+  "id_sector": 15
+ },
+ {
+  "actividad": "Escuela de educación básica, media y especial no especificadas de sector privado o público",
+  "id_sector": 15
+ },
+ {
+  "actividad": "Escuelas de educación postbachillerato no universitaria perteneciente al sector privado",
+  "id_sector": 15
+ },
+ {
+  "actividad": "Escuelas de educación postbachillerato no universitaria perteneciente al sector público",
+  "id_sector": 15
+ },
+ {
+  "actividad": "Escuelas de educación postbachillerato no universitaria no especificadas de sector privado o público",
+  "id_sector": 15
+ },
+ {
+  "actividad": "Escuelas de educación superior pertenecientes al sector privado",
+  "id_sector": 15
+ },
+ {
+  "actividad": "Escuelas de educación superior pertenecientes al sector público",
+  "id_sector": 15
+ },
+ {
+  "actividad": "Escuelas de educación superior no especificadas de sector privado o público",
+  "id_sector": 15
+ },
+ {
+  "actividad": "Otros servicios educativos pertenecientes al sector privado",
+  "id_sector": 15
+ },
+ {
+  "actividad": "Otros servicios educativos pertenecientes al sector público",
+  "id_sector": 15
+ },
+ {
+  "actividad": "Otros servicios educativos no especificados de sector privado o público",
+  "id_sector": 15
+ },
+ {
+  "actividad": "Servicios de apoyo a la educación",
+  "id_sector": 15
+ },
+ {
+  "actividad": "Servicios médicos de consulta externa y servicios relacionados pertenecientes al sector privado",
+  "id_sector": 16
+ },
+ {
+  "actividad": "Servicios médicos de consulta externa y servicios relacionados pertenecientes al sector público",
+  "id_sector": 16
+ },
+ {
+  "actividad": "Servicios médicos de consulta externa y servicios relacionados no especificados de sector privado o público",
+  "id_sector": 16
+ },
+ {
+  "actividad": "Hospitales pertenecientes al sector privado",
+  "id_sector": 16
+ },
+ {
+  "actividad": "Hospitales pertenecientes al sector público",
+  "id_sector": 16
+ },
+ {
+  "actividad": "Hospitales no especificados de sector privado o público",
+  "id_sector": 16
+ },
+ {
+  "actividad": "Residencias de asistencia social y para el cuidado de la salud pertenecientes al sector privado",
+  "id_sector": 16
+ },
+ {
+  "actividad": "Residencias de asistencia social y para el cuidado de la salud pertenecientes al sector público",
+  "id_sector": 16
+ },
+ {
+  "actividad": "Residencias de asistencia social y para el cuidado de la salud no especificadas de sector privado o público",
+  "id_sector": 16
+ },
+ {
+  "actividad": "Otros servicios de asistencia social pertenecientes al sector privado",
+  "id_sector": 16
+ },
+ {
+  "actividad": "Otros servicios de asistencia social pertenecientes al sector público",
+  "id_sector": 16
+ },
+ {
+  "actividad": "Otros servicios de asistencia social no especificados de sector privado o público",
+  "id_sector": 16
+ },
+ {
+  "actividad": "Guarderías pertenecientes al sector privado",
+  "id_sector": 16
+ },
+ {
+  "actividad": "Guarderías pertenecientes al sector público",
+  "id_sector": 16
+ },
+ {
+  "actividad": "Guarderías no especificados de sector privado o público",
+  "id_sector": 16
+ },
+ {
+  "actividad": "Compañías y grupos de espectáculos artísticos",
+  "id_sector": 17
+ },
+ {
+  "actividad": "Deportistas y equipos deportivos profesionales y semiprofesionales",
+  "id_sector": 17
+ },
+ {
+  "actividad": "Promotores, agentes y representantes de espectáculos artísticos, deportivos y similares",
+  "id_sector": 17
+ },
+ {
+  "actividad": "Artistas, escritores y técnicos independientes",
+  "id_sector": 17
+ },
+ {
+  "actividad": "Trabajadores ambulantes en espectáculos",
+  "id_sector": 17
+ },
+ {
+  "actividad": "Museos, sitios históricos, zoológicos y similares",
+  "id_sector": 17
+ },
+ {
+  "actividad": "Parques con instalaciones recreativas y casas de juegos electrónicos",
+  "id_sector": 17
+ },
+ {
+  "actividad": "Venta de billetes de lotería Nacional",
+  "id_sector": 17
+ },
+ {
+  "actividad": "Venta ambulante de billetes de lotería Nacional",
+  "id_sector": 17
+ },
+ {
+  "actividad": "Servicios de alojamiento temporal",
+  "id_sector": 18
+ },
+ {
+  "actividad": "Servicios de preparación de alimentos y bebidas",
+  "id_sector": 18
+ },
+ {
+  "actividad": "Servicios de preparación de alimentos y bebidas por trabajadores en unidades ambulantes",
+  "id_sector": 18
+ },
+ {
+  "actividad": "Centros nocturnos",
+  "id_sector": 18
+ },
+ {
+  "actividad": "Servicios de reparación y mantenimiento de automóviles y camiones",
+  "id_sector": 19
+ },
+ {
+  "actividad": "Servicios de reparación y mantenimiento de equipo, maquinaria, artículos para el hogar y personales",
+  "id_sector": 19
+ },
+ {
+  "actividad": "Servicios personales",
+  "id_sector": 19
+ },
+ {
+  "actividad": "Estacionamientos y pensiones para vehículos automotores",
+  "id_sector": 19
+ },
+ {
+  "actividad": "Servicios de cuidado y de lavado de automóviles por trabajadores ambulantes",
+  "id_sector": 19
+ },
+ {
+  "actividad": "Servicios de revelado e impresión de fotografías",
+  "id_sector": 19
+ },
+ {
+  "actividad": "Servicios de administración de cementerios",
+  "id_sector": 19
+ },
+ {
+  "actividad": "Asociaciones y organizaciones",
+  "id_sector": 19
+ },
+ {
+  "actividad": "Hogares con empleados domésticos",
+  "id_sector": 19
+ },
+ {
+  "actividad": "Órganos legislativos",
+  "id_sector": 20
+ },
+ {
+  "actividad": "Administración Pública Federal",
+  "id_sector": 20
+ },
+ {
+  "actividad": "Administración Pública Estatal",
+  "id_sector": 20
+ },
+ {
+  "actividad": "Administración Pública Municipal",
+  "id_sector": 20
+ },
+ {
+  "actividad": "Organismos internacionales y extraterritoriales",
+  "id_sector": 20
+ }
+]
+}

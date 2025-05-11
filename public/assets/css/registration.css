@@ -1,0 +1,288 @@
+.dashboard-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+.registration-section {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(157, 36, 73, 0.07);
+    padding: 0;
+    margin-bottom: 2rem;
+    position: relative;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    overflow: hidden;
+}
+
+/* Header section with gradient background */
+.registration-section h1 {
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 400;
+    margin: 0;
+    padding: 1.2rem 2rem;
+    background: linear-gradient(135deg, #9D2449 0%, #B42D54 100%);
+    position: relative;
+    letter-spacing: 0.5px;
+    border-radius: 10px 10px 0 0;
+    text-transform: uppercase;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(157, 36, 73, 0.1);
+}
+
+.registration-intro {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.registration-intro p {
+    margin: 0.5rem 0;
+    color: #555;
+    line-height: 1.6;
+}
+
+.registration-intro strong {
+    color: #9D2449;
+    font-weight: 600;
+}
+
+/* Card-style terms section */
+.terms-container {
+    padding: 1.5rem 2rem;
+}
+
+ction {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    position: relative;
+    margin: 0.5rem 0 1.5rem;
+}
+
+.terms-header {
+    background-color: #f8f8f8;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+}
+
+.terms-header h3 {
+    color: #9D2449;
+    font-size: 1.1rem;
+    margin: 0;
+    font-weight: 600;
+}
+
+.terms-header::before {
+    content: "";
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    background-color: #9D2449;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1v5h5v10H6V3h7z'/%3E%3C/svg%3E");
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1v5h5v10H6V3h7z'/%3E%3C/svg%3E");
+    mask-size: contain;
+    -webkit-mask-size: contain;
+    mask-repeat: no-repeat;
+    -webkit-mask-repeat: no-repeat;
+    margin-right: 10px;
+}
+
+.terms-content {
+    padding: 1.5rem;
+    height: auto;
+    overflow: visible;
+}
+
+.terms-content p {
+    color: #505050;
+    line-height: 1.7;
+    margin-bottom: 1rem;
+    font-size: 14px;
+}
+
+.terms-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem 0;
+}
+
+.terms-list li {
+    position: relative;
+    padding-left: 28px;
+    margin-bottom: 12px;
+    line-height: 1.6;
+    color: #444;
+}
+
+.terms-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 16px;
+    height: 16px;
+    background-color: #9D2449;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'/%3E%3C/svg%3E");
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'/%3E%3C/svg%3E");
+    mask-size: contain;
+    -webkit-mask-size: contain;
+    mask-repeat: no-repeat;
+    -webkit-mask-repeat: no-repeat;
+}
+
+.terms-footer {
+    padding: 1rem 1.5rem;
+    background-color: #f9f5f6;
+    border-top: 1px solid #eee;
+    font-style: italic;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* Form section styling */
+.form-section {
+    padding: 1.5rem 2rem;
+    border-top: 1px solid #f0f0f0;
+    background-color: #fcfcfc;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.form-group {
+    display: flex;
+    align-items: center;
+    margin: 0;
+}
+
+.custom-checkbox {
+    position: relative;
+    padding-left: 28px;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 500;
+    color: #333;
+    font-size: 14px;
+}
+
+.custom-checkbox input {
+    position: absolute;
+    opacity: 0;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 18px;
+    width: 18px;
+    background-color: #fff;
+    border: 2px solid #9D2449;
+    border-radius: 3px;
+    transition: all 0.2s;
+}
+
+.custom-checkbox:hover input ~ .checkmark {
+    background-color: #f9f5f6;
+}
+
+.custom-checkbox input:checked ~ .checkmark {
+    background-color: #9D2449;
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.custom-checkbox input:checked ~ .checkmark:after {
+    display: block;
+}
+
+.custom-checkbox .checkmark:after {
+    left: 5px;
+    top: 1px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.btn-submit {
+    background-color: #9D2449;
+    color: white;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 180px;
+}
+
+.btn-submit:hover {
+    background-color: #8c2041;
+    box-shadow: 0 4px 8px rgba(157, 36, 73, 0.2);
+}
+
+.btn-submit:after {
+    content: "";
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background-color: #fff;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z'/%3E%3C/svg%3E");
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z'/%3E%3C/svg%3E");
+    mask-size: contain;
+    -webkit-mask-size: contain;
+    mask-repeat: no-repeat;
+    -webkit-mask-repeat: no-repeat;
+    margin-left: 8px;
+}
+
+.text-danger {
+    color: #e74c3c;
+    font-size: 13px;
+    margin-top: 8px;
+    display: block;
+}
+
+/* Removed scrollbar styling as terms now expand automatically */
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .registration-section h1 {
+        font-size: 1.3rem;
+        padding: 1.2rem 1.5rem;
+    }
+    
+    .registration-intro,
+    .terms-container,
+    .form-section {
+        padding: 1.2rem 1.5rem;
+    }
+    
+    .form-section {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .btn-submit {
+        margin-top: 1rem;
+        width: 100%;
+    }
+}

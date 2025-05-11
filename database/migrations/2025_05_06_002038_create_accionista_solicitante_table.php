@@ -1,0 +1,27 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateAccionistaSolicitanteTable extends Migration
+{
+    public function up()
+    {
+        Schema::create('accionista_solicitante', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->bigInteger('tramite_id')->unsigned();
+            $table->bigInteger('accionista_id')->unsigned();
+            $table->decimal('porcentaje_participacion', 5, 2);
+            $table->timestamps();
+
+            $table->foreign('tramite_id')->references('id')->on('tramite')->onDelete('cascade');
+            $table->foreign('accionista_id')->references('id')->on('accionista')->onDelete('cascade');
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('accionista_solicitante');
+    }
+}
