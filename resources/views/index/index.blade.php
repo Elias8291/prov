@@ -15,14 +15,23 @@
                 Buenos días, {{ auth()->check() ? auth()->user()->name : 'Invitado' }}
             </h2>
             <p class="welcome-subtitle">¿Cómo va tu día? 🌟</p>
-            <p class="welcome-description">Bienvenido al sistema de registro de proveedores del gobierno de Oaxaca.</p>   
+            <p class="welcome-description">Bienvenido al Padron de Proveedores del Estado De Oaxaca.</p>   
             
-            @if(auth()->check() && auth()->user()->hasRole('solicitante'))
-            <button class="register-button">
-                <span>Comenzar tu inscripción</span>
-                <i class="fas fa-arrow-right"></i>
-            </button>
-        @endif
+           @if(auth()->check() && auth()->user()->hasRole('solicitante'))
+                <?php
+                    $tramite = auth()->user()->solicitante
+                        ? App\Models\Tramite::where('solicitante_id', auth()->user()->solicitante->id)
+                            ->where('estado', 'Pendiente')
+                            ->first()
+                        : null;
+                    $textoBoton = ($tramite && $tramite->progreso_tramite >= 1) ? 'Continuar trámite' : 'Iniciar trámite';
+                    $rutaBoton = ($tramite && $tramite->progreso_tramite >= 1) ? route('inscripcion.formulario') : route('inscripcion.terminos_y_condiciones');
+                ?>
+                <a href="{{ $rutaBoton }}" class="register-button">
+                    <span>{{ $textoBoton }}</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            @endif
 
             <div class="discover-section">
                 <h3 class="section-heading">Descubre Proveedores de Oaxaca</h3>

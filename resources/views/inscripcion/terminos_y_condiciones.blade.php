@@ -36,7 +36,7 @@
         </div>
         
         <div class="form-section">
-            <form id="termsForm" method="POST" action="{{ route('aceptar.terminos') }}">
+            <form id="termsForm" method="POST" action="{{ route('inscripcion.aceptar_terminos') }}">
                 @csrf
                 <div class="form-group">
                     <label class="custom-checkbox">
@@ -53,6 +53,4 @@
         </div>
     </div>
 </div>
-
-
 @endsection

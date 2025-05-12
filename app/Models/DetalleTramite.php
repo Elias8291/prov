@@ -30,4 +30,5 @@ class DetalleTramite extends Model
     {
         return $this->belongsTo(Direccion::class);
     }
+    
 }

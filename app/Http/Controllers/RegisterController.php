@@ -92,7 +92,7 @@ class RegisterController extends Controller
                 'solicitante_id' => $solicitante->id,
                 'tipo_tramite' => 'Inscripcion',
                 'estado' => 'Pendiente',
-                'progreso_tramite' => 10,
+                'progreso_tramite' => 0,
                 'fecha_inicio' => now(),
                 'created_at' => now(),
                 'updated_at' => now(),
