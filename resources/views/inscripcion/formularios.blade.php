@@ -38,7 +38,7 @@
             <form action="{{ route('inscripcion.procesar') }}" method="POST" autocomplete="off">
                 @csrf
                 {{-- Incluye los campos según la sección --}}
-                @include('inscripcion.secciones.seccion' . $seccion, ['datosPrevios' => $datosPrevios])
+                @include('inscripcion.secciones.' . $seccionPartial, ['datosPrevios' => $datosPrevios])
                 <div class="navigation-buttons">
                     @if ($seccion > 1)
                         <button type="button" onclick="window.location.href='{{ route('inscripcion.formulario') }}?retroceder=1'" class="btn btn-secondary">Anterior</button>
@@ -46,7 +46,6 @@
                         <span></span>
                     @endif
                     <span class="progress-small-text">Sección {{ $seccion }} de {{ $totalSecciones }}</span>
-                  
                 </div>
             </form>
         </div>
