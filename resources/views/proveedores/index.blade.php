@@ -10,14 +10,14 @@
         <!-- Header Section with Title -->
         <h1 class="page-title">Listado de Proveedores</h1>
         <p class="page-subtitle">Consulta de proveedores registrados en la plataforma de Proveedores de Oaxaca</p>
-        
+
         <!-- Controls Bar with Search, Days Filter and Status Filter -->
         <div class="controls-bar">
             <div class="search-container">
                 <i class="fas fa-search search-icon"></i>
                 <input type="text" class="search-input" placeholder="Buscar por razón social o RFC...">
             </div>
-            
+
             <div class="filters-container">
                 <!-- Status Filter -->
                 <div class="filter-item">
@@ -28,7 +28,7 @@
                         <option value="Inactivo" {{ $status == 'Inactivo' ? 'selected' : '' }}>Inactivos</option>
                     </select>
                 </div>
-                
+
                 <!-- Days Filter -->
                 <div class="filter-item">
                     <label for="daysFilter" class="filter-label">Vencimiento:</label>
@@ -40,19 +40,19 @@
                         <option value="30" {{ $days == '30' ? 'selected' : '' }}>Próximos 30 días</option>
                     </select>
                 </div>
-                
+
                 <!-- Filter Button -->
                 <button id="applyFilters" class="filter-button">
                     <i class="fas fa-filter"></i> Aplicar
                 </button>
             </div>
         </div>
-        
+
         <!-- Alert Messages -->
         <div class="alert alert-danger" style="display: none;" id="errorAlert">
             Ha ocurrido un error al procesar la solicitud.
         </div>
-        
+
         <!-- Table Container -->
         <div class="table-container">
             <table class="table">
@@ -71,22 +71,24 @@
                     @forelse($proveedores as $proveedor)
                         <tr>
                             <td data-label="ID Proveedor">{{ $proveedor->pv }}</td>
-                            <td data-label="Razón Social" class="razon-social">{{ Str::limit($proveedor->razon_social, 40) }}</td>
+                            <td data-label="Razón Social" class="razon-social">
+                                {{ Str::limit($proveedor->razon_social, 40) }}</td>
                             <td data-label="RFC" class="rfc">{{ $proveedor->rfc }}</td>
                             <td data-label="Estado">
-                                <span class="status-badge {{ strtolower($proveedor->estado) == 'activo' ? 'active' : 'inactive' }}">
+                                <span
+                                    class="status-badge {{ strtolower($proveedor->estado) == 'activo' ? 'active' : 'inactive' }}">
                                     {{ $proveedor->estado }}
                                 </span>
                             </td>
                             <td data-label="Fecha Registro">
-                                @if($proveedor->fecha_registro)
+                                @if ($proveedor->fecha_registro)
                                     {{ \Carbon\Carbon::createFromFormat('Y-m-d', $proveedor->fecha_registro)->format('d/m/Y') }}
                                 @else
                                     <span class="text-muted">No asignada</span>
                                 @endif
                             </td>
                             <td data-label="Fecha Vencimiento">
-                                @if($proveedor->fecha_vencimiento)
+                                @if ($proveedor->fecha_vencimiento)
                                     {{ \Carbon\Carbon::createFromFormat('Y-m-d', $proveedor->fecha_vencimiento)->format('d/m/Y') }}
                                 @else
                                     <span class="text-muted">No asignada</span>
@@ -94,7 +96,8 @@
                             </td>
                             <td data-label="Acciones">
                                 <div class="action-buttons">
-                                    <button class="btn-action view-btn" data-id="{{ $proveedor->pv }}" title="Ver detalles">
+                                    <button class="btn-action view-btn" data-id="{{ $proveedor->pv }}"
+                                        title="Ver detalles">
                                         <i class="fas fa-eye"></i>
                                     </button>
                                 </div>
@@ -108,15 +111,16 @@
                 </tbody>
             </table>
         </div>
-        
+
         <!-- Stylish Pagination -->
         <div class="custom-pagination">
-            @if($proveedores->onFirstPage())
+            @if ($proveedores->onFirstPage())
                 <span class="pagination-arrow disabled">
                     <i class="fas fa-chevron-left"></i>
                 </span>
             @else
-                <a href="{{ $proveedores->appends(['days' => $days, 'status' => $status])->previousPageUrl() }}" class="pagination-arrow">
+                <a href="{{ $proveedores->appends(['days' => $days, 'status' => $status])->previousPageUrl() }}"
+                    class="pagination-arrow">
                     <i class="fas fa-chevron-left"></i>
                 </a>
             @endif
@@ -129,27 +133,31 @@
                 $showStartEllipsis = $startPage > 1;
                 $showEndEllipsis = $endPage < $lastPage;
             @endphp
-            
-            @if($showStartEllipsis)
-                <a href="{{ $proveedores->appends(['days' => $days, 'status' => $status])->url(1) }}" class="pagination-number {{ $currentPage == 1 ? 'active' : '' }}">1</a>
+
+            @if ($showStartEllipsis)
+                <a href="{{ $proveedores->appends(['days' => $days, 'status' => $status])->url(1) }}"
+                    class="pagination-number {{ $currentPage == 1 ? 'active' : '' }}">1</a>
                 <span class="pagination-ellipsis">...</span>
             @endif
-            
-            @for($i = $startPage; $i <= $endPage; $i++)
-                <a href="{{ $proveedores->appends(['days' => $days, 'status' => $status])->url($i) }}" class="pagination-number {{ $currentPage == $i ? 'active' : '' }}">
+
+            @for ($i = $startPage; $i <= $endPage; $i++)
+                <a href="{{ $proveedores->appends(['days' => $days, 'status' => $status])->url($i) }}"
+                    class="pagination-number {{ $currentPage == $i ? 'active' : '' }}">
                     {{ $i }}
                 </a>
             @endfor
-            
-            @if($showEndEllipsis)
+
+            @if ($showEndEllipsis)
                 <span class="pagination-ellipsis">...</span>
-                <a href="{{ $proveedores->appends(['days' => $days, 'status' => $status])->url($lastPage) }}" class="pagination-number {{ $currentPage == $lastPage ? 'active' : '' }}">
+                <a href="{{ $proveedores->appends(['days' => $days, 'status' => $status])->url($lastPage) }}"
+                    class="pagination-number {{ $currentPage == $lastPage ? 'active' : '' }}">
                     {{ $lastPage }}
                 </a>
             @endif
 
-            @if($proveedores->hasMorePages())
-                <a href="{{ $proveedores->appends(['days' => $days, 'status' => $status])->nextPageUrl() }}" class="pagination-arrow">
+            @if ($proveedores->hasMorePages())
+                <a href="{{ $proveedores->appends(['days' => $days, 'status' => $status])->nextPageUrl() }}"
+                    class="pagination-arrow">
                     <i class="fas fa-chevron-right"></i>
                 </a>
             @else
@@ -167,41 +175,41 @@
                 <h2 class="modal-title">Detalles del Proveedor</h2>
                 <span class="close-modal">×</span>
             </div>
-            
+
             <div class="modal-body">
                 <div class="provider-details">
                     <div class="detail-group">
                         <span class="detail-label">ID Proveedor:</span>
                         <span class="detail-value" id="view_pv"></span>
                     </div>
-                    
+
                     <div class="detail-group">
                         <span class="detail-label">Razón Social:</span>
                         <span class="detail-value" id="view_razon_social"></span>
                     </div>
-                    
+
                     <div class="detail-group">
                         <span class="detail-label">RFC:</span>
                         <span class="detail-value" id="view_rfc"></span>
                     </div>
-                    
+
                     <div class="detail-group">
                         <span class="detail-label">Estado:</span>
                         <span class="detail-value" id="view_estado"></span>
                     </div>
-                    
+
                     <div class="detail-group">
                         <span class="detail-label">Fecha de Registro:</span>
                         <span class="detail-value" id="view_fecha_registro"></span>
                     </div>
-                    
+
                     <div class="detail-group">
                         <span class="detail-label">Fecha de Vencimiento:</span>
                         <span class="detail-value" id="view_fecha_vencimiento"></span>
                     </div>
                 </div>
             </div>
-            
+
             <div class="modal-footer">
                 <button type="button" class="btn-secondary" id="closeViewModal">Cerrar</button>
             </div>
@@ -219,7 +227,8 @@
         /* Compact Dashboard Container */
         .dashboard-container {
             padding: 15px;
-            max-width: 1220px; /* Compact container */
+            max-width: 1220px;
+            /* Compact container */
             margin: 0 auto;
             box-sizing: border-box;
         }
@@ -266,21 +275,53 @@
 
         /* Adjusted Column Widths */
         .table th:nth-child(1),
-        .table td:nth-child(1) { width: 7%; } /* ID Proveedor */
+        .table td:nth-child(1) {
+            width: 10%;
+            text-align: center;
+        }
+
+        /* ID Proveedor (increased from 7% to 10%) */
         .table th:nth-child(2),
-        .table td:nth-child(2) { width: 35%; } /* Razón Social (increased) */
+        .table td:nth-child(2) {
+            width: 32%;
+            text-align: center;
+        }
+
+        /* Razón Social (adjusted from 35% to 32%) */
         .table th:nth-child(3),
-        .table td:nth-child(3) { width: 15%; } /* RFC */
+        .table td:nth-child(3) {
+            width: 15%;
+            text-align: center;
+        }
+
+        /* RFC */
         .table th:nth-child(4),
-        .table td:nth-child(4) { width: 10%; } /* Estado */
+        .table td:nth-child(4) {
+            width: 10%;
+            text-align: center;
+        }
+
+        /* Estado */
         .table th:nth-child(5),
-        .table td:nth-child(5) { width: 15%; } /* Fecha Registro */
+        .table td:nth-child(5) {
+            width: 15%;
+            text-align: center;
+        }
+
+        /* Fecha Registro */
         .table th:nth-child(6),
-        .table td:nth-child(6) { width: 15%; } /* Fecha Vencimiento */
+        .table td:nth-child(6) {
+            width: 15%;
+            text-align: center;
+        }
+
+        /* Fecha Vencimiento */
         .table th:nth-child(7),
-        .table td:nth-child(7) { 
-            width: 5%; /* Acciones (reduced) */
-            text-align: center; /* Center icon */
+        .table td:nth-child(7) {
+            width: 5%;
+            /* Acciones */
+            text-align: center;
+            /* Already centered, kept for consistency */
         }
 
         .table tr:hover {
@@ -298,18 +339,20 @@
 
         .status-badge.active {
             background: #28a745;
-            color:  #fff;
+            color: #fff;
         }
 
         .status-badge.inactive {
-            background: #6c757d; /* Gray for inactive */
+            background: #6c757d;
+            /* Gray for inactive */
             color: #fff;
         }
 
         /* Action Buttons */
         .action-buttons {
             display: flex;
-            justify-content: center; /* Center icon */
+            justify-content: center;
+            /* Center icon */
             gap: 6px;
         }
 
@@ -427,14 +470,16 @@
         .search-container {
             position: relative;
             flex: 1;
-            max-width: 300px; /* Larger search input */
+            max-width: 300px;
+            /* Larger search input */
         }
 
         .search-input {
             width: 100%;
             padding: 8px 12px 8px 36px;
             border: 2px solid var(--guinda);
-            border-radius: 25px; /* Rounded design */
+            border-radius: 25px;
+            /* Rounded design */
             font-size: 14px;
             color: #333;
             background: #fff;
@@ -593,7 +638,9 @@
                 display: none;
             }
 
-            .table tbody, .table tr, .table td {
+            .table tbody,
+            .table tr,
+            .table td {
                 display: block;
                 width: 100%;
             }
@@ -621,7 +668,8 @@
             }
 
             .table td:nth-child(7) {
-                text-align: center; /* Keep Acciones centered */
+                text-align: center;
+                /* Keep Acciones centered */
             }
 
             .search-container {
@@ -646,19 +694,19 @@
             const closeViewBtn = viewModal.querySelector('.close-modal');
             const cancelViewBtn = document.getElementById('closeViewModal');
             const errorAlert = document.getElementById('errorAlert');
-            
+
             // Close View Modal Function
             function closeViewModal() {
                 viewModal.style.display = 'none';
                 document.body.style.overflow = 'auto';
             }
-            
+
             // Close View Modal with X button
             closeViewBtn.addEventListener('click', closeViewModal);
-            
+
             // Close View Modal with Close button
             cancelViewBtn.addEventListener('click', closeViewModal);
-            
+
             // Open View Modal when view button is clicked
             document.querySelectorAll('.view-btn').forEach(function(btn) {
                 btn.addEventListener('click', function() {
@@ -670,39 +718,40 @@
                         const estado = row.cells[3].textContent.trim();
                         const fechaRegistro = row.cells[4].textContent.trim();
                         const fechaVencimiento = row.cells[5].textContent.trim();
-                        
+
                         document.getElementById('view_pv').textContent = pv;
                         document.getElementById('view_razon_social').textContent = razonSocial;
                         document.getElementById('view_rfc').textContent = rfc;
                         document.getElementById('view_estado').textContent = estado;
                         document.getElementById('view_fecha_registro').textContent = fechaRegistro;
-                        document.getElementById('view_fecha_vencimiento').textContent = fechaVencimiento;
-                        
+                        document.getElementById('view_fecha_vencimiento').textContent =
+                            fechaVencimiento;
+
                         viewModal.style.display = 'block';
                         document.body.style.overflow = 'hidden';
                     }
                 });
             });
-            
+
             // Close modal when clicking outside
             window.addEventListener('click', function(event) {
                 if (event.target === viewModal) {
                     closeViewModal();
                 }
             });
-            
+
             // Table Search Functionality
             const searchInput = document.querySelector('.search-input');
             searchInput.addEventListener('keyup', function() {
                 const searchTerm = this.value.toLowerCase();
                 const status = document.getElementById('statusFilter').value;
                 const days = document.getElementById('daysFilter').value;
-                
+
                 if (searchTerm.length >= 2) {
                     let searchUrl = `{{ route('proveedores.search') }}?term=${searchTerm}`;
                     if (status) searchUrl += `&status=${status}`;
                     if (days) searchUrl += `&days=${days}`;
-                    
+
                     fetch(searchUrl)
                         .then(response => response.json())
                         .then(data => {
@@ -720,28 +769,28 @@
                     }
                 }
             });
-            
+
             // Apply Filters Button
             const applyFiltersBtn = document.getElementById('applyFilters');
             applyFiltersBtn.addEventListener('click', function() {
                 applyFilters();
             });
-            
+
             // Function to apply filters
             function applyFilters() {
                 const status = document.getElementById('statusFilter').value;
                 const days = document.getElementById('daysFilter').value;
                 const searchTerm = document.querySelector('.search-input').value;
-                
+
                 let url = `{{ route('proveedores.index') }}?`;
                 if (days) url += `days=${days}&`;
                 if (status) url += `status=${status}&`;
-                
+
                 if (searchTerm && searchTerm.length >= 2) {
                     url = `{{ route('proveedores.search') }}?term=${searchTerm}`;
                     if (days) url += `&days=${days}`;
                     if (status) url += `&status=${status}`;
-                    
+
                     fetch(url)
                         .then(response => response.json())
                         .then(data => {
@@ -755,19 +804,19 @@
                     window.location.href = url;
                 }
             }
-            
+
             // Function to update table with search results
             function updateTableWithSearchResults(proveedores) {
                 const tableBody = document.querySelector('tbody');
                 tableBody.innerHTML = '';
-                
+
                 if (proveedores.length === 0) {
                     const row = document.createElement('tr');
                     row.innerHTML = '<td colspan="7" class="text-center">No se encontraron resultados</td>';
                     tableBody.appendChild(row);
                     return;
                 }
-                
+
                 proveedores.forEach(proveedor => {
                     const row = document.createElement('tr');
                     let formattedFechaRegistro = '<span class="text-muted">No asignada</span>';
@@ -775,13 +824,13 @@
                         const [year, month, day] = proveedor.fecha_registro.split('-');
                         formattedFechaRegistro = `${day}/${month}/${year}`;
                     }
-                    
+
                     let formattedFechaVencimiento = '<span class="text-muted">No asignada</span>';
                     if (proveedor.fecha_vencimiento) {
                         const [year, month, day] = proveedor.fecha_vencimiento.split('-');
                         formattedFechaVencimiento = `${day}/${month}/${year}`;
                     }
-                    
+
                     row.innerHTML = `
                         <td data-label="ID Proveedor">${proveedor.pv}</td>
                         <td data-label="Razón Social" class="razon-social">${proveedor.razon_social ? proveedor.razon_social.substring(0, 40) + (proveedor.razon_social.length > 40 ? '...' : '') : ''}</td>
@@ -801,13 +850,13 @@
                             </div>
                         </td>
                     `;
-                    
+
                     tableBody.appendChild(row);
                 });
-                
+
                 attachEventListenersToButtons();
             }
-            
+
             // Function to attach event listeners to dynamically created buttons
             function attachEventListenersToButtons() {
                 document.querySelectorAll('.view-btn').forEach(function(btn) {
@@ -820,21 +869,23 @@
                             const estado = row.cells[3].textContent.trim();
                             const fechaRegistro = row.cells[4].textContent.trim();
                             const fechaVencimiento = row.cells[5].textContent.trim();
-                            
+
                             document.getElementById('view_pv').textContent = pv;
                             document.getElementById('view_razon_social').textContent = razonSocial;
                             document.getElementById('view_rfc').textContent = rfc;
                             document.getElementById('view_estado').textContent = estado;
-                            document.getElementById('view_fecha_registro').textContent = fechaRegistro;
-                            document.getElementById('view_fecha_vencimiento').textContent = fechaVencimiento;
-                            
+                            document.getElementById('view_fecha_registro').textContent =
+                                fechaRegistro;
+                            document.getElementById('view_fecha_vencimiento').textContent =
+                                fechaVencimiento;
+
                             viewModal.style.display = 'block';
                             document.body.style.overflow = 'hidden';
                         }
                     });
                 });
             }
-            
+
             // Show alert message
             function showAlert(alertElement, message) {
                 alertElement.textContent = message;
@@ -843,7 +894,7 @@
                     alertElement.style.display = 'none';
                 }, 5000);
             }
-            
+
             // Initialize event listeners
             attachEventListenersToButtons();
         });
