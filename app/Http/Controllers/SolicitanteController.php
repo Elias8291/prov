@@ -12,14 +12,16 @@ class SolicitanteController extends Controller
     {
         $usuario = Auth::user();
 
-        // If user is a revisor, redirect directly to inscripcion.formulario
+        // Check if the user has the revisor role
         if ($usuario->hasRole('revisor')) {
-            return redirect()->route('inscripcion.formulario');
+            // Revisors don't need to see terms and conditions; redirect to dashboard or another page
+            return redirect()->route('dashboard')->with('info', 'Revisores no necesitan aceptar términos y condiciones.');
         }
 
         // Ensure the user has a solicitante record
         $solicitante = $usuario->solicitante;
         if (!$solicitante) {
+            // Handle case where solicitante is null (e.g., for admins or users without solicitante record)
             return redirect()->route('dashboard')->withErrors(['error' => 'No tienes un perfil de solicitante asociado.']);
         }
 
@@ -46,9 +48,10 @@ class SolicitanteController extends Controller
 
         $usuario = Auth::user();
 
-        // If user is a revisor, redirect directly to inscripcion.formulario
+        // Check if the user has the revisor role
         if ($usuario->hasRole('revisor')) {
-            return redirect()->route('inscripcion.formulario');
+            // Revisors don't need to accept terms; redirect to dashboard
+            return redirect()->route('dashboard')->with('info', 'Revisores no necesitan aceptar términos y condiciones.');
         }
 
         // Ensure the user has a solicitante record

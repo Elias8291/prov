@@ -229,18 +229,11 @@
             padding: 15px;
             max-width: 1220px;
             /* Compact container */
-            margin: 0 auto;
+           margin: 40px auto;
             box-sizing: border-box;
         }
 
-        /* Table Container */
-        .table-container {
-            width: 100%;
-            max-width: 100%;
-            margin: 0 auto;
-            padding: 0 10px;
-        }
-
+       
         /* Table Styles */
         .table {
             width: 100%;

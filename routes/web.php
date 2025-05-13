@@ -47,11 +47,11 @@ Route::get('/inscripcion/terminos_y_condiciones', [SolicitanteController::class,
     Route::get('/inscripcion/exito', [InscripcionController::class, 'exito'])->name('inscripcion.exito');
     Route::get('/inscripcion/actividades', [InscripcionController::class, 'obtenerActividades'])->name('inscripcion.actividades');
     Route::post('/inscripcion/guardar', [InscripcionController::class, 'guardarSeccion'])->name('inscripcion.guardar');
-    Route::get('/revision', [RevisionController::class, 'index'])->name('revision.index');
+   
     // Resto de rutas de tu sistema...
     Route::get('/sectores', [SectorActividadController::class, 'getSectores'])->name('sectores.index');
     Route::get('/sectores/{sectorId}/actividades', [SectorActividadController::class, 'getActividadesBySector'])->name('sectores.actividades');
-    Route::get('/codigo-postal/{codigoPostal}', [DireccionController::class, 'getByCodigoPostal']);
+
     Route::get('/usuarios', [UserController::class, 'index'])->name('usuarios.index');
     Route::post('/usuarios', [UserController::class, 'store'])->name('usuarios.store');
     Route::put('/usuarios/{user}', [UserController::class, 'update'])->name('usuarios.update');
@@ -63,4 +63,25 @@ Route::get('/inscripcion/terminos_y_condiciones', [SolicitanteController::class,
     Route::delete('/roles/{role}', [RoleController::class, 'destroy'])->name('roles.destroy');
     Route::get('/proveedores', [ProveedorController::class, 'index'])->name('proveedores.index');
     Route::get('/proveedores/search', [ProveedorController::class, 'search'])->name('proveedores.search');
+
+     Route::get('/revision', [RevisionController::class, 'index'])->name('revision.index');
+    Route::get('/{id}', [RevisionController::class, 'show'])->name('revision.show');
+
+    // Iniciar la revisión de una solicitud
+    Route::post('/{id}/begin', [RevisionController::class, 'beginReview'])->name('revision.begin');
+
+    // Completar la revisión de una solicitud
+    Route::post('/{id}/complete', [RevisionController::class, 'completeReview'])->name('revision.complete');
+
+    // Listado de revisiones asignadas al usuario actual
+    Route::get('/my-revisions', [RevisionController::class, 'myRevisions'])->name('revision.my-revisions');
+    Route::get('/revision/iniciar/{rfc}', [RevisionController::class, 'iniciarRevision'])->name('revision.iniciar');
+     Route::get('/solicitante/address-info', [DireccionController::class, 'getSolicitanteAddressInfo']);
+    Route::get('/direccion/by-codigo-postal/{codigo}', [DireccionController::class, 'getAddressByCodigoPostal']);
+    Route::post('/inscripcion/obtener-datos-direccion', [InscripcionController::class, 'obtenerDatosDireccion'])->name('inscripcion.obtener-datos-direccion');
+    Route::post('/inscripcion/obtener-datos-direccion', [InscripcionController::class, 'obtenerDatosDireccion'])->name('inscripcion.obtener_datos_direccion');
+
+    Route::post('/inscripcion/procesar-seccion', [App\Http\Controllers\InscripcionController::class, 'procesarSeccion'])
+    ->name('inscripcion.procesar_seccion')
+    ->middleware(['auth']);
 });

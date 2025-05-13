@@ -1,7 +1,68 @@
+
+<style>/* Main Button Styling */
+.navigation-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    background-color: #9d2449; /* Primary blue color */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+}
+
+/* Icon spacing */
+.navigation-button i {
+    margin-left: 8px;
+}
+
+.navigation-button i:first-child {
+    margin-left: 0;
+    margin-right: 8px;
+}
+
+/* Hover state */
+.navigation-button:hover {
+    background-color: #9d2449;; /* Darker blue on hover */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+}
+
+/* Active/clicked state */
+.navigation-button:active {
+    background-color: #9d2449;
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+
+/* Disabled state (if needed) */
+.navigation-button:disabled {
+    background-color: #a0aec0;
+    cursor: not-allowed;
+    opacity: 0.7;
+    box-shadow: none;
+}
+
+/* For "Finalizar" button (if you want a different color) */
+.navigation-button.is-confirmation {
+    background-color: #38c172; /* Success green */
+}
+
+.navigation-button.is-confirmation:hover {
+    background-color: #2d9d5b;
+}
+    </style>
 <form id="formulario1" method="POST" action="{{ route('inscripcion.procesar') }}" enctype="multipart/form-data">
     @csrf
     <!-- Sección para subir Constancia de Situación Fiscal, visible solo para admin -->
-    @if (auth()->check() && auth()->user()->hasRole('revisor'))
+    @if (auth()->check() && auth()->user()->hasRole(''))
         <div class="form-section" id="constancia-upload-section">
             <h4><i class="fas fa-file-pdf"></i> Subir Constancia de Situación Fiscal</h4>
             <div class="form-group full-width" id="formulario__grupo--constancia">
@@ -170,6 +231,8 @@
                         Siguiente <i class="fas fa-arrow-right"></i>
                     @endif
                 </button>
+
+                
             </div>
         </div>
     </div>

@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Relations\HasMany;
 class Solicitante extends Model
 {
     use HasFactory;
@@ -48,4 +48,5 @@ class Solicitante extends Model
     {
         return $this->hasMany(Tramite::class, 'solicitante_id');
     }
+   
 }

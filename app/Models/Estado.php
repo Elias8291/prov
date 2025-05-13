@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Estado extends Model
 {
     use HasFactory;
-
+ protected $table = 'estado'; 
     protected $fillable = ['nombre', 'pais_id'];
 
     public function pais()

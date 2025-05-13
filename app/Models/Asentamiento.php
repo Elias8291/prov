@@ -5,6 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Asentamiento extends Model
 {
+    protected $table = 'asentamiento';
     protected $fillable = ['nombre', 'codigo_postal', 'localidad_id', 'tipo_asentamiento_id'];
 
     public function localidad()

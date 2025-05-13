@@ -12,7 +12,7 @@ class CreateTramiteTable extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('solicitante_id')->unsigned()->nullable();
             $table->enum('tipo_tramite', ['Inscripcion', 'Renovacion', 'Actualizacion']);
-            $table->enum('estado', ['Pendiente', 'En Revision', 'Aprobado', 'Rechazado'])->default('Pendiente');
+            $table->enum('estado', ['Pendiente', 'En Revision', 'Aprobado', 'Rechazado', 'Por Cotejar'])->default('Pendiente');
             $table->tinyInteger('progreso_tramite')->default(0);
             $table->bigInteger('revisado_por')->unsigned()->nullable();
             $table->timestamp('fecha_revision')->nullable();

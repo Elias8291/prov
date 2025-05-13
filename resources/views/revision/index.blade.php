@@ -1,212 +1,417 @@
 @extends('dashboard')
 
-@section('title', 'Listado de Proveedores - Proveedores de Oaxaca')
+@section('title', 'Listado de Solicitudes por Revisar')
 
 <link rel="stylesheet" href="{{ asset('assets/css/tabla.css') }}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 @section('content')
     <div class="dashboard-container">
-        <div class="content-wrapper">
-            <!-- Header Section with Title -->
-            <h1 class="page-title">Listado de Proveedores</h1>
-            <p class="page-subtitle">Consulta de proveedores registrados en la plataforma de Proveedores de Oaxaca</p>
-            
-            <!-- Controls Bar with Search, Days Filter and Status Filter -->
-            <div class="controls-bar">
-                <div class="search-container">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" class="search-input" placeholder="Buscar proveedores por razón social o RFC...">
+        <!-- Header Section with Title -->
+        <h1 class="page-title">Solicitudes Pendientes de Revisión</h1>
+        <p class="page-subtitle">Listado de solicitantes que requieren revisión (Progreso 1-7)</p>
+
+        <!-- Controls Bar with Search -->
+        <div class="controls-bar">
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="Buscar por nombre o RFC...">
+            </div>
+
+            <div class="filters-container">
+                <!-- Progress Filter -->
+                <div class="filter-item">
+                    <label for="progressFilter" class="filter-label">Progreso:</label>
+                    <select class="filter-select" id="progressFilter">
+                        <option value="" selected>Sección</option>
+                        <option value="1">Sección 1</option>
+                        <option value="2">Sección 2</option>
+                        <option value="3">Sección 3</option>
+                        <option value="4">Sección 4</option>
+                        <option value="5">Sección 5</option>
+                        <option value="6">Sección 6</option>
+                        <option value="7">Sección 7</option>
+                    </select>
                 </div>
-                
-                <div class="filters-container">
-                    <!-- Status Filter -->
-                    <div class="filter-item">
-                        <label for="statusFilter" class="filter-label">Estado:</label>
-                        <select class="filter-select" id="statusFilter">
-                            <option value="">Todos los estados</option>
-                            <option value="Activo">Activos</option>
-                        </select>
-                    </div>
-                    
-                    <!-- Days Filter -->
-                    <div class="filter-item">
-                        <label for="daysFilter" class="filter-label">Vencimiento:</label>
-                        <select class="filter-select" id="daysFilter">
-                            <option value="">Todos los vencimientos</option>
-                            <option value="10">Próximos 10 días</option>
-                            <option value="15">Próximos 15 días</option>
-                            <option value="20">Próximos 20 días</option>
-                            <option value="30">Próximos 30 días</option>
-                        </select>
-                    </div>
-                    
-                    <!-- Filter Button -->
-                    <button id="applyFilters" class="filter-button">
-                        <i class="fas fa-filter"></i> Aplicar Filtros
-                    </button>
+
+                <!-- Estado de Proceso Filter -->
+                <div class="filter-item">
+                    <label for="statusProcessFilter" class="filter-label">Estado:</label>
+                    <select class="filter-select" id="statusProcessFilter">
+                        <option value="" selected>Todos los estados</option>
+                        <option value="completo">Completos</option>
+                        <option value="proceso">En Proceso</option>
+                    </select>
                 </div>
-            </div>
-            
-            <!-- Alert Messages -->
-            <div class="alert alert-danger" style="display: none;" id="errorAlert">
-                Ha ocurrido un error al procesar la solicitud.
-            </div>
-            
-            <!-- Table Container -->
-            <div class="table-container">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>ID Proveedor</th>
-                            <th>Razón Social</th>
-                            <th>RFC</th>
-                            <th>Estado</th>
-                            <th>Fecha Registro</th>
-                            <th>Fecha Vencimiento</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Placeholder for table rows -->
-                        <tr>
-                            <td colspan="7" class="text-center">No se encontraron proveedores</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Stylish Pagination -->
-            <div class="custom-pagination">
-                <span class="pagination-arrow disabled">
-                    <i class="fas fa-chevron-left"></i>
-                </span>
-                <a href="#" class="pagination-number active">1</a>
-                <span class="pagination-arrow disabled">
-                    <i class="fas fa-chevron-right"></i>
-                </span>
+
+                <!-- Filter Button -->
+                <button id="applyFilters" class="filter-button">
+                    <i class="fas fa-filter"></i> Aplicar
+                </button>
             </div>
         </div>
-    </div>
 
-    <!-- View Provider Details Modal -->
-    <div id="viewProveedorModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Detalles del Proveedor</h2>
-                <span class="close-modal">×</span>
+        <!-- Alert Messages -->
+        <div class="alert alert-danger" style="display: none;" id="errorAlert">
+            Ha ocurrido un error al procesar la solicitud.
+        </div>
+
+        @if (session('success'))
+            <div class="alert alert-success" id="successAlert">
+                {{ session('success') }}
             </div>
-            
-            <div class="modal-body">
-                <div class="provider-details">
-                    <div class="detail-group">
-                        <span class="detail-label">ID Proveedor:</span>
-                        <span class="detail-value" id="view_pv"></span>
-                    </div>
-                    
-                    <div class="detail-group">
-                        <span class="detail-label">Razón Social:</span>
-                        <span class="detail-value" id="view_razon_social"></span>
-                    </div>
-                    
-                    <div class="detail-group">
-                        <span class="detail-label">RFC:</span>
-                        <span class="detail-value" id="view_rfc"></span>
-                    </div>
-                    
-                    <div class="detail-group">
-                        <span class="detail-label">Estado:</span>
-                        <span class="detail-value" id="view_estado"></span>
-                    </div>
-                    
-                    <div class="detail-group">
-                        <span class="detail-label">Fecha de Registro:</span>
-                        <span class="detail-value" id="view_fecha_registro"></span>
-                    </div>
-                    
-                    <div class="detail-group">
-                        <span class="detail-label">Fecha de Vencimiento:</span>
-                        <span class="detail-value" id="view_fecha_vencimiento"></span>
-                    </div>
-                </div>
+        @endif
+
+        @if (session('error'))
+            <div class="alert alert-danger" id="errorMsgAlert">
+                {{ session('error') }}
             </div>
-            
-            <div class="modal-footer">
-                <button type="button" class="btn-secondary" id="closeViewModal">Cerrar</button>
-            </div>
+        @endif
+
+        <!-- Table Container -->
+        <!-- Table Container -->
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th data-label="ID Trámite">ID</th>
+                        <th data-label="Solicitante">Nombre del Solicitante</th>
+                        <th data-label="RFC">RFC</th>
+                        <th data-label="Tipo Persona">Tipo</th>
+                        <th data-label="Sección Progreso">Progreso</th>
+                        <th data-label="Avance">Avance</th>
+                        <th data-label="Estado">Estado</th>
+                        <th data-label="Fecha Solicitud">Fecha</th>
+                        <th data-label="Acciones">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($solicitudes as $solicitud)
+                        @php
+                            // Determine if process is complete based on persona type and progress
+                            $isComplete = false;
+                            $tipoPersona = $solicitud->solicitante->tipo_persona ?? '';
+
+                            if ($tipoPersona === 'Física' && $solicitud->progreso_tramite >= 4) {
+                                $isComplete = true;
+                            } elseif ($tipoPersona === 'Moral' && $solicitud->progreso_tramite >= 7) {
+                                $isComplete = true;
+                            }
+
+                            $statusClass = $isComplete ? 'complete-status' : 'pending-status';
+                            $statusText = $isComplete ? 'Completo' : 'En Proceso';
+
+                            // Estado class based on the actual status
+                            $estadoClass = '';
+                            switch ($solicitud->estado) {
+                                case 'Aprobado':
+                                    $estadoClass = 'estado-aprobado';
+                                    break;
+                                case 'Rechazado':
+                                    $estadoClass = 'estado-rechazado';
+                                    break;
+                                case 'En Revision':
+                                    $estadoClass = 'estado-revision';
+                                    break;
+                                case 'Pendiente':
+                                    $estadoClass = 'estado-pendiente';
+                                    break;
+                                default:
+                                    $estadoClass = 'estado-default';
+                            }
+                        @endphp
+                        <tr data-process-status="{{ $isComplete ? 'completo' : 'proceso' }}">
+                            <td data-label="ID Trámite">{{ $solicitud->id }}</td>
+                            <td data-label="Solicitante" class="solicitante-nombre">
+                                {{ $solicitud->detalleTramite->razon_social ?? $solicitud->solicitante->usuario->nombre }}
+                            </td>
+                            <td data-label="RFC" class="rfc">{{ $solicitud->solicitante->rfc }}</td>
+                            <td data-label="Tipo Persona">{{ $solicitud->solicitante->tipo_persona }}</td>
+                            <td data-label="Sección Progreso">
+                                <span class="progress-badge progress-{{ $solicitud->progreso_tramite }}">
+                                    Sección {{ $solicitud->progreso_tramite }}
+                                </span>
+                            </td>
+                            <td data-label="Avance">
+                                <span class="status-badge {{ $statusClass }}">
+                                    {{ $statusText }}
+                                </span>
+                            </td>
+                            <td data-label="Estado">
+                                <span class="estado-badge {{ $estadoClass }}">
+                                    {{ $solicitud->estado ?: 'No asignado' }}
+                                </span>
+                            </td>
+                            <td data-label="Fecha Solicitud">
+                                {{ \Carbon\Carbon::parse($solicitud->created_at)->format('d/m/Y') }}
+                            </td>
+                            <td data-label="Acciones">
+                                <div class="action-buttons">
+                                    <a href="{{ route('revision.show', $solicitud->id) }}" class="btn-action view-btn"
+                                        title="Ver detalles">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ route('revision.iniciar', $solicitud->solicitante->rfc) }}"
+                                        class="btn-action begin-review-btn" title="Comenzar revisión">
+                                        <i class="fas fa-clipboard-check"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="9" class="text-center">No hay solicitudes pendientes de revisión</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Stylish Pagination -->
+        <div class="custom-pagination">
+            {{ $solicitudes->links() }}
         </div>
     </div>
 
     <style>
-        /* General Layout */
+        /* Guinda Color Scheme */
+        :root {
+            --guinda: #800000;
+            --guinda-light: #a52a2a;
+            --guinda-dark: #660000;
+            --complete-color: #28a745;
+            --pending-color: #ffc107;
+        }
+
+        /* Compact Dashboard Container */
         .dashboard-container {
-            padding: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
+            padding: 15px;
+            max-width: 1220px;
+            margin: 40px auto;
+            box-sizing: border-box;
         }
 
-        .content-wrapper {
+        /* Alert Styles */
+        .alert {
+            padding: 12px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        /* Table Styles */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
             background: #fff;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+            table-layout: auto;
         }
 
-        .page-title {
-            font-size: 24px;
+        .table th,
+        .table td {
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 13px;
+            white-space: normal;
+            word-break: break-word;
+        }
+
+        .table th {
+            background: var(--guinda);
+            color: #fff;
             font-weight: 600;
-            color: #343a40;
-            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-size: 12px;
         }
 
-        .page-subtitle {
-            font-size: 16px;
-            color: #6c757d;
-            margin-bottom: 20px;
+        .table td {
+            color: #333;
         }
 
-        /* Controls Bar */
+        .table tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* Progress Badge */
+        .progress-badge {
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 500;
+            display: inline-block;
+            color: #fff;
+        }
+
+        .progress-1 {
+            background: #007bff;
+            /* Blue */
+        }
+
+        .progress-2 {
+            background: #6f42c1;
+            /* Purple */
+        }
+
+        .progress-3 {
+            background: #fd7e14;
+            /* Orange */
+        }
+
+        .progress-4 {
+            background: #28a745;
+            /* Green */
+        }
+
+        .progress-5 {
+            background: #17a2b8;
+            /* Cyan */
+        }
+
+        .progress-6 {
+            background: #6c757d;
+            /* Gray */
+        }
+
+        .progress-7 {
+            background: #dc3545;
+            /* Red */
+        }
+
+        /* Status Badge */
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .complete-status {
+            background-color: var(--complete-color);
+            color: white;
+        }
+
+
+        .estado-badge {
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 500;
+            display: inline-block;
+            color: white;
+        }
+
+        .estado-aprobado {
+            background-color: #4CAF50;
+            /* Green */
+        }
+
+        .estado-rechazado {
+            background-color: #F44336;
+            /* Red */
+        }
+
+        .estado-revision {
+            background-color: #2196F3;
+            /* Blue */
+        }
+
+        .estado-pendiente {
+            background-color: #FF9800;
+            /* Orange */
+        }
+
+        .estado-default {
+            background-color: #9E9E9E;
+            /* Gray */
+        }
+
+        .pending-status {
+            background-color: var(--pending-color);
+            color: #333;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-action {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            font-size: 13px;
+            color: var(--guinda);
+        }
+
+        .btn-action:hover {
+            color: var(--guinda-light);
+        }
+
+        /* Enhanced Search and Filter Controls */
         .controls-bar {
             display: flex;
             flex-direction: column;
             gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        @media (min-width: 992px) {
-            .controls-bar {
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-between;
-            }
+            margin-bottom: 15px;
         }
 
         .search-container {
             position: relative;
+            flex: 1;
             max-width: 300px;
-            width: 100%;
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #6c757d;
         }
 
         .search-input {
             width: 100%;
-            padding: 8px 12px 8px 35px;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
+            padding: 8px 12px 8px 36px;
+            border: 2px solid var(--guinda);
+            border-radius: 25px;
+            font-size: 14px;
+            color: #333;
+            background: #fff;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--guinda-light);
+            box-shadow: 0 0 5px rgba(165, 42, 42, 0.3);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--guinda);
             font-size: 14px;
         }
 
         .filters-container {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         .filter-item {
@@ -215,300 +420,244 @@
         }
 
         .filter-label {
-            margin-right: 8px;
-            font-weight: 500;
-            color: #495057;
+            margin-right: 6px;
+            font-weight: 600;
+            color: var(--guinda);
+            font-size: 13px;
         }
 
         .filter-select {
-            padding: 8px 12px;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-            font-size: 14px;
-            color: #495057;
-            background-color: #fff;
-            min-width: 160px;
+            padding: 6px 10px;
+            border: 2px solid var(--guinda);
+            border-radius: 25px;
+            font-size: 13px;
+            color: #333;
+            background: #fff;
+            min-width: 140px;
+            transition: border-color 0.3s;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--guinda-light);
         }
 
         .filter-button {
-            background: linear-gradient(145deg, #3498db, #2980b9);
+            background: var(--guinda);
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
+            padding: 8px 14px;
+            border-radius: 25px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            font-size: 13px;
         }
 
         .filter-button:hover {
-            background: linear-gradient(145deg, #2980b9, #3498db);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background: var(--guinda-light);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
         }
 
-        /* Table Styles */
-        .table-container {
-            overflow-x: auto;
+        @media (min-width: 768px) {
+            .controls-bar {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
         }
 
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
+        /* Responsive Table for Small Screens */
+        @media (max-width: 600px) {
+            .dashboard-container {
+                padding: 10px;
+            }
+
+            .table th,
+            .table td {
+                padding: 6px 8px;
+                font-size: 12px;
+            }
+
+            .table {
+                display: block;
+                overflow-x: hidden;
+            }
+
+            .table thead {
+                display: none;
+            }
+
+            .table tbody,
+            .table tr,
+            .table td {
+                display: block;
+                width: 100%;
+            }
+
+            .table tr {
+                margin-bottom: 8px;
+                border-bottom: 1px solid #dee2e6;
+            }
+
+            .table td {
+                text-align: right;
+                padding-left: 50%;
+                position: relative;
+            }
+
+            .table td:before {
+                content: attr(data-label);
+                position: absolute;
+                left: 8px;
+                width: 45%;
+                font-weight: 600;
+                text-align: left;
+                font-size: 12px;
+                color: var(--guinda);
+            }
+
+            .table td:nth-child(8) {
+                text-align: center;
+            }
+
+            .search-container {
+                max-width: 100%;
+            }
+
+            .search-input {
+                padding: 6px 10px 6px 30px;
+                font-size: 13px;
+            }
+
+            .filter-select {
+                min-width: 120px;
+            }
         }
 
-        .table th, .table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        .table th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            color: #343a40;
-        }
-
-        .table tbody tr:hover {
-            background-color: #f1f3f5;
-        }
-
-        .status-badge {
-            padding: 5px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .status-badge.active {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .status-badge.inactive {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        .action-buttons {
+        /* Summary Cards */
+        .summary-cards {
             display: flex;
-            gap: 8px;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
-        .btn-action {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 5px;
-            color: #6c757d;
-            transition: color 0.3s;
-        }
-
-        .btn-action:hover {
-            color: #343a40;
-        }
-
-        /* Pagination */
-        .custom-pagination {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .pagination-arrow {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            border-radius: 5px;
-            background: #f8f9fa;
-            color: #6c757d;
-            text-decoration: none;
-            transition: background 0.3s;
-        }
-
-        .pagination-arrow:hover {
-            background: #e9ecef;
-        }
-
-        .pagination-arrow.disabled {
-            background: #f8f9fa;
-            color: #ced4da;
-            pointer-events: none;
-        }
-
-        .pagination-number {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            border-radius: 5px;
-            background: #f8f9fa;
-            color: #343a40;
-            text-decoration: none;
-            transition: background 0.3s;
-        }
-
-        .pagination-number:hover {
-            background: #e9ecef;
-        }
-
-        .pagination-number.active {
-            background: #3498db;
-            color: white;
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            overflow: auto;
-        }
-
-        .modal-content {
-            background: #fff;
-            margin: 5% auto;
-            padding: 20px;
+        .summary-card {
+            background: white;
             border-radius: 8px;
-            max-width: 500px;
-            width: 90%;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #dee2e6;
-            padding-bottom: 10px;
-        }
-
-        .modal-title {
-            font-size: 20px;
-            font-weight: 600;
-            color: #343a40;
-        }
-
-        .close-modal {
-            font-size: 24px;
-            cursor: pointer;
-            color: #6c757d;
-        }
-
-        .close-modal:hover {
-            color: #343a40;
-        }
-
-        .modal-body {
-            padding: 20px 0;
-        }
-
-        .provider-details {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            flex: 1;
+            min-width: 200px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-        }
-
-        .detail-group {
-            display: flex;
-            justify-content: space-between;
             align-items: center;
         }
 
-        .detail-label {
-            font-weight: 500;
-            color: #495057;
+        .summary-title {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 8px;
         }
 
-        .detail-value {
-            color: #343a40;
-        }
-
-        .modal-footer {
-            border-top: 1px solid #dee2e6;
-            padding-top: 10px;
-            text-align: right;
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-
-        /* Alert */
-        .alert {
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-
-        .alert-danger {
-            background: #f8d7da;
-            color: #721c24;
+        .summary-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--guinda);
         }
     </style>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // View Modal Elements
-        const viewModal = document.getElementById('viewProveedorModal');
-        const closeViewBtn = viewModal.querySelector('.close-modal');
-        const cancelViewBtn = document.getElementById('closeViewModal');
-        
-        // Error alert element
-        const errorAlert = document.getElementById('errorAlert');
-        
-        // Close View Modal Function
-        function closeViewModal() {
-            viewModal.style.display = 'none';
-            document.body.style.overflow = 'auto'; // Re-enable scrolling
-        }
-        
-        // Close View Modal with X button
-        closeViewBtn.addEventListener('click', closeViewModal);
-        
-        // Close View Modal with Close button
-        cancelViewBtn.addEventListener('click', closeViewModal);
-        
-        // Close modal when clicking outside
-        window.addEventListener('click', function(event) {
-            if (event.target === viewModal) {
-                closeViewModal();
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-hide success and error messages after 5 seconds
+            const successAlert = document.getElementById('successAlert');
+            const errorMsgAlert = document.getElementById('errorMsgAlert');
+            const errorAlert = document.getElementById('errorAlert');
+
+            if (successAlert) {
+                setTimeout(function() {
+                    successAlert.style.display = 'none';
+                }, 5000);
+            }
+
+            if (errorMsgAlert) {
+                setTimeout(function() {
+                    errorMsgAlert.style.display = 'none';
+                }, 5000);
+            }
+
+            // Table Search Functionality
+            const searchInput = document.querySelector('.search-input');
+            if (searchInput) {
+                searchInput.addEventListener('keyup', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const tableRows = document.querySelectorAll('tbody tr');
+
+                    tableRows.forEach(row => {
+                        const nombre = row.querySelector('.solicitante-nombre')?.textContent
+                            .toLowerCase() || '';
+                        const rfc = row.querySelector('.rfc')?.textContent.toLowerCase() || '';
+
+                        if (nombre.includes(searchTerm) || rfc.includes(searchTerm)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+            // Apply Filters Button
+            const applyFiltersBtn = document.getElementById('applyFilters');
+            if (applyFiltersBtn) {
+                applyFiltersBtn.addEventListener('click', function() {
+                    const progressValue = document.getElementById('progressFilter').value;
+                    const statusValue = document.getElementById('statusProcessFilter').value;
+
+                    // Client-side filtering for process status
+                    const tableRows = document.querySelectorAll('tbody tr');
+                    tableRows.forEach(row => {
+                        const rowStatus = row.getAttribute('data-process-status');
+                        if (statusValue === '' || rowStatus === statusValue) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+
+                    // Server-side filtering for progress level
+                    const currentUrl = new URL(window.location.href);
+
+                    // Clear existing parameters
+                    if (currentUrl.searchParams.has('progreso')) {
+                        currentUrl.searchParams.delete('progreso');
+                    }
+
+                    // Add new parameters if progress filter is selected
+                    if (progressValue) {
+                        currentUrl.searchParams.append('progreso', progressValue);
+                    }
+
+                    // Only redirect if progress filter is applied
+                    if (progressValue) {
+                        window.location.href = currentUrl.toString();
+                    }
+                });
+            }
+
+            // Show alert message function
+            function showAlert(alertElement, message) {
+                alertElement.textContent = message;
+                alertElement.style.display = 'block';
+                setTimeout(function() {
+                    alertElement.style.display = 'none';
+                }, 5000);
             }
         });
-
-        // Show alert message
-        function showAlert(alertElement, message) {
-            alertElement.textContent = message;
-            alertElement.style.display = 'block';
-            
-            // Auto hide after 5 seconds
-            setTimeout(function() {
-                alertElement.style.display = 'none';
-            }, 5000);
-        }
-    });
     </script>
 @endsection

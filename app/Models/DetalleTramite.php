@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class DetalleTramite extends Model
 {
     use HasFactory;
@@ -21,9 +21,9 @@ class DetalleTramite extends Model
         'sitio_web',
     ];
 
-    public function tramite()
+   public function tramite(): BelongsTo
     {
-        return $this->belongsTo(Tramite::class);
+        return $this->belongsTo(Tramite::class, 'tramite_id', 'id');
     }
 
     public function direccion()
