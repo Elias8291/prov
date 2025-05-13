@@ -1,26 +1,28 @@
-<form id="formulario1">
+<form id="formulario1" method="POST" action="{{ route('inscripcion.procesar') }}" enctype="multipart/form-data">
+    @csrf
     <!-- Sección para subir Constancia de Situación Fiscal, visible solo para admin -->
-    @if(auth()->check() && auth()->user()->hasRole('admin'))
-    <div class="form-section" id="constancia-upload-section">
-        <h4><i class="fas fa-file-pdf"></i> Subir Constancia de Situación Fiscal</h4>
-        <div class="form-group full-width" id="formulario__grupo--constancia">
-            <label class="form-label" for="constancia_upload">
-                <span>Seleccionar Constancia de Situación Fiscal</span>
-                <span class="file-desc">Formato PDF, máximo 5MB</span>
-            </label>
-            <input type="file" id="constancia_upload" name="constancia_upload" class="form-control"
-                accept="application/pdf" required>
-            <p class="formulario__input-error">Debe seleccionar un archivo en formato PDF.</p>
-            <!-- Contenedor para confirmación de subida y vista previa -->
-            <div class="pdf-preview-container" id="upload-feedback" style="display: none;">
-                <i class="fas fa-file-pdf pdf-icon"></i>
-                <span class="pdf-name upload-success">PDF subido correctamente</span>
-                <button class="view-pdf-btn preview-pdf" id="preview-pdf" title="Ver PDF">
-                    <i class="fas fa-eye"></i> Ver PDF
-                </button>
+    @if (auth()->check() && auth()->user()->hasRole('revisor'))
+        <div class="form-section" id="constancia-upload-section">
+            <h4><i class="fas fa-file-pdf"></i> Subir Constancia de Situación Fiscal</h4>
+            <div class="form-group full-width" id="formulario__grupo--constancia">
+                <label class="form-label" for="constancia_upload">
+                    <span>Seleccionar Constancia de Situación Fiscal</span>
+                    <span class="file-desc">Formato PDF, máximo 5MB</span>
+                </label>
+                <input type="file" id="constancia_upload" name="constancia_upload" class="form-control" accept="application/pdf">
+                @error('constancia_upload')
+                    <p class="formulario__input-error">{{ $message }}</p>
+                @enderror
+                <!-- Contenedor para confirmación de subida y vista previa -->
+                <div class="pdf-preview-container" id="upload-feedback" style="display: none;">
+                    <i class="fas fa-file-pdf pdf-icon"></i>
+                    <span class="pdf-name upload-success">PDF subido correctamente</span>
+                    <button class="view-pdf-btn preview-pdf" id="preview-pdf" title="Ver PDF">
+                        <i class="fas fa-eye"></i> Ver PDF
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
     @endif
 
     <!-- Resto del formulario -->
@@ -30,14 +32,16 @@
             <div class="half-width">
                 <label class="form-label data-label">Tipo de Proveedor</label>
                 @if (Auth::user()->hasRole('solicitante'))
-                    <span class="data-field">{{ Auth::user()->solicitante->tipo_persona ?? 'No disponible' }}</span>
+                    <span class="data-field">{{ $tipoPersona ?? 'No disponible' }}</span>
                 @else
-                    <select name="tipo_persona" id="tipo_persona" class="form-control" required>
+                    <select name="tipo_persona" id="tipo_persona" class="form-control">
                         <option value="">Seleccione un tipo</option>
                         <option value="Física">Física</option>
                         <option value="Moral">Moral</option>
                     </select>
-                    <p class="formulario__input-error">Debe seleccionar 'Física' o 'Moral'.</p>
+                    @error('tipo_persona')
+                        <p class="formulario__input-error">{{ $message }}</p>
+                    @enderror
                 @endif
             </div>
             <div class="half-width">
@@ -45,28 +49,36 @@
                 @if (Auth::user()->hasRole('solicitante'))
                     <span class="data-field">{{ Auth::user()->rfc ?? 'No disponible' }}</span>
                 @else
-                    <input type="text" name="rfc" id="rfc" class="form-control"
-                        placeholder="Ej. XAXX010101000" required maxlength="13" pattern="[A-Z0-9]{12,13}">
-                    <p class="formulario__input-error">El RFC debe tener 12 o 13 caracteres alfanuméricos.</p>
+                    <input type="text" name="rfc" id="rfc" class="form-control" placeholder="Ej. XAXX010101000" maxlength="13" pattern="[A-Z0-9]{12,13}">
+                    @error('rfc')
+                        <p class="formulario__input-error">{{ $message }}</p>
+                    @enderror
                 @endif
             </div>
         </div>
+        <!-- CURP field, shown for solicitante when tipo_persona is Física -->
+        @if ($mostrarCurp)
+            <div class="form-group" id="curp-field">
+                <label class="form-label data-label">CURP</label>
+                <span class="data-field">{{ $datosPrevios['curp'] ?? 'No disponible' }}</span>
+            </div>
+        @endif
         <!-- Campos visibles solo para revisor -->
         @if (Auth::user()->hasRole('revisor'))
             <div class="form-group horizontal-group">
                 <div class="half-width form-group" id="formulario__grupo--razon_social">
                     <label class="form-label" for="razon_social">Razón Social</label>
-                    <input type="text" id="razon_social" name="razon_social" class="form-control" required
-                        maxlength="100" pattern="[A-Za-z\s&.,0-9]+">
-                    <p class="formulario__input-error">La razón social debe contener solo letras, números, espacios y
-                        caracteres (&,.,).</p>
+                    <input type="text" id="razon_social" name="razon_social" class="form-control" maxlength="100" pattern="[A-Za-z\s&.,0-9]+">
+                    @error('razon_social')
+                        <p class="formulario__input-error">{{ $message }}</p>
+                    @enderror
                 </div>
                 <div class="half-width form-group" id="formulario__grupo--correo_electronico">
                     <label class="form-label" for="correo_electronico">Correo Electrónico</label>
-                    <input type="email" id="correo_electronico" name="correo_electronico" class="form-control"
-                        required>
-                    <p class="formulario__input-error">El correo debe tener un formato válido (ej. usuario@dominio.com).
-                    </p>
+                    <input type="email" id="correo_electronico" name="correo_electronico" class="form-control">
+                    @error('correo_electronico')
+                        <p class="formulario__input-error">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
         @endif
@@ -74,15 +86,22 @@
             <label class="form-label">Sectores</label>
             <select name="sectores" id="sectores" class="form-control">
                 <option value="">Seleccione un sector</option>
+                @foreach ($sectores as $sector)
+                    <option value="{{ $sector['id'] }}">{{ $sector['nombre'] }}</option>
+                @endforeach
             </select>
-            <p class="formulario__input-error">Debe seleccionar al menos un sector.</p>
+            @error('sectores')
+                <p class="formulario__input-error">{{ $message }}</p>
+            @enderror
         </div>
         <div class="form-group full-width" id="formulario__grupo--actividades">
             <label class="form-label">Actividades</label>
-            <select name="actividad" id="actividad" class="form-control" required>
+            <select name="actividad" id="actividad" class="form-control">
                 <option value="">Seleccione una actividad</option>
             </select>
-            <p class="formulario__input-error">Debe seleccionar al menos una actividad.</p>
+            @error('actividad')
+                <p class="formulario__input-error">{{ $message }}</p>
+            @enderror
         </div>
         <div class="form-group full-width" id="actividades-seleccionadas-container">
             <label class="form-label">Actividades Seleccionadas</label>
@@ -90,386 +109,216 @@
                 <!-- Actividades seleccionadas se añadirán aquí dinámicamente -->
             </div>
         </div>
-        <!-- CURP field, initially hidden for revisor, shown dynamically if tipo_persona is Física -->
-        @if (Auth::user()->hasRole('revisor') || (Auth::user()->hasRole('solicitante') && Auth::user()->solicitante && Auth::user()->solicitante->tipo_persona == 'Física'))
-            <div class="form-group" id="curp-field" style="display: none;">
-                <label class="form-label data-label">CURP</label>
-                <span class="data-field" id="curp-value">{{ Auth::user()->solicitante->curp ?? 'No disponible' }}</span>
-            </div>
-        @endif
         <div class="horizontal-group">
             <div class="half-width form-group" id="formulario__grupo--contacto_telefono">
                 <label class="form-label" for="contacto_telefono">Teléfono de Contacto</label>
-                <input type="tel" id="contacto_telefono" name="contacto_telefono" class="form-control" required
-                    pattern="[0-9]{10}">
-                <p class="formulario__input-error">El teléfono debe contener exactamente 10 dígitos numéricos.</p>
+                <input type="tel" id="contacto_telefono" name="contacto_telefono" class="form-control" pattern="[0-9]{10}">
+                @error('contacto_telefono')
+                    <p class="formulario__input-error">{{ $message }}</p>
+                @enderror
             </div>
             <div class="half-width form-group" id="formulario__grupo--contacto_web">
                 <label class="form-label" for="contacto_web">Página Web (opcional)</label>
-                <input type="url" id="contacto_web" name="contacto_web" class="form-control"
-                    placeholder="https://www.ejemplo.com">
-                <p class="formulario__input-error">La URL debe ser válida (ej. https://www.empresa.com) o dejar en
-                    blanco.</p>
+                <input type="url" id="contacto_web" name="contacto_web" class="form-control" placeholder="https://www.ejemplo.com">
+                @error('contacto_web')
+                    <p class="formulario__input-error">{{ $message }}</p>
+                @enderror
             </div>
         </div>
         <h4><i class="fas fa-address-card"></i> Datos de Contacto</h4>
         <span>Persona encargada de recibir solicitudes y requerimientos</span>
         <div class="form-group" id="formulario__grupo--contacto_nombre">
             <label class="form-label" for="contacto_nombre">Nombre Completo</label>
-            <input type="text" id="contacto_nombre" name="contacto_nombre" class="form-control" required
-                maxlength="40" pattern="[A-Za-z\s]+">
-            <p class="formulario__input-error">El nombre debe contener solo letras y espacios, máximo 40 caracteres.
-            </p>
+            <input type="text" id="contacto_nombre" name="contacto_nombre" class="form-control" maxlength="40" pattern="[A-Za-z\s]+">
+            @error('contacto_nombre')
+                <p class="formulario__input-error">{{ $message }}</p>
+            @enderror
         </div>
         <div class="form-group" id="formulario__grupo--contacto_cargo">
             <label class="form-label" for="contacto_cargo">Cargo o Puesto</label>
-            <input type="text" id="contacto_cargo" name="contacto_cargo" class="form-control" required
-                maxlength="50" pattern="[A-Za-z\s]+">
-            <p class="formulario__input-error">El cargo debe contener solo letras y espacios, máximo 50 caracteres.</p>
+            <input type="text" id="contacto_cargo" name="contacto_cargo" class="form-control" maxlength="50" pattern="[A-Za-z\s]+">
+            @error('contacto_cargo')
+                <p class="formulario__input-error">{{ $message }}</p>
+            @enderror
         </div>
         <div class="form-group" id="formulario__grupo--contacto_correo">
             <label class="form-label" for="contacto_correo">Correo Electrónico</label>
-            <input type="email" id="contacto_correo" name="contacto_correo" class="form-control" required>
-            <p class="formulario__input-error">El correo debe tener un formato válido (ej. usuario@dominio.com).</p>
+            <input type="email" id="contacto_correo" name="contacto_correo" class="form-control">
+            @error('contacto_correo')
+                <p class="formulario__input-error">{{ $message }}</p>
+            @enderror
         </div>
         <div class="form-group" id="formulario__grupo--contacto_telefono_2">
-            <label class="form-label" for="contacto_telefono_2">Teléfono de Contacto </label>
-            <input type="tel" id="contacto_telefono_2" name="contacto_telefono_2" class="form-control" required
-                pattern="[0-9]{10}">
-            <p class="formulario__input-error">El teléfono debe contener exactamente 10 dígitos numéricos.</p>
+            <label class="form-label" for="contacto_telefono_2">Teléfono de Contacto</label>
+            <input type="tel" id="contacto_telefono_2" name="contacto_telefono_2" class="form-control" pattern="[0-9]{10}">
+            @error('contacto_telefono_2')
+                <p class="formulario__input-error">{{ $message }}</p>
+            @enderror
+        </div>
+        <div class="form-group form-actions">
+            <div class="button-group">
+                @if ($seccion > 1)
+                    <button type="submit" name="retroceder" value="1" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Anterior
+                    </button>
+                @endif
+
+                <button type="submit" id="btnSiguiente" class="navigation-button">
+                    @if ($isConfirmationSection ?? false)
+                        <i class="fas fa-check"></i> Finalizar
+                    @else
+                        Siguiente <i class="fas fa-arrow-right"></i>
+                    @endif
+                </button>
+            </div>
         </div>
     </div>
 </form>
-
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // 1. Función para actualizar visibilidad de campos según tipo_persona
-    function updateFormVisibility(tipoPersona) {
-        const curpField = document.getElementById('curp-field');
-        if (curpField) {
-            curpField.style.display = tipoPersona === 'Física' ? 'block' : 'none';
-        }
-    }
+    document.addEventListener('DOMContentLoaded', function() {
+        const sectorSelect = document.getElementById('sectores');
+        const actividadSelect = document.getElementById('actividad');
+        const actividadesSeleccionadas = document.getElementById('actividades-seleccionadas');
 
-    // 2. Función para autocompletar campos del formulario con datos del PDF
-    function autocompleteFormFields(pdfData, satData) {
-        const isRevisor = !!document.getElementById('constancia_upload');
-        if (!isRevisor) return;
+        // Array to store selected activities
+        const selectedActivities = [];
 
-        const fieldMappings = {
-            tipo_persona: pdfData.tipo || '',
-            rfc: pdfData.rfc || '',
-            razon_social: satData.razonSocial?.toUpperCase() || '',
-            correo_electronico: satData.email?.toUpperCase() || ''
-        };
+        // Function to update the actividades dropdown
+        function updateActividades(actividades) {
+            // Clear current options
+            actividadSelect.innerHTML = '<option value="">Seleccione una actividad</option>';
 
-        Object.entries(fieldMappings).forEach(([fieldId, value]) => {
-            const element = document.getElementById(fieldId);
-            if (element) {
-                if (element.tagName === 'INPUT') {
-                    element.value = value;
-                } else if (element.tagName === 'SELECT') {
-                    element.value = value;
-                }
-            }
-        });
-
-        if (pdfData.tipo === 'Física' && satData.curp) {
-            const curpField = document.querySelector('.data-field#curp-value');
-            if (curpField) {
-                curpField.textContent = satData.curp.toUpperCase() || 'No disponible';
-            }
-        }
-
-        // Disparar evento change para tipo_persona
-        if (pdfData.tipo) {
-            const tipoPersonaSelect = document.getElementById('tipo_persona');
-            if (tipoPersonaSelect) {
-                tipoPersonaSelect.value = pdfData.tipo;
-                updateFormVisibility(pdfData.tipo);
-                const changeEvent = new Event('change', { bubbles: true });
-                tipoPersonaSelect.dispatchEvent(changeEvent);
-            }
-        }
-    }
-
-    // 3. Función para autocompletar dirección en Formulario 2 (si existe)
-    function populateFormulario2AddressFields(satData) {
-        const isSolicitante = @json(Auth::user()->hasRole('solicitante'));
-        const fields = {
-            codigo_postal: satData.cp || '',
-            calle: satData.nombreVialidad || '',
-            numero_exterior: satData.numeroExterior || '',
-            numero_interior: satData.numeroInterior || '',
-            colonia: satData.colonia || ''
-        };
-
-        Object.entries(fields).forEach(([fieldId, value]) => {
-            const inputElement = document.getElementById(fieldId);
-            const displayElement = document.getElementById(`${fieldId}_display`);
-
-            if (isSolicitante) {
-                if (displayElement) {
-                    displayElement.textContent = value || 'No disponible';
-                }
-                if (inputElement) {
-                    inputElement.value = value || '';
-                }
-            } else {
-                if (inputElement && fieldId !== 'colonia') {
-                    inputElement.value = value || '';
-                }
-            }
-        });
-
-        // Buscar código postal para revisor
-        if (!isSolicitante && satData.cp) {
-            const codigoPostalInput = document.getElementById('codigo_postal');
-            if (codigoPostalInput) {
-                codigoPostalInput.value = satData.cp;
-                const inputEvent = new Event('input', { bubbles: true });
-                codigoPostalInput.dispatchEvent(inputEvent);
-
-                // Establecer colonia después de la búsqueda
-                setTimeout(() => {
-                    const coloniaSelect = document.getElementById('colonia');
-                    if (coloniaSelect && satData.colonia) {
-                        Array.from(coloniaSelect.options).forEach(option => {
-                            if (option.textContent.toLowerCase() === satData.colonia.toLowerCase()) {
-                                option.selected = true;
-                            }
-                        });
-                    }
-                }, 1000); // Retardo para permitir completar la búsqueda
-            }
-        }
-    }
-
-    // 4. Manejo de subida de PDF
-    const fileInput = document.getElementById('constancia_upload');
-    const uploadFeedback = document.getElementById('upload-feedback');
-    const formGroupConstancia = document.getElementById('formulario__grupo--constancia');
-
-    if (fileInput) {
-        fileInput.addEventListener('change', async function() {
-            const file = fileInput.files[0];
-            if (!file) {
-                uploadFeedback.style.display = 'block';
-                uploadFeedback.innerHTML = 
-                    '<span class="upload-error"><i class="fas fa-exclamation-circle"></i> No se seleccionó ningún archivo.</span>';
-                return;
-            }
-
-            if (file.type !== 'application/pdf') {
-                uploadFeedback.style.display = 'block';
-                uploadFeedback.innerHTML = 
-                    '<span class="upload-error"><i class="fas fa-exclamation-circle"></i> Debe seleccionar un archivo en formato PDF.</span>';
-                return;
-            }
-
-            if (file.size > 5 * 1024 * 1024) {
-                uploadFeedback.style.display = 'block';
-                uploadFeedback.innerHTML = 
-                    '<span class="upload-error"><i class="fas fa-exclamation-circle"></i> El archivo excede el tamaño máximo de 5MB.</span>';
-                return;
-            }
-
-            // Crear barra de progreso
-            let progressBar = formGroupConstancia.querySelector('.pdf-upload-progress');
-            if (!progressBar) {
-                progressBar = document.createElement('div');
-                progressBar.classList.add('pdf-upload-progress');
-                progressBar.innerHTML = '<div class="progress-bar"></div>';
-                formGroupConstancia.appendChild(progressBar);
-            }
-            progressBar.style.display = 'block';
-            const progressBarInner = progressBar.querySelector('.progress-bar');
-
-            // Simular progreso
-            let progress = 0;
-            const progressInterval = setInterval(() => {
-                progress += 10;
-                progressBarInner.style.width = `${progress}%`;
-                if (progress >= 100) {
-                    clearInterval(progressInterval);
-                    progressBar.style.display = 'none';
-                }
-            }, 100);
-
-            try {
-                // Extraer datos del PDF
-                const pdfData = await window.extractQRCodeFromPDF(file);
-                console.log('Datos extraídos del PDF:', pdfData);
-
-                // Obtener datos del SAT
-                const satData = await window.scrapeSATData(pdfData.qrUrl);
-                console.log('Datos extraídos del SAT:', satData);
-
-                // Autocompletar formularios
-                autocompleteFormFields(pdfData, satData);
-                populateFormulario2AddressFields(satData);
-
-                // Actualizar UI para subida exitosa
-                formGroupConstancia.classList.add('pdf-upload-success');
-                uploadFeedback.style.display = 'block';
-                uploadFeedback.innerHTML = `
-                    <span class="upload-success">
-                        <i class="fas fa-check-circle"></i> PDF subido correctamente
-                    </span>
-                    <a href="#" class="preview-pdf" id="preview-pdf" title="Ver PDF">
-                        <i class="fas fa-eye"></i> Ver PDF
-                    </a>
-                `;
-
-                // Habilitar vista previa del PDF
-                const pdfUrl = URL.createObjectURL(file);
-                const previewLink = uploadFeedback.querySelector('#preview-pdf');
-                previewLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    window.open(pdfUrl, '_blank');
-                });
-            } catch (error) {
-                console.error('Error al procesar el PDF:', error.message);
-                uploadFeedback.style.display = 'block';
-                uploadFeedback.innerHTML = 
-                    '<span class="upload-error"><i class="fas fa-exclamation-circle"></i> Error al procesar el PDF: ' + error.message + '</span>';
-                progressBar.style.display = 'none';
-            }
-        });
-    }
-
-    // 5. Código para sectores y actividades
-    const sectorSelect = document.getElementById('sectores');
-    const actividadSelect = document.getElementById('actividad');
-    const actividadesContainer = document.getElementById('actividades-seleccionadas');
-    const actividadesSeleccionadas = new Set();
-    let actividadesDisponibles = [];
-    let actividadesIds = [];
-
-    // Cargar sectores al iniciar
-    if (sectorSelect) {
-        fetch('/sectores')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.data.length > 0) {
-                    sectorSelect.innerHTML = '<option value="">Seleccione un sector</option>';
-                    data.data.forEach(sector => {
-                        const option = document.createElement('option');
-                        option.value = sector.id;
-                        option.textContent = sector.nombre;
-                        sectorSelect.appendChild(option);
-                    });
-                } else {
-                    sectorSelect.innerHTML = '<option value="">No hay sectores disponibles</option>';
-                }
-            })
-            .catch(error => {
-                console.error('Error al cargar sectores:', error);
-                sectorSelect.innerHTML = '<option value="">Error al cargar sectores</option>';
-            });
-
-        // Evento para cargar actividades al seleccionar un sector
-        sectorSelect.addEventListener('change', function() {
-            const sectorId = this.value;
-            actividadesSeleccionadas.clear();
-            actividadesIds = [];
-            actividadesContainer.innerHTML = '';
-
-            if (sectorId) {
-                actividadSelect.innerHTML = '<option value="">Seleccione una actividad</option>';
-                actividadesDisponibles = [];
-
-                fetch(`/sectores/${sectorId}/actividades`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success && data.data.length > 0) {
-                            actividadesDisponibles = data.data;
-                            updateActividadesDropdown();
-                        } else {
-                            actividadSelect.innerHTML = '<option value="">No hay actividades disponibles</option>';
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error al cargar actividades:', error);
-                        actividadSelect.innerHTML = '<option value="">Error al cargar actividades</option>';
-                    });
-            } else {
-                actividadSelect.innerHTML = '<option value="">Seleccione un sector primero</option>';
-                actividadesDisponibles = [];
-            }
-
-            validateActividades();
-        });
-    }
-
-    function updateActividadesDropdown() {
-        actividadSelect.innerHTML = '<option value="">Seleccione una actividad</option>';
-        actividadesDisponibles.forEach(actividad => {
-            if (!actividadesSeleccionadas.has(actividad.id.toString())) {
+            // Add new options
+            actividades.forEach(actividad => {
                 const option = document.createElement('option');
                 option.value = actividad.id;
                 option.textContent = actividad.nombre;
                 actividadSelect.appendChild(option);
-            }
-        });
-    }
+            });
+        }
 
-    if (actividadSelect) {
-        actividadSelect.addEventListener('change', function() {
-            const selectedValue = this.value;
-            const selectedText = this.options[this.selectedIndex].text;
+        // Function to check if an activity is already selected
+        function isActivitySelected(id) {
+            return selectedActivities.some(activity => activity.id === id);
+        }
 
-            if (selectedValue && !actividadesSeleccionadas.has(selectedValue)) {
-                actividadesSeleccionadas.add(selectedValue);
-                actividadesIds.push(selectedValue);
-
-                const actividadItem = document.createElement('div');
-                actividadItem.classList.add('actividad-item');
-                actividadItem.dataset.value = selectedValue;
-                actividadItem.innerHTML = `
-                    <span class="actividad-texto">${selectedText}</span>
-                    <span class="remove-actividad">×</span>
-                `;
-                actividadesContainer.appendChild(actividadItem);
-
-                actividadItem.querySelector('.remove-actividad').addEventListener('click', function() {
-                    actividadesSeleccionadas.delete(selectedValue);
-                    actividadesIds = actividadesIds.filter(id => id !== selectedValue);
-                    actividadItem.remove();
-                    validateActividades();
-                    updateActividadesDropdown();
-                });
-
-                actividadSelect.value = '';
-                updateActividadesDropdown();
-            }
-
-            validateActividades();
-        });
-    }
-
-    function validateActividades() {
-        const errorElement = document.querySelector('#formulario__grupo--actividades .formulario__input-error');
-        if (errorElement) {
-            if (actividadesSeleccionadas.size === 0) {
-                errorElement.style.display = 'block';
-            } else {
-                errorElement.style.display = 'none';
+        // Function to remove an activity
+        function removeActivity(id) {
+            const index = selectedActivities.findIndex(activity => activity.id === id);
+            if (index !== -1) {
+                selectedActivities.splice(index, 1);
+                updateActivityDisplay();
             }
         }
-    }
 
-    // Event listener para tipo_persona
-    const tipoPersonaSelect = document.getElementById('tipo_persona');
-    if (tipoPersonaSelect) {
-        tipoPersonaSelect.addEventListener('change', function() {
-            const selectedTipo = this.value;
-            updateFormVisibility(selectedTipo);
-            // Notificar al script principal para actualizar las secciones y el progreso
-            if (window.formNavigation && window.formNavigation.updateSectionsByTipoPersona) {
-                window.formNavigation.updateSectionsByTipoPersona(selectedTipo);
+        // Function to update the display of selected activities
+        function updateActivityDisplay() {
+            actividadesSeleccionadas.innerHTML = '';
+
+            if (selectedActivities.length === 0) {
+                actividadesSeleccionadas.innerHTML = '<span>Sin actividad seleccionada</span>';
+                return;
+            }
+
+            selectedActivities.forEach(activity => {
+                const activityElement = document.createElement('div');
+                activityElement.className = 'actividad-seleccionada';
+
+                const activityText = document.createElement('span');
+                activityText.textContent = activity.name;
+
+                const removeButton = document.createElement('button');
+                removeButton.className = 'remove-activity';
+                removeButton.innerHTML = '&times;';
+                removeButton.setAttribute('data-id', activity.id);
+                removeButton.onclick = function() {
+                    removeActivity(activity.id);
+                };
+
+                activityElement.appendChild(activityText);
+                activityElement.appendChild(removeButton);
+                actividadesSeleccionadas.appendChild(activityElement);
+            });
+        }
+
+        // Function to add a selected activity
+        function addSelectedActivity() {
+            const selectedOption = actividadSelect.options[actividadSelect.selectedIndex];
+            if (!selectedOption || selectedOption.value === '') {
+                return;
+            }
+
+            const activityId = selectedOption.value;
+            const activityName = selectedOption.textContent;
+
+            // Check if already selected
+            if (isActivitySelected(activityId)) {
+                return; // Already selected, don't add again
+            }
+
+            // Add to selected activities
+            selectedActivities.push({
+                id: activityId,
+                name: activityName
+            });
+
+            // Update the display
+            updateActivityDisplay();
+
+            // Reset the select to the default option
+            actividadSelect.value = '';
+        }
+
+        // Event listener for sector change
+        sectorSelect.addEventListener('change', function() {
+            const sectorId = this.value;
+
+            if (!sectorId) {
+                actividadSelect.innerHTML = '<option value="">Seleccione una actividad</option>';
+                selectedActivities.length = 0; // Clear selected activities
+                updateActivityDisplay();
+                return;
+            }
+
+            // Make AJAX request to fetch activities
+            fetch(`/inscripcion/actividades?sector_id=${sectorId}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                    },
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la respuesta del servidor');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error);
+                        actividadSelect.innerHTML =
+                            '<option value="">Error al cargar actividades</option>';
+                        selectedActivities.length = 0; // Clear selected activities
+                        updateActivityDisplay();
+                        return;
+                    }
+                    updateActividades(data.actividades);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    actividadSelect.innerHTML =
+                        '<option value="">Error al cargar actividades</option>';
+                    selectedActivities.length = 0; // Clear selected activities
+                    updateActivityDisplay();
+                });
+        });
+
+        // Event listener for activity selection change
+        actividadSelect.addEventListener('change', function() {
+            if (this.value) {
+                addSelectedActivity();
             }
         });
-    }
-});
+    });
 </script>

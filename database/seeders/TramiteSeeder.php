@@ -10,7 +10,7 @@ class TramiteSeeder extends Seeder
 {
     public function run()
     {
-        $jsonPath = public_path('assets/json/tramites.json');
+        $jsonPath = public_path('assets/json/tramite.json');
 
         if (!File::exists($jsonPath)) {
             $this->command->error('The tramites.json file does not exist!');

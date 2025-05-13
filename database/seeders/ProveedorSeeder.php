@@ -52,10 +52,17 @@ class ProveedorSeeder extends Seeder
                 continue;
             }
 
-            // Validate estado
-            $estado = in_array($proveedor['estado'], ['Activo', 'Inactivo', 'Pendiente Renovacion'])
-                ? $proveedor['estado']
-                : 'Inactivo'; // Default to 'Inactivo' if invalid
+            // Debug estado value
+            $this->command->info('Processing estado: ' . ($proveedor['estado'] ?? 'N/A'));
+
+            // Normalize and map estado
+            $estadoRaw = isset($proveedor['estado']) ? trim(strtolower($proveedor['estado'])) : '';
+            $estado = match ($estadoRaw) {
+                'activo' => 'Activo',
+                'cancelado' => 'Inactivo',
+                'pendiente renovacion' => 'Pendiente Renovacion',
+                default => 'Inactivo',
+            };
 
             // Validate pv (proveedor_id) length
             if (strlen($proveedor['proveedor_id']) > 10) {

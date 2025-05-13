@@ -33,7 +33,7 @@
         </div>
 
         <!-- Usuarios - solo visible para roles distintos a Solicitante -->
-        @if(auth()->user()->hasRole('Admin') || auth()->user()->hasRole('OtroRol')) <!-- Ajusta según los roles -->
+        @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('OtroRol')) <!-- Ajusta según los roles -->
         <div class="menu-item {{ request()->routeIs('usuarios.index') ? 'active' : '' }}">
             <a href="{{ route('usuarios.index') }}"
                 style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px">
@@ -53,7 +53,7 @@
         @endif
 
         <!-- Roles - solo visible para roles distintos a Solicitante -->
-        @if(auth()->user()->hasRole('Admin') || auth()->user()->hasRole('OtroRol')) <!-- Ajusta según los roles -->
+        @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('OtroRol')) <!-- Ajusta según los roles -->
         <div class="menu-item {{ request()->routeIs('roles.index') ? 'active' : '' }}">
             <a href="{{ route('roles.index') }}"
                 style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px">
@@ -73,7 +73,7 @@
         @endif
 
         <!-- Proveedores - solo visible para roles distintos a Solicitante -->
-        @if(auth()->user()->hasRole('Admin') || auth()->user()->hasRole('OtroRol')) <!-- Ajusta según los roles -->
+        @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('OtroRol')) <!-- Ajusta según los roles -->
         <div class="menu-item {{ request()->routeIs('proveedores.index') ? 'active' : '' }}">
             <a href="{{ route('proveedores.index') }}"
                 style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px">

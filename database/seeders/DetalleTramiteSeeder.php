@@ -10,7 +10,7 @@ class DetalleTramiteSeeder extends Seeder
 {
     public function run()
     {
-        $jsonPath = public_path('assets/json/detalle_tramites.json');
+        $jsonPath = public_path('assets/json/detalle_tramite.json');
 
         if (!File::exists($jsonPath)) {
             $this->command->error('The detalle_tramite.json file does not exist!');

@@ -11,7 +11,18 @@ class SolicitanteController extends Controller
     public function mostrarTerminosYCondiciones()
     {
         $usuario = Auth::user();
+
+        // If user is a revisor, redirect directly to inscripcion.formulario
+        if ($usuario->hasRole('revisor')) {
+            return redirect()->route('inscripcion.formulario');
+        }
+
+        // Ensure the user has a solicitante record
         $solicitante = $usuario->solicitante;
+        if (!$solicitante) {
+            return redirect()->route('dashboard')->withErrors(['error' => 'No tienes un perfil de solicitante asociado.']);
+        }
+
         $tipoPersona = $solicitante->tipo_persona ?? 'No definido';
 
         // Verificar si existe un trámite pendiente
@@ -34,7 +45,17 @@ class SolicitanteController extends Controller
         ]);
 
         $usuario = Auth::user();
+
+        // If user is a revisor, redirect directly to inscripcion.formulario
+        if ($usuario->hasRole('revisor')) {
+            return redirect()->route('inscripcion.formulario');
+        }
+
+        // Ensure the user has a solicitante record
         $solicitante = $usuario->solicitante;
+        if (!$solicitante) {
+            return redirect()->route('dashboard')->withErrors(['error' => 'No tienes un perfil de solicitante asociado.']);
+        }
 
         // Crear o buscar trámite pendiente, inicia en progreso_tramite 0 (términos)
         $tramite = Tramite::firstOrCreate(

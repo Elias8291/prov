@@ -10,7 +10,7 @@ class SolicitanteSeeder extends Seeder
 {
     public function run()
     {
-        $jsonPath = public_path('assets/json/solicitantes.json');
+        $jsonPath = public_path('assets/json/solicitante.json');
 
         if (!File::exists($jsonPath)) {
             $this->command->error('The solicitantes.json file does not exist!');

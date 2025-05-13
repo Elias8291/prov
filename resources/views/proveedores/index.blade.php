@@ -649,56 +649,59 @@
         });
         
         // Function to update table with search results
-        function updateTableWithSearchResults(proveedores) {
-            const tableBody = document.querySelector('tbody');
-            tableBody.innerHTML = '';
-            
-            if (proveedores.length === 0) {
-                const row = document.createElement('tr');
-                row.innerHTML = '<td colspan="7" class="text-center">No se encontraron resultados</td>';
-                tableBody.appendChild(row);
-                return;
-            }
-            
-            proveedores.forEach(proveedor => {
-                const row = document.createElement('tr');
-                
-                // Format dates
-                const fechaRegistro = new Date(proveedor.fecha_registro);
-                const formattedFechaRegistro = `${fechaRegistro.getDate().toString().padStart(2, '0')}/${(fechaRegistro.getMonth() + 1).toString().padStart(2, '0')}/${fechaRegistro.getFullYear()}`;
-                
-                let formattedFechaVencimiento = '<span class="text-muted">No asignada</span>';
-                if (proveedor.fecha_vencimiento) {
-                    const fechaVencimiento = new Date(proveedor.fecha_vencimiento);
-                    formattedFechaVencimiento = `${fechaVencimiento.getDate().toString().padStart(2, '0')}/${(fechaVencimiento.getMonth() + 1).toString().padStart(2, '0')}/${fechaVencimiento.getFullYear()}`;
-                }
-                
-                row.innerHTML = `
-                    <td>${proveedor.pv}</td>
-                    <td class="razon-social">${proveedor.razon_social}</td>
-                    <td class="rfc">${proveedor.rfc}</td>
-                    <td>
-                        <span class="status-badge ${proveedor.estado.toLowerCase() === 'activo' ? 'active' : 'inactive'}">
-                            ${proveedor.estado}
-                        </span>
-                    </td>
-                    <td>${formattedFechaRegistro}</td>
-                    <td>${formattedFechaVencimiento}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn-action view-btn" data-id="${proveedor.pv}" title="Ver detalles">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
-                
-                tableBody.appendChild(row);
-            });
-            
-            // Reattach event listeners to the new buttons
-            attachEventListenersToButtons();
+      function updateTableWithSearchResults(proveedores) {
+    const tableBody = document.querySelector('tbody');
+    tableBody.innerHTML = '';
+    
+    if (proveedores.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = '<td colspan="7" class="text-center">No se encontraron resultados</td>';
+        tableBody.appendChild(row);
+        return;
+    }
+    
+    proveedores.forEach(proveedor => {
+        const row = document.createElement('tr');
+        
+        // Format dates
+        let formattedFechaRegistro = '<span class="text-muted">No asignada</span>';
+        if (proveedor.fecha_registro) {
+            const [year, month, day] = proveedor.fecha_registro.split('-');
+            formattedFechaRegistro = `${day}/${month}/${year}`;
         }
+        
+        let formattedFechaVencimiento = '<span class="text-muted">No asignada</span>';
+        if (proveedor.fecha_vencimiento) {
+            const [year, month, day] = proveedor.fecha_vencimiento.split('-');
+            formattedFechaVencimiento = `${day}/${month}/${year}`;
+        }
+        
+        row.innerHTML = `
+            <td>${proveedor.pv}</td>
+            <td class="razon-social">${proveedor.razon_social}</td>
+            <td class="rfc">${proveedor.rfc}</td>
+            <td>
+                <span class="status-badge ${proveedor.estado.toLowerCase() === 'activo' ? 'active' : 'inactive'}">
+                    ${proveedor.estado}
+                </span>
+            </td>
+            <td>${formattedFechaRegistro}</td>
+            <td>${formattedFechaVencimiento}</td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-action view-btn" data-id="${proveedor.pv}" title="Ver detalles">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        
+        tableBody.appendChild(row);
+    });
+    
+    // Reattach event listeners to the new buttons
+    attachEventListenersToButtons();
+}
         
         // Function to attach event listeners to dynamically created buttons
         function attachEventListenersToButtons() {
