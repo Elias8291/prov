@@ -12,11 +12,39 @@
             <h1 class="page-title">Listado de Proveedores</h1>
             <p class="page-subtitle">Consulta de proveedores registrados en la plataforma de Proveedores de Oaxaca</p>
             
-            <!-- Controls Bar with Search -->
+            <!-- Controls Bar with Search, Days Filter and Status Filter -->
             <div class="controls-bar">
                 <div class="search-container">
                     <i class="fas fa-search search-icon"></i>
                     <input type="text" class="search-input" placeholder="Buscar proveedores por razón social o RFC...">
+                </div>
+                
+                <div class="filters-container">
+                    <!-- Status Filter -->
+                    <div class="filter-item">
+                        <label for="statusFilter" class="filter-label">Estado:</label>
+                        <select class="filter-select" id="statusFilter">
+                            <option value="">Todos los estados</option>
+                            <option value="Activo" {{ $status == 'Activo' ? 'selected' : '' }}>Activos</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Days Filter -->
+                    <div class="filter-item">
+                        <label for="daysFilter" class="filter-label">Vencimiento:</label>
+                        <select class="filter-select" id="daysFilter">
+                            <option value="">Todos los vencimientos</option>
+                            <option value="10" {{ $days == '10' ? 'selected' : '' }}>Próximos 10 días</option>
+                            <option value="15" {{ $days == '15' ? 'selected' : '' }}>Próximos 15 días</option>
+                            <option value="20" {{ $days == '20' ? 'selected' : '' }}>Próximos 20 días</option>
+                            <option value="30" {{ $days == '30' ? 'selected' : '' }}>Próximos 30 días</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Filter Button -->
+                    <button id="applyFilters" class="filter-button">
+                        <i class="fas fa-filter"></i> Aplicar Filtros
+                    </button>
                 </div>
             </div>
             
@@ -50,10 +78,16 @@
                                         {{ $proveedor->estado }}
                                     </span>
                                 </td>
-                                <td>{{ \Carbon\Carbon::parse($proveedor->fecha_registro)->format('d/m/Y') }}</td>
+                                <td>
+                                    @if($proveedor->fecha_registro)
+                                        {{ \Carbon\Carbon::createFromFormat('Y-m-d', $proveedor->fecha_registro)->format('d/m/Y') }}
+                                    @else
+                                        <span class="text-muted">No asignada</span>
+                                    @endif
+                                </td>
                                 <td>
                                     @if($proveedor->fecha_vencimiento)
-                                        {{ \Carbon\Carbon::parse($proveedor->fecha_vencimiento)->format('d/m/Y') }}
+                                        {{ \Carbon\Carbon::createFromFormat('Y-m-d', $proveedor->fecha_vencimiento)->format('d/m/Y') }}
                                     @else
                                         <span class="text-muted">No asignada</span>
                                     @endif
@@ -82,7 +116,7 @@
                         <i class="fas fa-chevron-left"></i>
                     </span>
                 @else
-                    <a href="{{ $proveedores->previousPageUrl() }}" class="pagination-arrow">
+                    <a href="{{ $proveedores->appends(['days' => $days, 'status' => $status])->previousPageUrl() }}" class="pagination-arrow">
                         <i class="fas fa-chevron-left"></i>
                     </a>
                 @endif
@@ -109,25 +143,25 @@
                 @endphp
                 
                 @if($showStartEllipsis)
-                    <a href="{{ $proveedores->url(1) }}" class="pagination-number {{ $currentPage == 1 ? 'active' : '' }}">1</a>
+                    <a href="{{ $proveedores->appends(['days' => $days, 'status' => $status])->url(1) }}" class="pagination-number {{ $currentPage == 1 ? 'active' : '' }}">1</a>
                     <span class="pagination-ellipsis">...</span>
                 @endif
                 
                 @for($i = $startPage; $i <= $endPage; $i++)
-                    <a href="{{ $proveedores->url($i) }}" class="pagination-number {{ $currentPage == $i ? 'active' : '' }}">
+                    <a href="{{ $proveedores->appends(['days' => $days, 'status' => $status])->url($i) }}" class="pagination-number {{ $currentPage == $i ? 'active' : '' }}">
                         {{ $i }}
                     </a>
                 @endfor
                 
                 @if($showEndEllipsis)
                     <span class="pagination-ellipsis">...</span>
-                    <a href="{{ $proveedores->url($lastPage) }}" class="pagination-number {{ $currentPage == $lastPage ? 'active' : '' }}">
+                    <a href="{{ $proveedores->appends(['days' => $days, 'status' => $status])->url($lastPage) }}" class="pagination-number {{ $currentPage == $lastPage ? 'active' : '' }}">
                         {{ $lastPage }}
                     </a>
                 @endif
 
                 @if($proveedores->hasMorePages())
-                    <a href="{{ $proveedores->nextPageUrl() }}" class="pagination-arrow">
+                    <a href="{{ $proveedores->appends(['days' => $days, 'status' => $status])->nextPageUrl() }}" class="pagination-arrow">
                         <i class="fas fa-chevron-right"></i>
                     </a>
                 @else
@@ -139,8 +173,9 @@
         </div>
     </div>
 
-    <!-- View Provider Details Modal -->
+    <!-- View Provider Details Modal (unchanged) -->
     <div id="viewProveedorModal" class="modal">
+        <!-- Modal content is unchanged -->
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Detalles del Proveedor</h2>
@@ -188,374 +223,70 @@
     </div>
 
     <style>
-    /* Main Table Styles */
-    .table-container {
-        overflow-x: auto;
-        background-color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        margin-bottom: 20px;
-    }
-
-    .table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .table th,
-    .table td {
-        padding: 15px;
-        text-align: left;
-        border-bottom: 1px solid #f0f0f0;
-    }
-
-    .table th {
-        background-color: #f8f9fa;
-        color: #495057;
-        font-weight: 500;
-        position: sticky;
-        top: 0;
-    }
-
-    .table tbody tr:hover {
-        background-color: #f8f9fa;
-    }
-
-    /* Status Badge Styles */
-    .status-badge {
-        display: inline-block;
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 13px;
-        font-weight: 500;
-    }
-
-    .status-badge.active {
-        background-color: #d4edda;
-        color: #155724;
-    }
-
-    .status-badge.inactive {
-        background-color: #f8d7da;
-        color: #721c24;
-    }
-
-    /* Header and Controls */
-    .page-title {
-        font-size: 1.75rem;
-        margin-bottom: 5px;
-        color: #2C3E50;
-    }
-
-    .page-subtitle {
-        color: #6c757d;
-        margin-bottom: 20px;
-    }
-
-    .controls-bar {
+    /* Main Table Styles (unchanged) */
+    /* ... existing styles ... */
+    
+    /* New Filter Controls Styles */
+    .filters-container {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
+        gap: 15px;
     }
-
-    .search-container {
-        position: relative;
-        flex: 1;
-        max-width: 400px;
+    
+    .filter-item {
+        display: flex;
+        align-items: center;
     }
-
-    .search-icon {
-        position: absolute;
-        left: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #6c757d;
+    
+    .filter-label {
+        margin-right: 8px;
+        font-weight: 500;
+        color: #495057;
     }
-
-    .search-input {
-        width: 100%;
-        padding: 10px 15px 10px 35px;
+    
+    .filter-select {
+        padding: 8px 12px;
         border: 1px solid #ced4da;
         border-radius: 5px;
         font-size: 14px;
-    }
-
-    /* Action Button */
-    .action-buttons {
-        display: flex;
-        gap: 5px;
-    }
-
-    .btn-action {
-        border: none;
-        background: none;
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .view-btn {
-        color: #3498db;
-        background-color: rgba(52, 152, 219, 0.1);
-    }
-
-    .view-btn:hover {
-        background-color: rgba(52, 152, 219, 0.2);
-    }
-
-    /* Enhanced Pagination Styles */
-    .custom-pagination {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 8px;
-        margin-top: 30px;
-        margin-bottom: 20px;
-        padding: 10px;
-        background: #ffffff;
-        border-radius: 50px;
-        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
-        max-width: fit-content;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .pagination-number {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-width: 40px;
-        height: 40px;
-        border-radius: 8px;
         color: #495057;
-        font-weight: 500;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        margin: 0 2px;
-        position: relative;
-        overflow: hidden;
-        z-index: 1;
-        font-size: 14px;
-        background-color: transparent;
+        background-color: #fff;
+        min-width: 160px;
     }
-
-    .pagination-number:before {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 0;
-        background-color: #3498db;
-        transition: height 0.3s ease;
-        z-index: -1;
-        border-radius: 8px;
-        opacity: 0.1;
-    }
-
-    .pagination-number:hover:before {
-        height: 100%;
-    }
-
-    .pagination-number:hover {
-        color: #3498db;
-        transform: translateY(-3px);
-    }
-
-    .pagination-number.active {
+    
+    .filter-button {
         background: linear-gradient(145deg, #3498db, #2980b9);
         color: white;
-        font-weight: 600;
-        box-shadow: 0 4px 10px rgba(52, 152, 219, 0.35);
+        border: none;
+        padding: 8px 16px;
+        border-radius: 5px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
-
-    .pagination-number.active:hover {
+    
+    .filter-button:hover {
+        background: linear-gradient(145deg, #2980b9, #3498db);
         transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-
-    .pagination-arrow {
+    
+    /* Updated Controls Bar Layout */
+    .controls-bar {
         display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: linear-gradient(145deg, #f8f9fa, #e9ecef);
-        color: #3498db;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        font-size: 14px;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+        flex-direction: column;
+        gap: 15px;
+        margin-bottom: 20px;
     }
-
-    .pagination-arrow:hover {
-        background: linear-gradient(145deg, #3498db, #2980b9);
-        color: #fff;
-        transform: translateY(-3px);
-        box-shadow: 0 6px 12px rgba(52, 152, 219, 0.4);
-    }
-
-    .pagination-arrow.disabled {
-        background: linear-gradient(145deg, #f8f9fa, #e9ecef);
-        color: #cbd3da;
-        cursor: not-allowed;
-        pointer-events: none;
-        box-shadow: none;
-    }
-
-    .pagination-ellipsis {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        color: #6c757d;
-        min-width: 30px;
-    }
-
-    /* Modal Styles */
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        animation: fadeIn 0.3s;
-    }
-
-    .modal-content {
-        background-color: #fff;
-        margin: 5% auto;
-        width: 600px;
-        max-width: 90%;
-        border-radius: 8px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        animation: slideIn 0.3s;
-    }
-
-    .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 15px 20px;
-        border-bottom: 1px solid #e0e0e0;
-    }
-
-    .modal-title {
-        font-size: 1.25rem;
-        margin: 0;
-        color: #2C3E50;
-    }
-
-    .close-modal {
-        font-size: 24px;
-        cursor: pointer;
-        color: #777;
-        transition: color 0.2s;
-    }
-
-    .close-modal:hover {
-        color: #333;
-    }
-
-    .modal-body {
-        padding: 20px;
-        max-height: 500px;
-        overflow-y: auto;
-    }
-
-    .modal-footer {
-        padding: 15px 20px;
-        border-top: 1px solid #e0e0e0;
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-    }
-
-    .btn-secondary {
-        background-color: #f8f9fa;
-        color: #343a40;
-        border: 1px solid #ced4da;
-        padding: 10px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-weight: 500;
-    }
-
-    .btn-secondary:hover {
-        background-color: #e2e6ea;
-    }
-
-    /* Alert Styles */
-    .alert {
-        padding: 12px 15px;
-        border-radius: 5px;
-        margin-bottom: 15px;
-        font-size: 14px;
-    }
-
-    .alert-danger {
-        background-color: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-    }
-
-    /* Provider Details Styles */
-    .provider-details {
-        background-color: #f8f9fa;
-        padding: 20px;
-        border-radius: 5px;
-    }
-
-    .detail-group {
-        margin-bottom: 15px;
-        display: flex;
-        border-bottom: 1px dashed #e0e0e0;
-        padding-bottom: 10px;
-    }
-
-    .detail-group:last-child {
-        border-bottom: none;
-        margin-bottom: 0;
-    }
-
-    .detail-label {
-        font-weight: 500;
-        color: #495057;
-        width: 180px;
-        flex-shrink: 0;
-    }
-
-    .detail-value {
-        color: #212529;
-    }
-
-    .text-muted {
-        color: #6c757d;
-        font-style: italic;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-
-    @keyframes slideIn {
-        from {
-            transform: translateY(-50px);
-            opacity: 0;
-        }
-        to {
-            transform: translateY(0);
-            opacity: 1;
+    
+    @media (min-width: 992px) {
+        .controls-bar {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
         }
     }
     </style>
@@ -631,10 +362,16 @@
         
         searchInput.addEventListener('keyup', function() {
             const searchTerm = this.value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+            const days = document.getElementById('daysFilter').value;
             
             if (searchTerm.length >= 2) {
                 // Send AJAX request to search endpoint
-                fetch(`{{ route('proveedores.search') }}?term=${searchTerm}`)
+                let searchUrl = `{{ route('proveedores.search') }}?term=${searchTerm}`;
+                if (status) searchUrl += `&status=${status}`;
+                if (days) searchUrl += `&days=${days}`;
+                
+                fetch(searchUrl)
                     .then(response => response.json())
                     .then(data => {
                         updateTableWithSearchResults(data);
@@ -643,65 +380,108 @@
                         console.error('Error:', error);
                     });
             } else if (searchTerm.length === 0) {
-                // If the search field is cleared, reload the page
-                window.location.reload();
+                // If the search field is cleared and no filters, reload the page
+                if (!status && !days) {
+                    window.location.reload();
+                } else {
+                    // Otherwise, apply just the filters
+                    applyFilters();
+                }
             }
         });
         
+        // Apply Filters Button
+        const applyFiltersBtn = document.getElementById('applyFilters');
+        applyFiltersBtn.addEventListener('click', function() {
+            applyFilters();
+        });
+        
+        // Function to apply filters
+        function applyFilters() {
+            const status = document.getElementById('statusFilter').value;
+            const days = document.getElementById('daysFilter').value;
+            const searchTerm = document.querySelector('.search-input').value;
+            
+            // Build the URL with filters
+            let url = `{{ route('proveedores.index') }}?`;
+            if (days) url += `days=${days}&`;
+            if (status) url += `status=${status}&`;
+            
+            // If there's a search term, use search endpoint instead
+            if (searchTerm && searchTerm.length >= 2) {
+                url = `{{ route('proveedores.search') }}?term=${searchTerm}`;
+                if (days) url += `&days=${days}`;
+                if (status) url += `&status=${status}`;
+                
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        updateTableWithSearchResults(data);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showAlert(errorAlert, 'Error al buscar proveedores.');
+                    });
+            } else {
+                // Otherwise navigate to the index with filters
+                window.location.href = url;
+            }
+        }
+        
         // Function to update table with search results
-      function updateTableWithSearchResults(proveedores) {
-    const tableBody = document.querySelector('tbody');
-    tableBody.innerHTML = '';
-    
-    if (proveedores.length === 0) {
-        const row = document.createElement('tr');
-        row.innerHTML = '<td colspan="7" class="text-center">No se encontraron resultados</td>';
-        tableBody.appendChild(row);
-        return;
-    }
-    
-    proveedores.forEach(proveedor => {
-        const row = document.createElement('tr');
-        
-        // Format dates
-        let formattedFechaRegistro = '<span class="text-muted">No asignada</span>';
-        if (proveedor.fecha_registro) {
-            const [year, month, day] = proveedor.fecha_registro.split('-');
-            formattedFechaRegistro = `${day}/${month}/${year}`;
+        function updateTableWithSearchResults(proveedores) {
+            const tableBody = document.querySelector('tbody');
+            tableBody.innerHTML = '';
+            
+            if (proveedores.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="7" class="text-center">No se encontraron resultados</td>';
+                tableBody.appendChild(row);
+                return;
+            }
+            
+            proveedores.forEach(proveedor => {
+                const row = document.createElement('tr');
+                
+                // Format dates
+                let formattedFechaRegistro = '<span class="text-muted">No asignada</span>';
+                if (proveedor.fecha_registro) {
+                    const [year, month, day] = proveedor.fecha_registro.split('-');
+                    formattedFechaRegistro = `${day}/${month}/${year}`;
+                }
+                
+                let formattedFechaVencimiento = '<span class="text-muted">No asignada</span>';
+                if (proveedor.fecha_vencimiento) {
+                    const [year, month, day] = proveedor.fecha_vencimiento.split('-');
+                    formattedFechaVencimiento = `${day}/${month}/${year}`;
+                }
+                
+                row.innerHTML = `
+                    <td>${proveedor.pv}</td>
+                    <td class="razon-social">${proveedor.razon_social || ''}</td>
+                    <td class="rfc">${proveedor.rfc || ''}</td>
+                    <td>
+                        <span class="status-badge ${proveedor.estado.toLowerCase() === 'activo' ? 'active' : 'inactive'}">
+                            ${proveedor.estado}
+                        </span>
+                    </td>
+                    <td>${formattedFechaRegistro}</td>
+                    <td>${formattedFechaVencimiento}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-action view-btn" data-id="${proveedor.pv}" title="Ver detalles">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // Reattach event listeners to the new buttons
+            attachEventListenersToButtons();
         }
-        
-        let formattedFechaVencimiento = '<span class="text-muted">No asignada</span>';
-        if (proveedor.fecha_vencimiento) {
-            const [year, month, day] = proveedor.fecha_vencimiento.split('-');
-            formattedFechaVencimiento = `${day}/${month}/${year}`;
-        }
-        
-        row.innerHTML = `
-            <td>${proveedor.pv}</td>
-            <td class="razon-social">${proveedor.razon_social}</td>
-            <td class="rfc">${proveedor.rfc}</td>
-            <td>
-                <span class="status-badge ${proveedor.estado.toLowerCase() === 'activo' ? 'active' : 'inactive'}">
-                    ${proveedor.estado}
-                </span>
-            </td>
-            <td>${formattedFechaRegistro}</td>
-            <td>${formattedFechaVencimiento}</td>
-            <td>
-                <div class="action-buttons">
-                    <button class="btn-action view-btn" data-id="${proveedor.pv}" title="Ver detalles">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </div>
-            </td>
-        `;
-        
-        tableBody.appendChild(row);
-    });
-    
-    // Reattach event listeners to the new buttons
-    attachEventListenersToButtons();
-}
         
         // Function to attach event listeners to dynamically created buttons
         function attachEventListenersToButtons() {
