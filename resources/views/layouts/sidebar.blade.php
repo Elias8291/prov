@@ -32,8 +32,24 @@
             </a>
         </div>
 
+        <!-- Revisión - visible para todos -->
+        <div class="menu-item {{ request()->routeIs('revision.index') ? 'active' : '' }}">
+            <a href="{{ route('revision.index') }}"
+                style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px">
+                <div class="menu-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M9 18l6-6-6-6" />
+                        <path d="M20 6v12" />
+                    </svg>
+                </div>
+                <div class="menu-text">Revisión</div>
+            </a>
+        </div>
+
         <!-- Usuarios - solo visible para roles distintos a Solicitante -->
-        @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('OtroRol')) <!-- Ajusta según los roles -->
+        @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('OtroRol'))
         <div class="menu-item {{ request()->routeIs('usuarios.index') ? 'active' : '' }}">
             <a href="{{ route('usuarios.index') }}"
                 style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px">
@@ -53,7 +69,7 @@
         @endif
 
         <!-- Roles - solo visible para roles distintos a Solicitante -->
-        @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('OtroRol')) <!-- Ajusta según los roles -->
+        @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('OtroRol'))
         <div class="menu-item {{ request()->routeIs('roles.index') ? 'active' : '' }}">
             <a href="{{ route('roles.index') }}"
                 style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px">
@@ -73,7 +89,7 @@
         @endif
 
         <!-- Proveedores - solo visible para roles distintos a Solicitante -->
-        @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('OtroRol')) <!-- Ajusta según los roles -->
+        @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('OtroRol'))
         <div class="menu-item {{ request()->routeIs('proveedores.index') ? 'active' : '' }}">
             <a href="{{ route('proveedores.index') }}"
                 style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px">

@@ -10,7 +10,7 @@ use App\Http\Controllers\DireccionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ProveedorController;
-
+use App\Http\Controllers\RevisionController;
 Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
@@ -47,6 +47,7 @@ Route::get('/inscripcion/terminos_y_condiciones', [SolicitanteController::class,
     Route::get('/inscripcion/exito', [InscripcionController::class, 'exito'])->name('inscripcion.exito');
     Route::get('/inscripcion/actividades', [InscripcionController::class, 'obtenerActividades'])->name('inscripcion.actividades');
     Route::post('/inscripcion/guardar', [InscripcionController::class, 'guardarSeccion'])->name('inscripcion.guardar');
+    Route::get('/revision', [RevisionController::class, 'index'])->name('revision.index');
     // Resto de rutas de tu sistema...
     Route::get('/sectores', [SectorActividadController::class, 'getSectores'])->name('sectores.index');
     Route::get('/sectores/{sectorId}/actividades', [SectorActividadController::class, 'getActividadesBySector'])->name('sectores.actividades');
