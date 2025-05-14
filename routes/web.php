@@ -11,6 +11,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\RevisionController;
+use App\Http\Controllers\EstadoController;
+
 Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
@@ -33,21 +35,21 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/index', function () {
         return view('index.index');
     })->name('index');
-    
+
     // Términos y condiciones de inscripción
     Route::get('/inscripcion/terminos_y_condiciones', [SolicitanteController::class, 'mostrarTerminosYCondiciones'])
         ->name('inscripcion.terminos_y_condiciones');
     Route::post('/inscripcion/aceptar-terminos', [SolicitanteController::class, 'aceptarTerminos'])
         ->name('inscripcion.aceptar_terminos');
-Route::get('/inscripcion/terminos_y_condiciones', [SolicitanteController::class, 'mostrarTerminosYCondiciones'])
-    ->name('inscripcion.terminos_y_condiciones');
+    Route::get('/inscripcion/terminos_y_condiciones', [SolicitanteController::class, 'mostrarTerminosYCondiciones'])
+        ->name('inscripcion.terminos_y_condiciones');
     // Inscripción - formulario multisección
     Route::get('/inscripcion', [InscripcionController::class, 'mostrarFormulario'])->name('inscripcion.formulario');
     Route::post('/inscripcion', [InscripcionController::class, 'procesarSeccion'])->name('inscripcion.procesar');
     Route::get('/inscripcion/exito', [InscripcionController::class, 'exito'])->name('inscripcion.exito');
     Route::get('/inscripcion/actividades', [InscripcionController::class, 'obtenerActividades'])->name('inscripcion.actividades');
     Route::post('/inscripcion/guardar', [InscripcionController::class, 'guardarSeccion'])->name('inscripcion.guardar');
-   
+
     // Resto de rutas de tu sistema...
     Route::get('/sectores', [SectorActividadController::class, 'getSectores'])->name('sectores.index');
     Route::get('/sectores/{sectorId}/actividades', [SectorActividadController::class, 'getActividadesBySector'])->name('sectores.actividades');
@@ -64,7 +66,7 @@ Route::get('/inscripcion/terminos_y_condiciones', [SolicitanteController::class,
     Route::get('/proveedores', [ProveedorController::class, 'index'])->name('proveedores.index');
     Route::get('/proveedores/search', [ProveedorController::class, 'search'])->name('proveedores.search');
 
-     Route::get('/revision', [RevisionController::class, 'index'])->name('revision.index');
+    Route::get('/revision', [RevisionController::class, 'index'])->name('revision.index');
     Route::get('/{id}', [RevisionController::class, 'show'])->name('revision.show');
 
     // Iniciar la revisión de una solicitud
@@ -76,12 +78,15 @@ Route::get('/inscripcion/terminos_y_condiciones', [SolicitanteController::class,
     // Listado de revisiones asignadas al usuario actual
     Route::get('/my-revisions', [RevisionController::class, 'myRevisions'])->name('revision.my-revisions');
     Route::get('/revision/iniciar/{rfc}', [RevisionController::class, 'iniciarRevision'])->name('revision.iniciar');
-     Route::get('/solicitante/address-info', [DireccionController::class, 'getSolicitanteAddressInfo']);
+    Route::get('/solicitante/address-info', [DireccionController::class, 'getSolicitanteAddressInfo']);
     Route::get('/direccion/by-codigo-postal/{codigo}', [DireccionController::class, 'getAddressByCodigoPostal']);
     Route::post('/inscripcion/obtener-datos-direccion', [InscripcionController::class, 'obtenerDatosDireccion'])->name('inscripcion.obtener-datos-direccion');
     Route::post('/inscripcion/obtener-datos-direccion', [InscripcionController::class, 'obtenerDatosDireccion'])->name('inscripcion.obtener_datos_direccion');
 
     Route::post('/inscripcion/procesar-seccion', [App\Http\Controllers\InscripcionController::class, 'procesarSeccion'])
-    ->name('inscripcion.procesar_seccion')
-    ->middleware(['auth']);
+        ->name('inscripcion.procesar_seccion')
+        ->middleware(['auth']);
+    Route::post('/registro-datos-constitucion', [InscripcionController::class, 'guardarDatosConstitucion'])
+        ->name('registro.datos.constitucion');
+Route::get('/estados', [EstadoController::class, 'getEstados'])->name('estados');
 });

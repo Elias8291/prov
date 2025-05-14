@@ -10,13 +10,13 @@
                     <div class="half-width form-group" id="formulario__grupo--nombre-apoderado">
                         <label class="form-label" for="nombre-apoderado">Nombre</label>
                         <input type="text" id="nombre-apoderado" name="nombre-apoderado" class="form-control"
-                            placeholder="Ej: Lic. Juan Pérez González">
+                            placeholder="Ej: Lic. Juan Pérez González" value="{{ $datosPrevios['nombre-apoderado'] ?? '' }}">
                         <p class="formulario__input-error">El nombre solo puede contener letras y espacios, máximo 100 caracteres.</p>
                     </div>
                     <div class="half-width form-group" id="formulario__grupo--numero-escritura">
                         <label class="form-label" for="numero-escritura">Número de Escritura</label>
                         <input type="text" id="numero-escritura" name="numero-escritura" class="form-control"
-                            placeholder="Ej: 12345">
+                            placeholder="Ej: 12345" value="{{ $datosPrevios['numero-escritura'] ?? '' }}">
                         <p class="formulario__input-error">El número de escritura debe contener solo números, máximo 10 dígitos.</p>
                     </div>
                 </div>
@@ -24,13 +24,13 @@
                     <div class="half-width form-group" id="formulario__grupo--nombre-notario">
                         <label class="form-label" for="nombre-notario">Nombre del Notario</label>
                         <input type="text" id="nombre-notario" name="nombre-notario" class="form-control"
-                            placeholder="Ej: Lic. María López Ramírez">
+                            placeholder="Ej: Lic. María López Ramírez" value="{{ $datosPrevios['nombre-notario'] ?? '' }}">
                         <p class="formulario__input-error">El nombre del notario solo puede contener letras y espacios, máximo 100 caracteres.</p>
                     </div>
                     <div class="half-width form-group" id="formulario__grupo--numero-notario">
                         <label class="form-label" for="numero-notario">Número del Notario</label>
                         <input type="text" id="numero-notario" name="numero-notario" class="form-control"
-                            placeholder="Ej: 123">
+                            placeholder="Ej: 123" value="{{ $datosPrevios['numero-notario'] ?? '' }}">
                         <p class="formulario__input-error">El número del notario debe contener solo números, máximo 10 dígitos.</p>
                     </div>
                 </div>
@@ -39,12 +39,18 @@
                         <label class="form-label" for="entidad-federativa">Entidad Federativa</label>
                         <select id="entidad-federativa" name="entidad-federativa" class="form-control">
                             <option value="">Seleccione un estado</option>
+                            @foreach($estados as $estado)
+                                <option value="{{ $estado['id'] }}" {{ isset($datosPrevios['entidad-federativa']) && $datosPrevios['entidad-federativa'] == $estado['id'] ? 'selected' : '' }}>
+                                    {{ $estado['nombre'] }}
+                                </option>
+                            @endforeach
                         </select>
                         <p class="formulario__input-error">Por favor, seleccione una entidad federativa.</p>
                     </div>
                     <div class="half-width form-group" id="formulario__grupo--fecha-escritura">
                         <label class="form-label" for="fecha-escritura">Fecha de Escritura</label>
-                        <input type="date" id="fecha-escritura" name="fecha-escritura" class="form-control">
+                        <input type="date" id="fecha-escritura" name="fecha-escritura" class="form-control" 
+                            value="{{ $datosPrevios['fecha-escritura'] ?? '' }}">
                         <p class="formulario__input-error">Por favor, seleccione una fecha válida.</p>
                     </div>
                 </div>
@@ -58,12 +64,13 @@
                     <div class="half-width form-group" id="formulario__grupo--numero-registro">
                         <label class="form-label" for="numero-registro">Número de Registro o Folio Mercantil</label>
                         <input type="text" id="numero-registro" name="numero-registro" class="form-control"
-                            placeholder="Ej: 987654">
+                            placeholder="Ej: 987654" value="{{ $datosPrevios['numero-registro'] ?? '' }}">
                         <p class="formulario__input-error">El número de registro debe contener solo números, máximo 10 dígitos.</p>
                     </div>
                     <div class="half-width form-group" id="formulario__grupo--fecha-inscripcion">
                         <label class="form-label" for="fecha-inscripcion">Fecha de Inscripción</label>
-                        <input type="date" id="fecha-inscripcion" name="fecha-inscripcion" class="form-control">
+                        <input type="date" id="fecha-inscripcion" name="fecha-inscripcion" class="form-control"
+                            value="{{ $datosPrevios['fecha-inscripcion'] ?? '' }}">
                         <p class="formulario__input-error">Por favor, seleccione una fecha válida.</p>
                     </div>
                 </div>

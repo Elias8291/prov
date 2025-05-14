@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+
 class Solicitante extends Model
 {
     use HasFactory;
@@ -26,6 +27,7 @@ class Solicitante extends Model
         'tipo_persona',
         'curp',
         'rfc',
+        'objeto_social', // Added objeto_social to fillable
     ];
 
     /**
@@ -35,6 +37,7 @@ class Solicitante extends Model
      */
     protected $casts = [
         'tipo_persona' => 'string',
+        'objeto_social' => 'string', // Optional: Cast objeto_social as string
     ];
 
     /**
@@ -44,9 +47,12 @@ class Solicitante extends Model
     {
         return $this->belongsTo(User::class, 'usuario_id');
     }
+
+    /**
+     * Get the tramites associated with the solicitante.
+     */
     public function tramites()
     {
         return $this->hasMany(Tramite::class, 'solicitante_id');
     }
-   
 }

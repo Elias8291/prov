@@ -15,127 +15,156 @@ use App\Models\ContactoSolicitante;
 use App\Models\DetalleTramite;
 use App\Models\Documento;
 use App\Models\DocumentoSolicitante;
-
+use App\Models\DatoConstitutivo;
+use App\Models\AccionistaSolicitante;
+use App\Models\Accionista;
+use App\Models\Estado;
 class InscripcionController extends Controller
 {
     // Muestra la sección actual del formulario de inscripción
-public function mostrarFormulario(Request $request)
-{
-    $user = Auth::user();
-    $solicitante = $user->solicitante;
-    $isRevisor = $user->hasRole('revisor');
+   public function mostrarFormulario(Request $request)
+    {
+        $user = Auth::user();
+        $solicitante = $user->solicitante;
+        $isRevisor = $user->hasRole('revisor');
 
-    // If user is a revisor and has no solicitante, use default values for preview
-    if ($isRevisor && !$solicitante) {
-        $tipoPersona = 'Física'; // Default for preview
-        $tramite = null;
-        $seccion = 1; // Start at section 1
-        $totalSecciones = $this->obtenerTotalSecciones($tipoPersona);
-        $datosPrevios = [];
-        $porcentaje = 0;
-        $seccionesCompletadas = 0;
-        $isConfirmationSection = false;
-        $direccion = null; // No dirección para revisores sin solicitante
-    } else {
-        // Ensure solicitante exists for non-revisors
-        if (!$solicitante) {
-            return redirect()->route('dashboard')->withErrors(['error' => 'No tienes un perfil de solicitante asociado.']);
-        }
-
-        $tipoPersona = $solicitante->tipo_persona ?? 'No definido';
-
-        // Buscar trámite pendiente
-        $tramite = Tramite::where('solicitante_id', $solicitante->id)
-            ->where('estado', 'Pendiente')
-            ->with('detalleTramite.direccion') // Cargar detalle_tramite y dirección
-            ->first();
-
-        // Si no existe trámite, redirigir a términos y condiciones (except for revisors)
-        if (!$tramite && !$isRevisor) {
-            return redirect()->route('inscripcion.terminos_y_condiciones');
-        }
-
-        // Si el trámite está en progreso_tramite 0, enviar a términos (except for revisors)
-        if ($tramite && $tramite->progreso_tramite == 0 && !$isRevisor) {
-            return redirect()->route('inscripcion.terminos_y_condiciones');
-        }
-
-        // Permitir retroceder si el usuario da clic en "Anterior"
-        if ($request->has('retroceder') && $tramite && $tramite->progreso_tramite > 1) {
-            $tramite->decrement('progreso_tramite');
-        }
-
-        $seccion = $tramite ? $tramite->progreso_tramite : 1;
-        $totalSecciones = $this->obtenerTotalSecciones($tipoPersona);
-        
-        // Determinar si es la sección de confirmación
-        $isConfirmationSection = ($tipoPersona == 'Física' && $seccion == 4) || ($tipoPersona == 'Moral' && $seccion == 7);
-
-        // Calcular progreso basado en secciones completadas
-        if ($isConfirmationSection) {
-            $porcentaje = 100;
-            $seccionesCompletadas = $totalSecciones;
+        // If user is a revisor and has no solicitante, use default values for preview
+        if ($isRevisor && !$solicitante) {
+            $tipoPersona = 'Física'; // Default for preview
+            $tramite = null;
+            $seccion = 1; // Start at section 1
+            $totalSecciones = $this->obtenerTotalSecciones($tipoPersona);
+            $datosPrevios = [];
+            $porcentaje = 0;
+            $seccionesCompletadas = 0;
+            $isConfirmationSection = false;
+            $direccion = null; // No dirección para revisores sin solicitante
+            $estados = $this->cargarEstados(); // Cargar estados para todas las secciones
         } else {
-            $seccionesCompletadas = max(0, $seccion - 1);
-            $porcentaje = $totalSecciones > 0 ? round(($seccionesCompletadas / $totalSecciones) * 100) : 0;
-        }
-
-        // Cargar datos previos para autocompletar
-        $datosPrevios = $tramite && method_exists($tramite, 'getDatosPorSeccion') 
-            ? $tramite->getDatosPorSeccion($seccion)
-            : [];
-
-        // Añadir CURP a datosPrevios para solicitante con tipo_persona Física en sección 1
-        if ($tipoPersona == 'Física' && $seccion == 1 && $user->hasRole('solicitante')) {
-            $datosPrevios['curp'] = $solicitante->curp ?? 'No disponible';
-        }
-
-        // Cargar datos de dirección para la sección 2
-        if ($seccion == 2 && $tramite && $tramite->detalleTramite && $tramite->detalleTramite->direccion) {
-            $direccion = $tramite->detalleTramite->direccion;
-            $datosPrevios['codigo_postal'] = $direccion->codigo_postal ?? '';
-            $datosPrevios['calle'] = $direccion->calle ?? '';
-            $datosPrevios['numero_exterior'] = $direccion->numero_exterior ?? '';
-            $datosPrevios['numero_interior'] = $direccion->numero_interior ?? '';
-            $datosPrevios['entre_calle_1'] = $direccion->entre_calle_1 ?? '';
-            $datosPrevios['entre_calle_2'] = $direccion->entre_calle_2 ?? '';
-            // Cargar datos de asentamiento, municipio y estado si es necesario
-            if ($direccion->asentamiento) {
-                $datosPrevios['colonia'] = $direccion->asentamiento->nombre ?? '';
-                $datosPrevios['municipio'] = $direccion->asentamiento->localidad->municipio->nombre ?? '';
-                $datosPrevios['estado'] = $direccion->asentamiento->localidad->municipio->estado->nombre ?? '';
+            // Ensure solicitante exists for non-revisors
+            if (!$solicitante) {
+                return redirect()->route('dashboard')->withErrors(['error' => 'No tienes un perfil de solicitante asociado.']);
             }
-        } else {
-            $direccion = null;
+
+            $tipoPersona = $solicitante->tipo_persona ?? 'No definido';
+
+            // Buscar trámite pendiente
+            $tramite = Tramite::where('solicitante_id', $solicitante->id)
+                ->where('estado', 'Pendiente')
+                ->with('detalleTramite.direccion') // Cargar detalle_tramite y dirección
+                ->first();
+
+            // Si no existe trámite, redirigir a términos y condiciones (except for revisors)
+            if (!$tramite && !$isRevisor) {
+                return redirect()->route('inscripcion.terminos_y_condiciones');
+            }
+
+            // Si el trámite está en progreso_tramite 0, enviar a términos (except for revisors)
+            if ($tramite && $tramite->progreso_tramite == 0 && !$isRevisor) {
+                return redirect()->route('inscripcion.terminos_y_condiciones');
+            }
+
+            // Permitir retroceder si el usuario da clic en "Anterior"
+            if ($request->has('retroceder') && $tramite && $tramite->progreso_tramite > 1) {
+                $tramite->decrement('progreso_tramite');
+            }
+
+            $seccion = $tramite ? $tramite->progreso_tramite : 1;
+            $totalSecciones = $this->obtenerTotalSecciones($tipoPersona);
+            
+            // Determinar si es la sección de confirmación
+            $isConfirmationSection = ($tipoPersona == 'Física' && $seccion == 4) || ($tipoPersona == 'Moral' && $seccion == 7);
+
+            // Calcular progreso basado en secciones completadas
+            if ($isConfirmationSection) {
+                $porcentaje = 100;
+                $seccionesCompletadas = $totalSecciones;
+            } else {
+                $seccionesCompletadas = max(0, $seccion - 1);
+                $porcentaje = $totalSecciones > 0 ? round(($seccionesCompletadas / $totalSecciones) * 100) : 0;
+            }
+
+            // Cargar datos previos para autocompletar
+            $datosPrevios = $tramite && method_exists($tramite, 'getDatosPorSeccion') 
+                ? $tramite->getDatosPorSeccion($seccion)
+                : [];
+
+            // Añadir CURP a datosPrevios para solicitante con tipo_persona Física en sección 1
+            if ($tipoPersona == 'Física' && $seccion == 1 && $user->hasRole('solicitante')) {
+                $datosPrevios['curp'] = $solicitante->curp ?? 'No disponible';
+            }
+
+            // Cargar datos de dirección para la sección 2
+            if ($seccion == 2 && $tramite && $tramite->detalleTramite && $tramite->detalleTramite->direccion) {
+                $direccion = $tramite->detalleTramite->direccion;
+                $datosPrevios['codigo_postal'] = $direccion->codigo_postal ?? '';
+                $datosPrevios['calle'] = $direccion->calle ?? '';
+                $datosPrevios['numero_exterior'] = $direccion->numero_exterior ?? '';
+                $datosPrevios['numero_interior'] = $direccion->numero_interior ?? '';
+                $datosPrevios['entre_calle_1'] = $direccion->entre_calle_1 ?? '';
+                $datosPrevios['entre_calle_2'] = $direccion->entre_calle_2 ?? '';
+                // Cargar datos de asentamiento, municipio y estado si es necesario
+                if ($direccion->asentamiento) {
+                    $datosPrevios['colonia'] = $direccion->asentamiento->nombre ?? '';
+                    $datosPrevios['municipio'] = $direccion->asentamiento->localidad->municipio->nombre ?? '';
+                    $datosPrevios['estado'] = $direccion->asentamiento->localidad->municipio->estado->nombre ?? '';
+                }
+            } else {
+                $direccion = null;
+            }
+
+            // Cargar datos de apoderado legal para la sección 5
+            if ($seccion == 5 && $tramite && $tramite->detalleTramite && $tramite->detalleTramite->apoderadoLegal) {
+                $apoderadoLegal = $tramite->detalleTramite->apoderadoLegal;
+                $datosPrevios['nombre-apoderado'] = $apoderadoLegal->nombre ?? '';
+                $datosPrevios['numero-escritura'] = $apoderadoLegal->instrumento_notarial->numero_escritura ?? '';
+                $datosPrevios['nombre-notario'] = $apoderadoLegal->instrumento_notarial->nombre_notario ?? '';
+                $datosPrevios['numero-notario'] = $apoderadoLegal->instrumento_notarial->numero_notario ?? '';
+                $datosPrevios['entidad-federativa'] = $apoderadoLegal->instrumento_notarial->estado_id ?? '';
+                $datosPrevios['fecha-escritura'] = $apoderadoLegal->instrumento_notarial->fecha ?? '';
+                $datosPrevios['numero-registro'] = $apoderadoLegal->instrumento_notarial->registro_mercantil ?? '';
+                $datosPrevios['fecha-inscripcion'] = $apoderadoLegal->instrumento_notarial->fecha_registro ?? '';
+            }
+
+            // Cargar estados para el formulario (para todas las secciones que lo necesiten)
+            $estados = $this->cargarEstados();
         }
+
+        // Cargar sectores para el formulario
+        $sectores = Sector::all()->map(function ($sector) {
+            return [
+                'id' => $sector->id,
+                'nombre' => $sector->nombre,
+            ];
+        })->toArray();
+
+        // Determinar el nombre del partial de la sección
+        $seccionPartial = $this->obtenerSeccionPartial($seccion, $tipoPersona);
+
+        // Pass $tramite to the view
+        return view('inscripcion.formularios', [
+            'seccion' => $seccion,
+            'seccionPartial' => $seccionPartial,
+            'totalSecciones' => $totalSecciones,
+            'porcentaje' => $porcentaje,
+            'tipoPersona' => $tipoPersona,
+            'seccionesInfo' => $this->obtenerSecciones($tipoPersona),
+            'datosPrevios' => $datosPrevios,
+            'isConfirmationSection' => $isConfirmationSection,
+            'mostrarCurp' => ($tipoPersona == 'Física' && $user->hasRole('solicitante') && $seccion == 1),
+            'sectores' => $sectores,
+            'isRevisor' => $isRevisor,
+            'direccion' => $direccion,
+            'estados' => $estados, // Ahora disponible para todas las secciones
+            'tramite' => $tramite, // Explicitly pass $tramite
+        ]);
     }
 
-    // Cargar sectores para el formulario
-    $sectores = Sector::all()->map(function ($sector) {
-        return [
-            'id' => $sector->id,
-            'nombre' => $sector->nombre,
-        ];
-    })->toArray();
-
-    // Determinar el nombre del partial de la sección
-    $seccionPartial = $this->obtenerSeccionPartial($seccion, $tipoPersona);
-
-    return view('inscripcion.formularios', [
-        'seccion' => $seccion,
-        'seccionPartial' => $seccionPartial,
-        'totalSecciones' => $totalSecciones,
-        'porcentaje' => $porcentaje,
-        'tipoPersona' => $tipoPersona,
-        'seccionesInfo' => $this->obtenerSecciones($tipoPersona),
-        'datosPrevios' => $datosPrevios,
-        'isConfirmationSection' => $isConfirmationSection,
-        'mostrarCurp' => ($tipoPersona == 'Física' && $user->hasRole('solicitante') && $seccion == 1),
-        'sectores' => $sectores,
-        'isRevisor' => $isRevisor,
-        'direccion' => $direccion, // Pasar la dirección al formulario
-    ]);
-}
+    private function cargarEstados()
+    {
+        // Usar el FQCN (Fully Qualified Class Name) para evitar ambigüedad
+        return \App\Models\Estado::orderBy('nombre', 'asc')->get(['id', 'nombre'])->toArray();
+    }
     // Obtener actividades por sector (AJAX)
     public function obtenerActividades(Request $request)
     {
@@ -161,8 +190,8 @@ public function mostrarFormulario(Request $request)
         return view('inscripcion.exito');
     }
 
-    // Handle form submission for progressing to the next section
-public function procesarSeccion(Request $request)
+
+    public function procesarSeccion(Request $request)
 {
     $user = Auth::user();
     
@@ -205,9 +234,20 @@ public function procesarSeccion(Request $request)
             $this->procesarDatosGenerales($request, $tramite);
         }
         elseif ($seccion == 2) {
-            // Make sure this is being called for section 2
-            Log::info('Processing address data for section 2');
             $this->procesarDatosLegales($request, $tramite);
+        }
+        elseif ($seccion == 3) {
+            if ($tipoPersona == 'Moral') {
+                // Para personas morales, la sección 3 es de datos constitutivos
+                $this->procesarDatosConstitucion($request, $tramite);
+            } else if ($tipoPersona == 'Física') {
+                // Para personas físicas, la sección 3 es de accionistas
+                $this->procesarAccionistas($request, $tramite);
+            }
+        }
+        elseif ($seccion == 4 && $tipoPersona == 'Moral') {
+            // Para personas morales, la sección 4 es de accionistas
+            $this->procesarAccionistas($request, $tramite);
         }
         // Other section handlers...
 
@@ -229,93 +269,248 @@ public function procesarSeccion(Request $request)
         return back()->withErrors(['error' => 'Ocurrió un error al guardar los datos: ' . $e->getMessage()])->withInput();
     }
 }
-    /**
-     * Process general data from section 1
-     */
-    private function procesarDatosGenerales(Request $request, $tramite)
-    {
-        // Get or create detalle_tramite
-        $detalle = DetalleTramite::firstOrNew(['tramite_id' => $tramite->id]);
-        
-        // Update detalle_tramite with phone and website
-        $detalle->telefono = $request->input('contacto_telefono');
-        $detalle->sitio_web = $request->input('contacto_web');
-        
-        // If admin is creating, set razon_social and email
-        if (Auth::user()->hasRole('admin') || Auth::user()->hasRole('revisor')) {
-            $detalle->razon_social = $request->input('razon_social');
-            $detalle->email = $request->input('correo_electronico');
-        }
-        
+   private function procesarDatosGenerales(Request $request, $tramite)
+{
+    $solicitante = Auth::user()->solicitante;
+
+    // Get or create detalle_tramite
+    $detalle = DetalleTramite::firstOrNew(['tramite_id' => $tramite->id]);
+
+    // Update detalle_tramite with phone and website
+    $detalle->telefono = $request->input('contacto_telefono');
+    $detalle->sitio_web = $request->input('contacto_web');
+
+    // If admin or revisor is creating, set razon_social and email
+    if (Auth::user()->hasRole('admin') || Auth::user()->hasRole('revisor')) {
+        $detalle->razon_social = $request->input('razon_social');
+        $detalle->email = $request->input('correo_electronico');
+    }
+
+    $detalle->save();
+
+    // Create or update contacto_solicitante
+    $contacto = ContactoSolicitante::firstOrNew([
+        'id' => $detalle->contacto_id
+    ]);
+
+    $contacto->nombre = $request->input('contacto_nombre');
+    $contacto->puesto = $request->input('contacto_cargo');
+    $contacto->telefono = $request->input('contacto_telefono_2');
+    $contacto->email = $request->input('contacto_correo');
+    $contacto->save();
+
+    // Update detalle_tramite with new contacto_id if it was just created
+    if (!$detalle->contacto_id) {
+        $detalle->contacto_id = $contacto->id;
         $detalle->save();
-        
-        // Create or update contacto_solicitante
-        $contacto = ContactoSolicitante::firstOrNew([
-            'id' => $detalle->contacto_id
-        ]);
-        
-        $contacto->nombre = $request->input('contacto_nombre');
-        $contacto->puesto = $request->input('contacto_cargo');
-        $contacto->telefono = $request->input('contacto_telefono_2');
-        $contacto->email = $request->input('contacto_correo');
-        $contacto->save();
-        
-        // Update detalle_tramite with new contacto_id if it was just created
-        if (!$detalle->contacto_id) {
-            $detalle->contacto_id = $contacto->id;
-            $detalle->save();
-        }
-        
-        // Process selected activities
-        // First, get existing activities for this tramite to avoid duplicates
-        $existingActivities = ActividadSolicitante::where('tramite_id', $tramite->id)
-            ->pluck('actividad_id')
-            ->toArray();
-        
-        // Get the selected activities from hidden input field or array
-        $selectedActivities = $request->input('actividades_seleccionadas', []);
-        
-        // Ensure $selectedActivities is an array (decode if JSON)
-        if (!is_array($selectedActivities) && is_string($selectedActivities)) {
-            $selectedActivities = json_decode($selectedActivities, true) ?: [];
-        }
-        
-        // Add new activities
-        foreach ($selectedActivities as $activityId) {
-            if (!in_array($activityId, $existingActivities)) {
-                ActividadSolicitante::create([
-                    'tramite_id' => $tramite->id,
-                    'actividad_id' => $activityId,
-                ]);
-            }
-        }
-        
-        // Handle constancia document upload (for admin)
-        if (Auth::user()->hasRole('admin') && $request->hasFile('constancia_upload')) {
-            $pdfPath = $request->file('constancia_upload')->store('documents', 'public');
-            
-            // Create documento if doesn't exist
-            $documento = Documento::firstOrCreate(
-                ['nombre' => 'Constancia SAT'],
-                [
-                    'tipo' => 'Certificado',
-                    'descripcion' => 'Constancia del SAT subida por administrador',
-                    'fecha_expiracion' => now()->addYear(),
-                ]
-            );
-            
-            // Create documento_solicitante record
-            DocumentoSolicitante::create([
+    }
+
+    // Update solicitante with objeto_social for Moral providers or when admin/revisor specifies it
+    if ($request->input('objeto_social') !== null) {
+        $solicitante->objeto_social = $request->input('objeto_social');
+        $solicitante->save();
+        Log::info('Objeto social actualizado para solicitante ID: ' . $solicitante->id, ['objeto_social' => $request->input('objeto_social')]);
+    }
+
+    // Process selected activities
+    $existingActivities = ActividadSolicitante::where('tramite_id', $tramite->id)
+        ->pluck('actividad_id')
+        ->toArray();
+
+    $selectedActivities = $request->input('actividades_seleccionadas', []);
+
+    if (!is_array($selectedActivities) && is_string($selectedActivities)) {
+        $selectedActivities = json_decode($selectedActivities, true) ?: [];
+    }
+
+    foreach ($selectedActivities as $activityId) {
+        if (!in_array($activityId, $existingActivities)) {
+            ActividadSolicitante::create([
                 'tramite_id' => $tramite->id,
-                'documento_id' => $documento->id,
-                'fecha_entrega' => now(),
-                'estado' => 'Pendiente',
-                'version_documento' => 1,
-                'ruta_archivo' => $pdfPath,
+                'actividad_id' => $activityId,
             ]);
         }
     }
 
+    // Handle constancia document upload (for admin)
+    if (Auth::user()->hasRole('admin') && $request->hasFile('constancia_upload')) {
+        $pdfPath = $request->file('constancia_upload')->store('documents', 'public');
+
+        $documento = Documento::firstOrCreate(
+            ['nombre' => 'Constancia SAT'],
+            [
+                'tipo' => 'Certificado',
+                'descripcion' => 'Constancia del SAT subida por administrador',
+                'fecha_expiracion' => now()->addYear(),
+            ]
+        );
+
+        DocumentoSolicitante::create([
+            'tramite_id' => $tramite->id,
+            'documento_id' => $documento->id,
+            'fecha_entrega' => now(),
+            'estado' => 'Pendiente',
+            'version_documento' => 1,
+            'ruta_archivo' => $pdfPath,
+        ]);
+    }
+}
+
+public function guardarDatosConstitucion(Request $request, Tramite $tramite)
+{
+    try {
+        DB::beginTransaction();
+
+        // Validar los datos del formulario
+        $request->validate([
+            'numero_escritura' => 'required|numeric|max:9999999999',
+            'nombre_notario' => 'required|string|max:100|regex:/^[A-Za-z\s]+$/',
+            'entidad_federativa' => 'required|exists:estado,id',
+            'fecha_constitucion' => 'required|date',
+            'numero_notario' => 'required|numeric|max:9999999999',
+            'numero_registro' => 'required|numeric|max:9999999999',
+            'fecha_inscripcion' => 'required|date',
+        ]);
+
+        // Obtener o crear el instrumento notarial
+        $instrumentoNotarial = \App\Models\InstrumentoNotarial::updateOrCreate(
+            [
+                'tramite_id' => $tramite->id,
+            ],
+            [
+                'numero_escritura' => $request->input('numero_escritura'),
+                'fecha' => $request->input('fecha_constitucion'),
+                'nombre_notario' => $request->input('nombre_notario'),
+                'numero_notario' => $request->input('numero_notario'),
+                'estado_id' => $request->input('entidad_federativa'),
+                'registro_mercantil' => $request->input('numero_registro'),
+                'fecha_registro' => $request->input('fecha_inscripcion'),
+            ]
+        );
+
+        // Actualizar el progreso del trámite
+        $tramite->increment('progreso_tramite');
+
+        DB::commit();
+
+        return redirect()->route('inscripcion.formulario')
+            ->with('success', 'Datos de Constitución guardados correctamente.');
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Error guardando datos de Constitución: ' . $e->getMessage(), [
+            'trace' => $e->getTraceAsString(),
+        ]);
+
+        return back()->withErrors(['error' => 'Ocurrió un error al guardar los datos: ' . $e->getMessage()])
+            ->withInput();
+    }
+}
+
+/**
+ * Process incorporation data from section 3
+ */
+private function procesarDatosConstitucion(Request $request, $tramite)
+{
+    try {
+        Log::info('Processing incorporation data for section 3:', $request->all());
+
+        // Validate the form data
+        $this->validarDatosSeccion($request, 3, 'Moral');
+
+        // Get the detalle_tramite first
+        $detalleTramite = DetalleTramite::firstOrNew(['tramite_id' => $tramite->id]);
+        
+        // Create a new instrumento_notarial
+        $instrumentoNotarial = new \App\Models\InstrumentoNotarial();
+
+        // If we already have an existing instrument linked to this tramite, use that one instead
+        if ($detalleTramite->dato_constitutivo_id) {
+            $datoConstitutivo = \App\Models\DatoConstitutivo::find($detalleTramite->dato_constitutivo_id);
+            if ($datoConstitutivo && $datoConstitutivo->instrumento_notarial_id) {
+                $existingInstrument = \App\Models\InstrumentoNotarial::find($datoConstitutivo->instrumento_notarial_id);
+                if ($existingInstrument) {
+                    $instrumentoNotarial = $existingInstrument;
+                }
+            }
+        }
+
+        // Fill the instrumento_notarial data
+        $instrumentoNotarial->numero_escritura = $request->input('numero_escritura');
+        $instrumentoNotarial->fecha = $request->input('fecha_constitucion');
+        $instrumentoNotarial->nombre_notario = $request->input('nombre_notario');
+        $instrumentoNotarial->numero_notario = $request->input('numero_notario');
+        $instrumentoNotarial->estado_id = $request->input('entidad_federativa');
+        $instrumentoNotarial->registro_mercantil = $request->input('numero_registro');
+        $instrumentoNotarial->fecha_registro = $request->input('fecha_inscripcion');
+        $instrumentoNotarial->save();
+
+        Log::info('InstrumentoNotarial saved with ID: ' . $instrumentoNotarial->id);
+
+        // Get or create datos_constitutivo record
+        if ($detalleTramite->dato_constitutivo_id) {
+            $datoConstitutivo = \App\Models\DatoConstitutivo::find($detalleTramite->dato_constitutivo_id);
+        }
+        
+        if (empty($datoConstitutivo)) {
+            $datoConstitutivo = new \App\Models\DatoConstitutivo();
+        }
+
+        // Fill with data - using objeto_social from solicitante if available
+        $datoConstitutivo->instrumento_notarial_id = $instrumentoNotarial->id;
+        $datoConstitutivo->objeto_social = Auth::user()->solicitante->objeto_social ?? '';
+        $datoConstitutivo->save();
+
+        Log::info('DatoConstitutivo saved with ID: ' . $datoConstitutivo->id);
+
+        // Update the detalleTramite with the datos_constitutivo_id
+        $detalleTramite->dato_constitutivo_id = $datoConstitutivo->id;
+        $detalleTramite->save();
+
+        Log::info('DetalleTramite updated with dato_constitutivo_id: ' . $datoConstitutivo->id);
+
+        return true;
+    } catch (\Exception $e) {
+        Log::error('Error processing incorporation data: ' . $e->getMessage());
+        Log::error($e->getTraceAsString());
+        throw $e;
+    }
+}
+/**
+ * Validate incorporation data from section 3
+ */
+private function validarDatosConstitucion(Request $request)
+{
+    $rules = [
+        'numero_escritura' => 'required|numeric|max:9999999999',
+        'nombre_notario' => 'required|string|max:100|regex:/^[A-Za-zÀ-ÖØ-öø-ÿ\s\.]+$/',
+        'entidad_federativa' => 'required|exists:estado,id',
+        'fecha_constitucion' => 'required|date|before_or_equal:today',
+        'numero_notario' => 'required|numeric|max:9999999999',
+        'numero_registro' => 'required|string|max:20',
+        'fecha_inscripcion' => 'required|date|after_or_equal:fecha_constitucion|before_or_equal:today',
+    ];
+
+    $messages = [
+        'numero_escritura.required' => 'El número de escritura es obligatorio.',
+        'numero_escritura.numeric' => 'El número de escritura debe ser numérico.',
+        'nombre_notario.required' => 'El nombre del notario es obligatorio.',
+        'nombre_notario.regex' => 'El nombre del notario debe contener solo letras, espacios y puntos.',
+        'entidad_federativa.required' => 'La entidad federativa es obligatoria.',
+        'entidad_federativa.exists' => 'La entidad federativa seleccionada no es válida.',
+        'fecha_constitucion.required' => 'La fecha de constitución es obligatoria.',
+        'fecha_constitucion.date' => 'La fecha de constitución debe ser una fecha válida.',
+        'fecha_constitucion.before_or_equal' => 'La fecha de constitución no puede ser futura.',
+        'numero_notario.required' => 'El número de notario es obligatorio.',
+        'numero_notario.numeric' => 'El número de notario debe ser numérico.',
+        'numero_registro.required' => 'El número de registro es obligatorio.',
+        'fecha_inscripcion.required' => 'La fecha de inscripción es obligatoria.',
+        'fecha_inscripcion.date' => 'La fecha de inscripción debe ser una fecha válida.',
+        'fecha_inscripcion.after_or_equal' => 'La fecha de inscripción no puede ser anterior a la fecha de constitución.',
+        'fecha_inscripcion.before_or_equal' => 'La fecha de inscripción no puede ser futura.',
+    ];
+
+    return $request->validate($rules, $messages);
+}
     /**
      * Process legal data from section 2
      */
@@ -378,6 +573,77 @@ public function procesarSeccion(Request $request)
     }
 }
 
+private function procesarAccionistas(Request $request, $tramite)
+{
+    try {
+        Log::info('Processing shareholders data for section 4:', $request->all());
+
+        // Validar los datos del formulario
+        $this->validarDatosSeccion($request, 4, 'Moral');
+
+        // Obtener el array JSON de accionistas
+        $accionistasData = $request->input('accionistas');
+        
+        if (!is_array($accionistasData)) {
+            // Si los datos vienen como string JSON, convertirlos a array
+            $accionistasData = json_decode($accionistasData, true) ?: [];
+        }
+
+        // Eliminar accionistas anteriores de este trámite antes de guardar los nuevos
+        $existingIds = AccionistaSolicitante::where('tramite_id', $tramite->id)->pluck('accionista_id')->toArray();
+        AccionistaSolicitante::where('tramite_id', $tramite->id)->delete();
+        
+        Log::info('Previous shareholders removed for tramite: ' . $tramite->id);
+        
+        // Total de porcentaje para validación
+        $totalPorcentaje = 0;
+        
+        // Procesar cada accionista
+        foreach ($accionistasData as $accionistaData) {
+            // Validar datos mínimos requeridos
+            if (
+                empty($accionistaData['nombre']) || 
+                empty($accionistaData['apellido_paterno']) || 
+                !isset($accionistaData['porcentaje'])
+            ) {
+                continue; // Saltar registros inválidos
+            }
+            
+            // Crear o actualizar el accionista
+            $accionista = Accionista::firstOrCreate([
+                'nombre' => $accionistaData['nombre'],
+                'apellido_paterno' => $accionistaData['apellido_paterno'],
+                'apellido_materno' => $accionistaData['apellido_materno'] ?? '',
+            ]);
+            
+            // Sumar al total
+            $porcentaje = floatval($accionistaData['porcentaje']);
+            $totalPorcentaje += $porcentaje;
+            
+            // Crear la relación con el trámite
+            AccionistaSolicitante::create([
+                'tramite_id' => $tramite->id,
+                'accionista_id' => $accionista->id,
+                'porcentaje_participacion' => $porcentaje,
+            ]);
+            
+            Log::info('Shareholder added: ' . $accionista->id . ' with ' . $porcentaje . '% participation');
+        }
+        
+        // Verificar si el total es aproximadamente 100% (con un margen de error pequeño)
+        if (abs($totalPorcentaje - 100) > 0.1) {
+            Log::warning('Total shareholder percentage is not 100%: ' . $totalPorcentaje);
+        } else {
+            Log::info('Total shareholder percentage: ' . $totalPorcentaje . '%');
+        }
+        
+        return true;
+    } catch (\Exception $e) {
+        Log::error('Error processing shareholders data: ' . $e->getMessage());
+        Log::error($e->getTraceAsString());
+        throw $e;
+    }
+}
     /**
      * Process documents from section 3
      */
@@ -398,17 +664,17 @@ public function procesarSeccion(Request $request)
         if ($tipoPersona == 'Física') {
             return [
                 1 => 'Datos Generales',
-                2 => 'Información Legal',
-                3 => 'Accionistas',
+                2 => 'Iomucilio',
+                3 => 'Documentos',
             ];
         } elseif ($tipoPersona == 'Moral') {
             return [
-                1 => 'Datos Generales',
-                2 => 'Información Legal',
-                3 => 'Documentos',
-                4 => 'Información Financiera',
-                5 => 'Información Técnica',
-                6 => 'Accionistas',
+              1 => 'Datos Generales',
+                        2 => 'Domicilio',
+                        3 => 'Datos de Constitución',
+                        4 => 'Accionistas',
+                        5 => 'Apoderado Legal',
+                        6 => 'Documentos',
             ];
         }
         return [
@@ -472,34 +738,85 @@ public function procesarSeccion(Request $request)
             'contacto_telefono' => 'required|regex:/^[0-9]{10}$/',
             'contacto_cargo' => 'required|string|max:50|regex:/^[A-Za-z\s]+$/',
             'contacto_telefono_2' => 'required|regex:/^[0-9]{10}$/',
+            'objeto_social' => 'required_if:tipo_persona,Moral|string|max:500|nullable',
         ];
 
         if (!$request->user()->hasRole('solicitante')) {
             $rules['tipo_persona'] = 'required|in:Física,Moral';
             $rules['rfc'] = 'required|regex:/^[A-Z0-9]{12,13}$/';
+            $rules['razon_social'] = 'required_if:tipo_persona,Moral|string|max:100|regex:/^[A-Za-z\s&.,0-9]+$/|nullable';
+            $rules['correo_electronico'] = 'required_if:tipo_persona,Moral|email|nullable';
         }
 
         if ($request->user()->hasRole('admin')) {
             $rules['constancia_upload'] = 'required|mimes:pdf|max:5120';
         }
 
-        $request->validate($rules);
-    } elseif ($seccion == 2) {
+        $request->validate($rules, [
+            'objeto_social.required_if' => 'El objeto social es obligatorio para proveedores Morales.',
+            'objeto_social.max' => 'El objeto social no puede exceder los 500 caracteres.',
+            'razon_social.required_if' => 'La razón social es obligatoria para proveedores Morales.',
+            'correo_electronico.required_if' => 'El correo electrónico es obligatorio para proveedores Morales.',
+        ]);
+    } elseif ($seccion == 3 && $tipoPersona == 'Moral') {
         $rules = [
-            'codigo_postal' => 'required|regex:/^[0-9]{4,5}$/', // Acepta 4 o 5 dígitos
-            'colonia' => 'required|string|max:405',
-            'calle' => 'required|string|max:100|regex:/^[A-Za-z0-9\s]+$/',
-            'numero_exterior' => 'required|string|max:10|regex:/^[A-Za-z0-9]+$/',
-            'numero_interior' => 'nullable|string|max:10|regex:/^[A-Za-z0-9]+$/',
-            'entre_calle_1' => 'nullable|string|max:100|regex:/^[A-Za-z0-9\s]+$/',
-            'entre_calle_2' => 'nullable|string|max:100|regex:/^[A-Za-z0-9\s]+$/',
+            'numero_escritura' => 'required|numeric|max:9999999999',
+            'nombre_notario' => 'required|string|max:100',
+            'entidad_federativa' => 'required|exists:estado,id',
+            'fecha_constitucion' => 'required|date',
+            'numero_notario' => 'required|numeric|max:9999999999',
+            'numero_registro' => 'required|string|max:20',
+            'fecha_inscripcion' => 'required|date',
         ];
 
         $request->validate($rules);
+    } 
+    elseif ($seccion == 4 || ($seccion == 3 && $tipoPersona == 'Física')) {
+        // Validación para la sección de accionistas (sección 4 para Morales, sección 3 para Físicas)
+        $accionistas = $request->input('accionistas');
+        
+        // Verifica que exista un input de accionistas
+        if (empty($accionistas)) {
+            return $request->validate([
+                'accionistas' => 'required',
+            ], [
+                'accionistas.required' => 'Debe proporcionar al menos un accionista.',
+            ]);
+        }
+        
+        // Si es una cadena JSON, intentamos decodificarla
+        if (is_string($accionistas)) {
+            $accionistasArray = json_decode($accionistas, true);
+            
+            // Si no es un JSON válido o está vacío
+            if (json_last_error() !== JSON_ERROR_NONE || empty($accionistasArray)) {
+                return $request->validate([
+                    'accionistas' => 'required|json',
+                ], [
+                    'accionistas.json' => 'El formato de datos de los accionistas no es válido.',
+                ]);
+            }
+            
+            // Verifica que sea un array después de decodificar
+            if (!is_array($accionistasArray)) {
+                return $request->validate([
+                    'accionistas' => 'required',
+                ], [
+                    'accionistas.required' => 'Los datos de accionistas deben ser una lista válida.',
+                ]);
+            }
+        }
+        
+        // Validar que al menos haya un accionista
+        if (is_array($accionistas) && empty($accionistas)) {
+            return $request->validate([
+                'accionistas' => 'required',
+            ], [
+                'accionistas.required' => 'Debe proporcionar al menos un accionista.',
+            ]);
+        }
     }
 }
-
-
 public function obtenerDatosDireccion(Request $request)
 {
     $codigoPostal = $request->input('codigo_postal');

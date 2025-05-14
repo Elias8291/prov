@@ -232,3 +232,29 @@ $(document).ready(function() {
     }
 });
 </script>
+
+<style>
+.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+.form-group.has-error .form-control {
+    border-color: #dc3545;
+}
+
+.formulario__input-error {
+    color: #dc3545;
+    font-size: 0.85em;
+    margin-top: 5px;
+    display: none;
+}
+
+.form-group.has-error .formulario__input-error {
+    display: block;
+}
+</style>

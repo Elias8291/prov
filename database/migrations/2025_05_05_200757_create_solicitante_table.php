@@ -14,6 +14,7 @@ class CreateSolicitanteTable extends Migration
             $table->enum('tipo_persona', ['Física', 'Moral']);
             $table->string('curp', 255)->nullable();
             $table->string('rfc', 255);
+            $table->text('objeto_social')->nullable(); // Added objeto_social field
             $table->timestamps();
 
             $table->foreign('usuario_id')->references('id')->on('users')->onDelete('cascade');
