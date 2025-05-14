@@ -1,4 +1,87 @@
-<form id="formulario5">
+
+<style>
+    /* Main Button Styling */
+    .form-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin: 20px 0;
+        gap: 15px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-weight: 500;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        min-width: 120px;
+    }
+
+    .btn-primary {
+        background-color: #9d2449;
+        color: white;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+        box-shadow: 0 2px 4px rgba(108, 117, 125, 0.2);
+    }
+
+    .btn-secondary:hover {
+        background-color: #5c636a;
+        box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+        transform: translateY(-2px);
+    }
+
+    /* Responsive styles */
+    @media (max-width: 576px) {
+        .form-buttons {
+            flex-direction: column | column;
+            gap: 10px;
+        }
+
+        .btn {
+            width: 100%;
+        }
+    }
+
+    /* Estilos adicionales para notificaciones */
+    .notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 12px 16px;
+        border-radius: 5px;
+        background-color: white;
+        color: #333;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        opacity: 1;
+        transition: opacity 0.3s;
+        max-width: 300px;
+    }
+
+    .notification.info {
+        border-left: 4px solid #007bff;
+    }
+
+    .notification.success {
+        border-left: 4px solid #28a745;
+    }
+
+    .notification.warning {
+        border-left: 4px solid #ffc107;
+    }
+
+    .notification.error {
+        border-left: 4px solid #dc3545;
+    }
+</style>
+
+<form id="formulario5" action="{{ route('inscripcion.procesar') }}" method="POST">
     <div id="section-5" class="form-section">
         <div class="form-container">
             <!-- Primera columna -->
@@ -76,6 +159,10 @@
                 </div>
             </div>
         </div>
+    </div>
+      <div class="form-buttons">
+        <button type="button" class="btn btn-secondary" onclick="window.history.back();">Anterior</button>
+        <button type="submit" class="btn btn-primary">Siguiente</button>
     </div>
 </form>
 <script>
