@@ -1,471 +1,775 @@
-
-<style>
-    /* Main Button Styling */
-    .form-buttons {
-        display: flex;
-        justify-content: space-between;
-        margin: 20px 0;
-        gap: 15px;
-    }
-
-    .btn {
-        padding: 10px 20px;
-        border-radius: 5px;
-        font-weight: 500;
-        font-size: 16px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        border: none;
-        min-width: 120px;
-    }
-
-    .btn-primary {
-        background-color: #9d2449;
-        color: white;
-    }
-
-    .btn-secondary {
-        background-color: #6c757d;
-        color: white;
-        box-shadow: 0 2px 4px rgba(108, 117, 125, 0.2);
-    }
-
-    .btn-secondary:hover {
-        background-color: #5c636a;
-        box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
-        transform: translateY(-2px);
-    }
-
-    /* Responsive styles */
-    @media (max-width: 576px) {
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <style>
+        /* Main Button Styling */
         .form-buttons {
-            flex-direction: column | column;
-            gap: 10px;
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            gap: 15px;
         }
 
         .btn {
-            width: 100%;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 500;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            min-width: 120px;
         }
-    }
 
-    /* Estilos adicionales para notificaciones */
-    .notification {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        padding: 12px 16px;
-        border-radius: 5px;
-        background-color: white;
-        color: #333;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        z-index: 1000;
-        opacity: 1;
-        transition: opacity 0.3s;
-        max-width: 300px;
-    }
+        .btn-primary {
+            background-color: #9d2449;
+            color: white;
+        }
 
-    .notification.info {
-        border-left: 4px solid #007bff;
-    }
+        .btn-primary:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
 
-    .notification.success {
-        border-left: 4px solid #28a745;
-    }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            box-shadow: 0 2px 4px rgba(108, 117, 125, 0.2);
+        }
 
-    .notification.warning {
-        border-left: 4px solid #ffc107;
-    }
+        .btn-secondary:hover {
+            background-color: #5c636a;
+            box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+            transform: translateY(-2px);
+        }
 
-    .notification.error {
-        border-left: 4px solid #dc3545;
-    }
-</style>
+        /* Form validation styles */
+        .form-group-shareholder {
+            position: relative;
+            margin-bottom: 15px;
+        }
 
-<form id="formulario4" action="{{ route('inscripcion.procesar') }}" method="POST">
-    @csrf
-    <div class="form-section" id="form-step-4">
-        <div class="form-container">
-            <div class="form-column">
-                <div class="form-header">
-                    <h4><i class="fas fa-users"></i> Socios o Accionistas (Persona Moral)</h4>
-                    <p class="subtitle">Agrega los socios o accionistas de la empresa</p>
-                    <div class="percentage-summary">
-                        <div class="progress-bar-container">
-                            <div class="progress-bar" id="percentage-bar"></div>
+        .form-control-shareholder {
+            border: 1px solid #ced4da;
+            padding: 8px;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control-shareholder.valid {
+            border-color: #28a745 !important;
+        }
+
+        .form-control-shareholder.invalid {
+            border-color: #dc3545 !important;
+        }
+
+        .formulario__input-error {
+            color: #dc3545;
+            font-size: 0.85em;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .form-group-shareholder.invalid .formulario__input-error {
+            display: block;
+        }
+
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        /* Shareholder card styles */
+        .shareholder-card {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            padding: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .shareholder-card.expanded {
+            border-color: #9d2449;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .shareholder-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .shareholder-number {
+            background: #9d2449;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .shareholder-title {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .shareholder-percentage {
+            font-size: 14px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .btn-delete-shareholder {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn-add-shareholder {
+            background: #9d2449;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .percentage-input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .percentage-suffix {
+            position: absolute;
+            right: 10px;
+            color: #6c757d;
+        }
+
+        /* Progress bar styles */
+        .progress-bar-container {
+            background: #e9ecef;
+            border-radius: 5px;
+            height: 8px;
+            width: 100%;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .progress-bar {
+            background: #9d2449;
+            height: 100%;
+            width: 0;
+            transition: width 0.3s ease;
+        }
+
+        .progress-bar.complete {
+            background: #28a745;
+        }
+
+        .progress-bar.danger {
+            background: #dc3545;
+        }
+
+        /* Notification styles */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 16px;
+            border-radius: 5px;
+            background-color: white;
+            color: #333;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.3s;
+            max-width: 300px;
+        }
+
+        .notification.error {
+            border-left: 4px solid #dc3545;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 576px) {
+            .form-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        /* CSS Variables for consistency */
+        :root {
+            --primary-color: #9d2449;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --primary-light: #f8d7da;
+            --secondary-light: #e9ecef;
+            --accent-light: #d1ecf1;
+            --accent-color: #0c5460;
+            --secondary-color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <form id="formulario4" action="{{ route('inscripcion.procesar', ['seccion' => 4]) }}" method="POST">
+        @csrf
+        <div class="form-section" id="form-step-4">
+            <div class="form-container">
+                <div class="form-column">
+                    <div class="form-header">
+                        <h4><i class="fas fa-users"></i> Socios o Accionistas (Persona Moral)</h4>
+                        <p class="subtitle">Agrega los socios o accionistas de la empresa</p>
+                        <div class="percentage-summary">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="percentage-bar"></div>
+                            </div>
+                            <span id="percentage-text">0% asignado</span>
                         </div>
-                        <span id="percentage-text">0% asignado</span>
+                    </div>
+
+                    <div class="shareholders-container" id="shareholders-container">
+                        <!-- Tarjetas de accionistas se agregan dinámicamente -->
+                    </div>
+
+                    <button type="button" id="add-shareholder" class="btn-add-shareholder">
+                        <i class="fas fa-plus-circle"></i> Agregar Socio/Accionista
+                    </button>
+                </div>
+            </div>
+            <div id="form-errors" class="alert-danger" style="display: none;"></div>
+        </div>
+        <!-- Campo oculto para almacenar los datos de accionistas como JSON -->
+        <input type="hidden" name="accionistas" id="accionistas-data">
+        <div class="form-buttons">
+            <button type="button" class="btn btn-secondary" onclick="window.history.back();">Anterior</button>
+            <button type="submit" class="btn btn-primary" id="submit-btn" disabled>Siguiente</button>
+        </div>
+    </form>
+
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+    $(document).ready(function() {
+        const container = $('#shareholders-container');
+        const addBtn = $('#add-shareholder');
+        const percentageBar = $('#percentage-bar');
+        const percentageText = $('#percentage-text');
+        const form = $('#formulario4');
+        const accionistasDataInput = $('#accionistas-data');
+
+        let shareholderCount = 0;
+        let activeCard = null;
+        let shareholdersArray = [];
+        const interactedFields = new Set();
+
+        // Validation rules for shareholder fields
+        const validationRules = {
+            name: {
+                pattern: /^[A-Za-z\s]{1,50}$/,
+                message: "El nombre debe contener solo letras y espacios (máx. 50 caracteres).",
+                required: true,
+                label: "Nombre(s)"
+            },
+            lastname1: {
+                pattern: /^[A-Za-z\s]{1,50}$/,
+                message: "El apellido paterno debe contener solo letras y espacios (máx. 50 caracteres).",
+                required: true,
+                label: "Apellido Paterno"
+            },
+            lastname2: {
+                pattern: /^[A-Za-z\s]{0,50}$/,
+                message: "El apellido materno debe contener solo letras y espacios (máx. 50 caracteres).",
+                required: false,
+                label: "Apellido Materno"
+            },
+            percentage: {
+                pattern: /^(?!0(\.0{1,2})?$)\d{1,3}(\.\d{1,2})?$/,
+                message: "El porcentaje debe ser un número entre 0.01 y 100 (máx. 2 decimales).",
+                required: true,
+                label: "Porcentaje de Acciones"
+            }
+        };
+
+        // Debounce function for delayed actions
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Function to validate a single field
+        function isFieldValid(field) {
+            const fieldType = field.attr('id').split('-')[0];
+            const rules = validationRules[fieldType];
+            if (!rules) return true;
+
+            const value = field.val()?.trim();
+
+            if (rules.required && (!value || value === '')) {
+                return false;
+            }
+            if (value && rules.pattern && !rules.pattern.test(value)) {
+                return false;
+            }
+            if (!rules.required && value && rules.pattern && !rules.pattern.test(value)) {
+                return false;
+            }
+
+            if (fieldType === 'percentage') {
+                const numValue = parseFloat(value);
+                if (numValue <= 0 || numValue > 100) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        // Function to update field UI
+        function updateFieldUI(field, showError = false) {
+            const fieldId = field.attr('id');
+            const fieldType = fieldId.split('-')[0];
+            const rules = validationRules[fieldType];
+            if (!rules) return true;
+
+            const group = field.closest('.form-group-shareholder');
+            const isValid = isFieldValid(field);
+
+            // Only update UI if the field has been interacted with
+            if (!interactedFields.has(fieldId)) {
+                group.removeClass('valid invalid');
+                field.removeClass('valid invalid');
+                group.find('.formulario__input-error').hide();
+                return isValid;
+            }
+
+            group.removeClass('valid invalid');
+            field.removeClass('valid invalid');
+
+            if (isValid) {
+                group.addClass('valid');
+                field.addClass('valid');
+                group.find('.formulario__input-error').hide();
+            } else {
+                group.addClass('invalid');
+                field.addClass('invalid');
+                if (showError) {
+                    group.find('.formulario__input-error').text(rules.message).show();
+                } else {
+                    group.find('.formulario__input-error').hide();
+                }
+            }
+
+            return isValid;
+        }
+
+        // Function to check all fields and update submit button
+        function checkAllFields() {
+            let allValid = true;
+            const totalPercentage = updatePercentageSummary();
+
+            if (Math.abs(totalPercentage - 100) > 0.1) {
+                allValid = false;
+            }
+
+            container.find('.form-control-shareholder').each(function() {
+                if (!isFieldValid($(this))) {
+                    allValid = false;
+                }
+            });
+
+            $('#submit-btn').prop('disabled', !allValid);
+        }
+
+        // Function to display form errors
+        function displayFormErrors(errors) {
+            const errorContainer = $('#form-errors');
+            errorContainer.empty().hide();
+
+            if (errors.length > 0) {
+                let errorHtml = '<strong>Error en el formulario:</strong><ul>';
+                errors.forEach(function(error) {
+                    errorHtml += `<li><strong>${error.label}</strong>: ${error.message}</li>`;
+                });
+                errorHtml += '</ul>';
+                errorContainer.html(errorHtml).show();
+            }
+        }
+
+        // Function to show notifications
+        function showNotification(message, type = 'error') {
+            const notification = $('<div>').addClass(`notification ${type}`).text(message);
+            $('body').append(notification);
+            setTimeout(() => {
+                notification.css('opacity', '0');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Function to add a new shareholder
+        function addShareholder() {
+            shareholderCount++;
+            const card = $('<div>').addClass('shareholder-card expanded').attr('data-id', shareholderCount);
+            
+            card.html(`
+                <div class="shareholder-header">
+                    <div class="shareholder-number">${shareholderCount}</div>
+                    <div class="shareholder-title">Socio ${shareholderCount}</div>
+                    <button type="button" class="btn-delete-shareholder" title="Eliminar accionista">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <span class="shareholder-percentage">0%</span>
+                </div>
+                <div class="shareholder-fields">
+                    <div class="form-group-shareholder">
+                        <label for="name-${shareholderCount}">Nombre(s)*</label>
+                        <input type="text" id="name-${shareholderCount}" class="form-control-shareholder" placeholder="Ej: Juan Carlos" required>
+                        <p class="formulario__input-error"></p>
+                    </div>
+                    <div class="form-group-shareholder">
+                        <label for="lastname1-${shareholderCount}">Apellido Paterno*</label>
+                        <input type="text" id="lastname1-${shareholderCount}" class="form-control-shareholder" placeholder="Ej: González" required>
+                        <p class="formulario__input-error"></p>
+                    </div>
+                    <div class="form-group-shareholder">
+                        <label for="lastname2-${shareholderCount}">Apellido Materno</label>
+                        <input type="text" id="lastname2-${shareholderCount}" class="form-control-shareholder" placeholder="Ej: López">
+                        <p class="formulario__input-error"></p>
+                    </div>
+                    <div class="form-group-shareholder">
+                        <label for="percentage-${shareholderCount}">Porcentaje de Acciones*</label>
+                        <div class="percentage-input-container">
+                            <input type="number" id="percentage-${shareholderCount}" 
+                                   class="form-control-shareholder percentage-input" 
+                                   placeholder="Ej: 50" min="0.01" max="100" step="0.01" required>
+                            <span class="percentage-suffix">%</span>
+                        </div>
+                        <p class="formulario__input-error"></p>
                     </div>
                 </div>
+            `);
 
-                <div class="shareholders-container" id="shareholders-container">
-                    <!-- Tarjetas de accionistas se agregan dinámicamente -->
-                </div>
+            container.append(card);
+            activeCard = card;
 
-                <button type="button" id="add-shareholder" class="btn-add-shareholder">
-                    <i class="fas fa-plus-circle"></i> Agregar Socio/Accionista
-                </button>
-            </div>
-        </div>
-    </div>
-    <!-- Campo oculto para almacenar los datos de accionistas como JSON -->
-    <input type="hidden" name="accionistas" id="accionistas-data">
-    <div class="form-buttons">
-        <button type="button" class="btn btn-secondary" onclick="window.history.back();">Anterior</button>
-        <button type="submit" class="btn btn-primary">Siguiente</button>
-    </div>
-</form>
+            shareholdersArray.push({
+                id: shareholderCount,
+                nombre: '',
+                apellido_paterno: '',
+                apellido_materno: '',
+                porcentaje: 0
+            });
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const container = document.getElementById('shareholders-container');
-    const addBtn = document.getElementById('add-shareholder');
-    const percentageBar = document.getElementById('percentage-bar');
-    const percentageText = document.getElementById('percentage-text');
-    const form = document.getElementById('formulario4');
-    const accionistasDataInput = document.getElementById('accionistas-data');
+            updateHiddenField();
+            updatePercentageSummary();
+            checkAllFields();
 
-    let shareholderCount = 0;
-    let activeCard = null;
-    let shareholdersArray = []; // Arreglo para almacenar los datos de los accionistas
-
-    // Función para actualizar el campo oculto con los datos de accionistas
-    function updateHiddenField() {
-        accionistasDataInput.value = JSON.stringify(shareholdersArray);
-        console.log('Campo oculto actualizado con datos:', shareholdersArray);
-    }
-
-    // Función para agregar un nuevo accionista
-    function addShareholder() {
-        shareholderCount++;
-        const card = document.createElement('div');
-        card.className = 'shareholder-card expanded';
-        card.dataset.id = shareholderCount;
-        
-        card.innerHTML = `
-        <div class="shareholder-header">
-            <div class="shareholder-number">${shareholderCount}</div>
-            <div class="shareholder-title">Socio ${shareholderCount}</div>
-            <button type="button" class="btn-delete-shareholder" title="Eliminar accionista">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="shareholder-fields">
-            <div class="form-group-shareholder">
-                <label for="name-${shareholderCount}">Nombre(s)*</label>
-                <input type="text" id="name-${shareholderCount}" class="form-control-shareholder" placeholder="Ej: Juan Carlos" required>
-            </div>
-            <div class="form-group-shareholder">
-                <label for="lastname1-${shareholderCount}">Apellido Paterno*</label>
-                <input type="text" id="lastname1-${shareholderCount}" class="form-control-shareholder" placeholder="Ej: González" required>
-            </div>
-            <div class="form-group-shareholder">
-                <label for="lastname2-${shareholderCount}">Apellido Materno</label>
-                <input type="text" id="lastname2-${shareholderCount}" class="form-control-shareholder" placeholder="Ej: López">
-            </div>
-            <div class="form-group-shareholder">
-                <label for="percentage-${shareholderCount}">Porcentaje de Acciones*</label>
-                <div class="percentage-input-container">
-                    <input type="number" id="percentage-${shareholderCount}" 
-                           class="form-control-shareholder percentage-input" 
-                           placeholder="Ej: 50" min="0" max="100" step="0.01" required>
-                    <span class="percentage-suffix">%</span>
-                </div>
-            </div>
-        </div>
-        `;
-
-        container.appendChild(card);
-        
-        activeCard = card;
-
-        // Agregar el indicador de porcentaje para vista compacta
-        const headerDiv = card.querySelector('.shareholder-header');
-        const percentageSpan = document.createElement('span');
-        percentageSpan.className = 'shareholder-percentage';
-        percentageSpan.textContent = '0%';
-        headerDiv.appendChild(percentageSpan);
-
-        // Enfocar el primer campo del nuevo accionista
-        const firstInput = card.querySelector('input');
-        if (firstInput) firstInput.focus();
-
-        // Agregar nuevo accionista al arreglo
-        shareholdersArray.push({
-            id: shareholderCount,
-            nombre: '',
-            apellido_paterno: '',
-            apellido_materno: '',
-            porcentaje: 0
-        });
-
-        console.log('Accionistas actualizados:', shareholdersArray);
-        
-        // Actualizar el campo oculto inmediatamente
-        updateHiddenField();
-        updatePercentageSummary();
-    }
-
-    // Función para eliminar un accionista
-    function deleteShareholder(card) {
-        if (container.children.length > 1) {
-            card.style.opacity = '0';
-            card.style.transform = 'scale(0.9)';
-            
-            setTimeout(() => {
-                // Remover del arreglo
-                const id = parseInt(card.dataset.id);
-                shareholdersArray = shareholdersArray.filter(shareholder => shareholder.id !== id);
-                
-                card.remove();
-                updateShareholderNumbers();
-                updatePercentageSummary();
-                
-                // Actualizar el campo oculto después de eliminar
-                updateHiddenField();
-                console.log('Accionistas actualizados tras eliminar:', shareholdersArray);
-            }, 300);
-        } else {
-            showNotification('Debe haber al menos un socio/accionista registrado.', 'warning');
+            card.find('input').first().focus();
         }
-    }
 
-    // Función para mostrar notificaciones
-    function showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.textContent = message;
-        
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            notification.style.opacity = '0';
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
-    }
+        // Function to delete a shareholder
+        function deleteShareholder(card) {
+            if (container.children().length > 1) {
+                card.css({ opacity: '0', transform: 'scale(0.9)' });
+                setTimeout(() => {
+                    const id = parseInt(card.data('id'));
+                    shareholdersArray = shareholdersArray.filter(sh => sh.id !== id);
+                    card.remove();
+                    updateShareholderNumbers();
+                    updatePercentageSummary();
+                    updateHiddenField();
+                    checkAllFields();
+                }, 300);
+            } else {
+                showNotification('Debe haber al menos un socio/accionista registrado.', 'error');
+            }
+        }
 
-    // Función para actualizar los números de los accionistas
-    function updateShareholderNumbers() {
-        const cards = container.querySelectorAll('.shareholder-card');
-        cards.forEach((card, index) => {
-            const number = index + 1;
-            card.querySelector('.shareholder-number').textContent = number;
-            
-            const titleElement = card.querySelector('.shareholder-title');
-            const nameInput = card.querySelector('input[id^="name-"]');
-            const lastname1Input = card.querySelector('input[id^="lastname1-"]');
-            const lastname2Input = card.querySelector('input[id^="lastname2-"]');
-            
-            if (nameInput || lastname1Input || lastname2Input) {
+        // Function to update shareholder numbers
+        function updateShareholderNumbers() {
+            container.find('.shareholder-card').each(function(index) {
+                const number = index + 1;
+                const card = $(this);
+                card.find('.shareholder-number').text(number);
+                const id = parseInt(card.data('id'));
+                const shareholder = shareholdersArray.find(sh => sh.id === id);
+                if (shareholder) {
+                    shareholder.id = number;
+                    card.data('id', number);
+                }
                 updateCardTitle(card);
-            } else {
-                titleElement.textContent = `Socio ${number}`;
-            }
-
-            // Actualizar el ID en el arreglo
-            const id = parseInt(card.dataset.id);
-            const shareholder = shareholdersArray.find(sh => sh.id === id);
-            if (shareholder) {
-                shareholder.id = number;
-                card.dataset.id = number;
-            }
-        });
-        shareholderCount = cards.length;
-        
-        // Actualizar el campo oculto después de reordenar
-        updateHiddenField();
-    }
-
-    // Función para actualizar el título de la tarjeta con el nombre completo
-    function updateCardTitle(card) {
-        const id = parseInt(card.dataset.id);
-        const nameInput = card.querySelector('input[id^="name-"]');
-        const lastname1Input = card.querySelector('input[id^="lastname1-"]');
-        const lastname2Input = card.querySelector('input[id^="lastname2-"]');
-        const percentageInput = card.querySelector('.percentage-input');
-        
-        const name = nameInput ? nameInput.value.trim() : '';
-        const lastname1 = lastname1Input ? lastname1Input.value.trim() : '';
-        const lastname2 = lastname2Input ? lastname2Input.value.trim() : '';
-        const percentage = percentageInput ? parseFloat(percentageInput.value || 0).toFixed(2) : '0.00';
-        
-        const titleElement = card.querySelector('.shareholder-title');
-        const percentageElement = card.querySelector('.shareholder-percentage');
-        
-        let fullname = '';
-        if (name) fullname += name;
-        if (lastname1) {
-            if (fullname) fullname += ' ';
-            fullname += lastname1;
-        }
-        if (lastname2) {
-            if (fullname) fullname += ' ';
-            fullname += lastname2;
-        }
-        
-        if (fullname) {
-            titleElement.textContent = fullname;
-        } else {
-            const number = card.querySelector('.shareholder-number').textContent;
-            titleElement.textContent = `Socio ${number}`;
-        }
-        
-        if (percentageElement) {
-            percentageElement.textContent = `${percentage}%`;
-            
-            if (percentage > 50) {
-                percentageElement.style.backgroundColor = 'var(--primary-light)';
-                percentageElement.style.color = 'var(--primary-color)';
-            } else if (percentage > 20) {
-                percentageElement.style.backgroundColor = 'var(--accent-light)';
-                percentageElement.style.color = 'var(--accent-color)';
-            } else {
-                percentageElement.style.backgroundColor = 'var(--secondary-light)';
-                percentageElement.style.color = 'var(--secondary-color)';
-            }
-        }
-
-        // Actualizar el arreglo
-        const shareholder = shareholdersArray.find(sh => sh.id === id);
-        if (shareholder) {
-            shareholder.nombre = name;
-            shareholder.apellido_paterno = lastname1;
-            shareholder.apellido_materno = lastname2;
-            shareholder.porcentaje = parseFloat(percentage) || 0;
-            
-            // Actualizar el campo oculto después de modificar datos
+            });
+            shareholderCount = container.find('.shareholder-card').length;
             updateHiddenField();
         }
-    }
 
-    // Función para contraer todas las tarjetas excepto la activa
-    function collapseOtherCards(activeCardId) {
-        const cards = container.querySelectorAll('.shareholder-card');
-        cards.forEach(card => {
-            if (card.dataset.id !== activeCardId) {
-                card.classList.remove('expanded');
+        // Function to update card title
+        function updateCardTitle(card) {
+            const id = parseInt(card.data('id'));
+            const nameInput = card.find('input[id^="name-"]');
+            const lastname1Input = card.find('input[id^="lastname1-"]');
+            const lastname2Input = card.find('input[id^="lastname2-"]');
+            const percentageInput = card.find('.percentage-input');
+
+            const name = nameInput.val()?.trim() || '';
+            const lastname1 = lastname1Input.val()?.trim() || '';
+            const lastname2 = lastname2Input.val()?.trim() || '';
+            const percentage = parseFloat(percentageInput.val() || 0).toFixed(2);
+
+            const titleElement = card.find('.shareholder-title');
+            const percentageElement = card.find('.shareholder-percentage');
+
+            let fullname = [name, lastname1, lastname2].filter(Boolean).join(' ');
+            titleElement.text(fullname || `Socio ${card.find('.shareholder-number').text()}`);
+
+            percentageElement.text(`${percentage}%`);
+            percentageElement.css({
+                backgroundColor: percentage > 50 ? 'var(--primary-light)' :
+                                percentage > 20 ? 'var(--accent-light)' : 'var(--secondary-light)',
+                color: percentage > 50 ? 'var(--primary-color)' :
+                       percentage > 20 ? 'var(--accent-color)' : 'var(--secondary-color)'
+            });
+
+            const shareholder = shareholdersArray.find(sh => sh.id === id);
+            if (shareholder) {
+                shareholder.nombre = name;
+                shareholder.apellido_paterno = lastname1;
+                shareholder.apellido_materno = lastname2;
+                shareholder.porcentaje = parseFloat(percentage) || 0;
+                updateHiddenField();
+            }
+        }
+
+        // Function to update hidden field
+        function updateHiddenField() {
+            accionistasDataInput.val(JSON.stringify(shareholdersArray));
+        }
+
+        // Function to update percentage summary
+        function updatePercentageSummary() {
+            const inputs = container.find('.percentage-input');
+            let total = 0;
+
+            inputs.each(function() {
+                total += parseFloat($(this).val()) || 0;
+            });
+
+            const percentage = Math.min(total, 100);
+            percentageBar.css('width', `${percentage}%`);
+            percentageBar.removeClass('complete danger');
+
+            if (total > 100) {
+                percentageText.text(`⚠️ ${total.toFixed(2)}% (Excede el 100%)`).css('color', 'var(--danger-color)');
+                percentageBar.addClass('danger');
+            } else if (Math.abs(total - 100) < 0.1) {
+                percentageText.text(`✓ ${total.toFixed(2)}% (Completo)`).css('color', 'var(--success-color)');
+                percentageBar.addClass('complete');
+            } else {
+                percentageText.text(`${total.toFixed(2)}% asignado`).css('color', 'var(--primary-color)');
+            }
+
+            return total;
+        }
+
+        // Function to collapse other cards
+        function collapseOtherCards(activeCardId) {
+            container.find('.shareholder-card').each(function() {
+                if ($(this).data('id') != activeCardId) {
+                    $(this).removeClass('expanded');
+                }
+            });
+        }
+
+        // Input filtering
+        container.on('keypress', 'input[id^="name-"], input[id^="lastname1-"], input[id^="lastname2-"]', function(e) {
+            const char = String.fromCharCode(e.which);
+            if (!/[A-Za-z\s]/.test(char)) {
+                e.preventDefault();
             }
         });
-    }
 
-    // Función para calcular y mostrar el resumen de porcentajes
-    function updatePercentageSummary() {
-        const inputs = container.querySelectorAll('.percentage-input');
-        let total = 0;
-
-        inputs.forEach(input => {
-            const value = parseFloat(input.value) || 0;
-            total += value;
+        container.on('keypress', 'input[id^="percentage-"]', function(e) {
+            const char = String.fromCharCode(e.which);
+            const value = $(this).val();
+            if (!/[0-9.]/.test(char) || (char === '.' && value.includes('.'))) {
+                e.preventDefault();
+            }
         });
 
-        const percentage = Math.min(total, 100);
-        percentageBar.style.width = `${percentage}%`;
-        
-        percentageBar.classList.remove('complete', 'warning', 'danger');
-        
-        if (total > 100) {
-            percentageText.textContent = `⚠️ ${total.toFixed(2)}% (Excede el 100%)`;
-            percentageText.style.color = 'var(--danger-color)';
-            percentageBar.classList.add('danger');
-        } else if (total === 100) {
-            percentageText.textContent = `✓ ${total.toFixed(2)}% (Completo)`;
-            percentageText.style.color = 'var(--success-color)';
-            percentageBar.classList.add('complete');
-        } else {
-            percentageText.textContent = `${total.toFixed(2)}% asignado`;
-            percentageText.style.color = 'var(--primary-color)';
-        }
+        // Real-time validation
+        container.on('input', 'input[id^="name-"], input[id^="lastname1-"], input[id^="lastname2-"]', function() {
+            const field = $(this);
+            const fieldId = field.attr('id');
+            interactedFields.add(fieldId);
+            updateFieldUI(field, true);
+            updateCardTitle(field.closest('.shareholder-card'));
+            checkAllFields();
+        });
 
-        return total;
-    }
-
-    // Event listeners
-    addBtn.addEventListener('click', () => {
-        collapseOtherCards(null);
-        addShareholder();
-    });
-
-    container.addEventListener('click', (e) => {
-        const card = e.target.closest('.shareholder-card');
-        if (!card) return;
-
-        if (e.target.closest('.btn-delete-shareholder')) {
-            deleteShareholder(card);
-        } else if (!card.classList.contains('expanded')) {
-            collapseOtherCards(card.dataset.id);
-            card.classList.add('expanded');
-            activeCard = card;
-        }
-    });
-
-    container.addEventListener('input', (e) => {
-        if (!e.target.matches('input')) return;
-        
-        const card = e.target.closest('.shareholder-card');
-        if (!card) return;
-        
-        if (e.target.id.startsWith('name-') || 
-            e.target.id.startsWith('lastname1-') || 
-            e.target.id.startsWith('lastname2-')) {
-            updateCardTitle(card);
-        }
-        
-        if (e.target.classList.contains('percentage-input')) {
-            if (parseFloat(e.target.value) > 100) {
-                e.target.value = 100;
-            }
+        container.on('input', 'input[id^="percentage-"]', function() {
+            const field = $(this);
+            const fieldId = field.attr('id');
+            interactedFields.add(fieldId);
+            const value = parseFloat(field.val());
+            if (value > 100) field.val(100);
+            updateFieldUI(field, true);
             updatePercentageSummary();
-            updateCardTitle(card);
-        }
-    });
+            updateCardTitle(field.closest('.shareholder-card'));
+            checkAllFields();
+        });
 
-    container.addEventListener('focusout', (e) => {
-        if (!e.target.matches('input')) return;
-        
-        const card = e.target.closest('.shareholder-card');
-        if (!card) return;
-        
-        setTimeout(() => {
-            const activeElement = document.activeElement;
-            if (!card.contains(activeElement) && !e.target.closest('.btn-delete-shareholder')) {
-                card.classList.remove('expanded');
+        const showErrorMessage = debounce(function(field) {
+            const fieldId = field.attr('id');
+            if (interactedFields.has(fieldId)) {
+                updateFieldUI(field, true);
             }
-        }, 100);
-    });
+            checkAllFields();
+        }, 500);
 
-    // Validar y enviar el formulario
-    form.addEventListener('submit', (e) => {
-        e.preventDefault(); // Prevenir el envío predeterminado para validar
+        container.on('input', 'input.form-control-shareholder', function() {
+            showErrorMessage($(this));
+        });
 
-        const totalPercentage = updatePercentageSummary();
+        // Event listeners
+        addBtn.on('click', function() {
+            collapseOtherCards(null);
+            addShareholder();
+        });
 
-        // Validar que el porcentaje total sea 100%
-        if (Math.abs(totalPercentage - 100) > 0.1) {
-            showNotification('El porcentaje total debe ser exactamente 100%.', 'error');
-            return;
-        }
+        container.on('click', '.btn-delete-shareholder', function() {
+            const card = $(this).closest('.shareholder-card');
+            deleteShareholder(card);
+        });
 
-        // Validar que todos los campos requeridos estén completos
-        let hasErrors = false;
-        shareholdersArray.forEach((shareholder, index) => {
-            if (!shareholder.nombre || !shareholder.apellido_paterno || shareholder.porcentaje <= 0) {
-                showNotification(`El accionista ${index + 1} debe tener nombre, apellido paterno y un porcentaje mayor a 0.`, 'error');
+        container.on('click', '.shareholder-card', function(e) {
+            const card = $(this);
+            if (!$(e.target).closest('.btn-delete-shareholder').length && !card.hasClass('expanded')) {
+                collapseOtherCards(card.data('id'));
+                card.addClass('expanded');
+                activeCard = card;
+            }
+        });
+
+        container.on('focusout', 'input', function(e) {
+            const card = $(this).closest('.shareholder-card');
+            setTimeout(() => {
+                if (!card[0].contains(document.activeElement) && !$(e.target).closest('.btn-delete-shareholder').length) {
+                    card.removeClass('expanded');
+                }
+            }, 100);
+        });
+
+        // Form submission
+        form.on('submit', function(e) {
+            e.preventDefault();
+
+            const totalPercentage = updatePercentageSummary();
+            let hasErrors = false;
+            const errors = [];
+
+            if (Math.abs(totalPercentage - 100) > 0.1) {
+                errors.push({
+                    label: "Porcentaje Total",
+                    message: "El porcentaje total debe ser exactamente 100%."
+                });
                 hasErrors = true;
             }
+
+            container.find('.shareholder-card').each(function(index) {
+                const card = $(this);
+                const id = parseInt(card.data('id'));
+                const shareholder = shareholdersArray.find(sh => sh.id === id);
+                const fields = [
+                    { selector: `input[id="name-${id}"]`, type: 'name' },
+                    { selector: `input[id="lastname1-${id}"]`, type: 'lastname1' },
+                    { selector: `input[id="lastname2-${id}"]`, type: 'lastname2' },
+                    { selector: `input[id="percentage-${id}"]`, type: 'percentage' }
+                ];
+
+                fields.forEach(field => {
+                    const input = card.find(field.selector);
+                    const fieldId = input.attr('id');
+                    const isValid = isFieldValid(input);
+                    const hasValue = input.val()?.trim();
+
+                    // Only show UI errors for interacted fields or fields with invalid non-empty content
+                    if (interactedFields.has(fieldId) || (hasValue && !isValid)) {
+                        if (!updateFieldUI(input, true)) {
+                            hasErrors = true;
+                            errors.push({
+                                label: `Socio ${index + 1} - ${validationRules[field.type].label}`,
+                                message: validationRules[field.type].message
+                            });
+                        }
+                    } else if (!isValid && validationRules[field.type].required) {
+                        // For untouched required fields, add error without UI change
+                        hasErrors = true;
+                        errors.push({
+                            label: `Socio ${index + 1} - ${validationRules[field.type].label}`,
+                            message: validationRules[field.type].message
+                        });
+                    }
+                });
+
+                if (!shareholder.nombre || !shareholder.apellido_paterno || shareholder.porcentaje <= 0) {
+                    hasErrors = true;
+                    errors.push({
+                        label: `Socio ${index + 1}`,
+                        message: "Debe tener nombre, apellido paterno y un porcentaje mayor a 0."
+                    });
+                }
+            });
+
+            displayFormErrors(errors);
+
+            if (hasErrors) {
+                showNotification('Por favor, corrija los errores en el formulario.', 'error');
+                checkAllFields();
+                return;
+            }
+
+            updateHiddenField();
+            form[0].submit();
         });
 
-        if (hasErrors) return;
-
-        // Actualizar una última vez el campo oculto antes de enviar
-        updateHiddenField();
-
-        console.log('Enviando datos al servidor:', shareholdersArray);
-        console.log('Valor del campo oculto:', accionistasDataInput.value);
-
-        // Enviar el formulario
-        form.submit();
+        // Initialize with one shareholdera
+        addShareholder();
     });
-
-    // Agregar primer accionista por defecto
-    addShareholder();
-});
-</script>
+    </script>
+</body>
+</html>
