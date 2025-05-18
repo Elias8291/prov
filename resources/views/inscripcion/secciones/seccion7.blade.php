@@ -7,4 +7,9 @@
         <p>Tus datos han sido recibidos y serán revisados pronto. Gracias por tu confianza.</p>
         <button class="return-button">Volver al inicio</button>
     </div>
+    <div class="success-image">
+
+
+         <img src="{{ asset('assets/imagenes/hombre_exito.png') }}" alt="Asistente" class="welcome-image">
+    </div>
 </div>
