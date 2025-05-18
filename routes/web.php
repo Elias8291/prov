@@ -106,4 +106,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/documentos/{documento}/edit', [DocumentoController::class, 'edit'])->name('documentos.edit');
     Route::put('/documentos/{documento}', [DocumentoController::class, 'update'])->name('documentos.update');
     Route::delete('/documentos/{documento}', [DocumentoController::class, 'destroy'])->name('documentos.destroy');
+    Route::post('/inscripcion/documento/upload', [InscripcionController::class, 'subirDocumento'])
+    ->name('inscripcion.documento.upload');
 });

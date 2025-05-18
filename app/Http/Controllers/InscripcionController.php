@@ -22,61 +22,53 @@ use App\Models\Estado;
 
 class InscripcionController extends Controller
 {
-    // Muestra la sección actual del formulario de inscripción
+   
    public function mostrarFormulario(Request $request)
 {
     $user = Auth::user();
     $solicitante = $user->solicitante;
     $isRevisor = $user->hasRole('revisor');
 
-
     if ($isRevisor && !$solicitante) {
-        $tipoPersona = 'Física'; 
+        $tipoPersona = 'Física';
         $tramite = null;
-        $seccion = 1; 
+        $seccion = 1;
         $totalSecciones = $this->obtenerTotalSecciones($tipoPersona);
         $datosPrevios = [];
         $porcentaje = 0;
         $seccionesCompletadas = 0;
         $isConfirmationSection = false;
-        $direccion = null; // No dirección para revisores sin solicitante
-        $estados = $this->cargarEstados(); // Cargar estados para todas las secciones
+        $direccion = null;
+        $estados = $this->cargarEstados();
     } else {
-        // Ensure solicitante exists for non-revisors
         if (!$solicitante) {
             return redirect()->route('dashboard')->withErrors(['error' => 'No tienes un perfil de solicitante asociado.']);
         }
 
         $tipoPersona = $solicitante->tipo_persona ?? 'No definido';
 
-        // Buscar trámite pendiente
         $tramite = Tramite::where('solicitante_id', $solicitante->id)
             ->where('estado', 'Pendiente')
-            ->with('detalleTramite.direccion') // Cargar detalle_tramite y dirección
+            ->with('detalleTramite.direccion')
             ->first();
 
-        // Si no existe trámite, redirigir a términos y condiciones (except for revisors)
         if (!$tramite && !$isRevisor) {
             return redirect()->route('inscripcion.terminos_y_condiciones');
         }
 
-        // Si el trámite está en progreso_tramite 0, enviar a términos (except for revisors)
         if ($tramite && $tramite->progreso_tramite == 0 && !$isRevisor) {
             return redirect()->route('inscripcion.terminos_y_condiciones');
         }
 
-        // Permitir retroceder si el usuario da clic en "Anterior"
         if ($request->has('retroceder') && $tramite && $tramite->progreso_tramite > 1) {
             $tramite->decrement('progreso_tramite');
         }
 
         $seccion = $tramite ? $tramite->progreso_tramite : 1;
         $totalSecciones = $this->obtenerTotalSecciones($tipoPersona);
-        
-        // Determinar si es la sección de confirmación
+
         $isConfirmationSection = ($tipoPersona == 'Física' && $seccion == 4) || ($tipoPersona == 'Moral' && $seccion == 7);
 
-        // Calcular progreso basado en secciones completadas
         if ($isConfirmationSection) {
             $porcentaje = 100;
             $seccionesCompletadas = $totalSecciones;
@@ -85,17 +77,14 @@ class InscripcionController extends Controller
             $porcentaje = $totalSecciones > 0 ? round(($seccionesCompletadas / $totalSecciones) * 100) : 0;
         }
 
-        // Cargar datos previos para autocompletar
-        $datosPrevios = $tramite && method_exists($tramite, 'getDatosPorSeccion') 
+        $datosPrevios = $tramite && method_exists($tramite, 'getDatosPorSeccion')
             ? $tramite->getDatosPorSeccion($seccion)
             : [];
 
-        // Añadir CURP a datosPrevios para solicitante con tipo_persona Física en sección 1
         if ($tipoPersona == 'Física' && $seccion == 1 && $user->hasRole('solicitante')) {
             $datosPrevios['curp'] = $solicitante->curp ?? 'No disponible';
         }
 
-        // Cargar datos de dirección para la sección 2
         if ($seccion == 2 && $tramite && $tramite->detalleTramite && $tramite->detalleTramite->direccion) {
             $direccion = $tramite->detalleTramite->direccion;
             $datosPrevios['codigo_postal'] = $direccion->codigo_postal ?? '';
@@ -104,7 +93,6 @@ class InscripcionController extends Controller
             $datosPrevios['numero_interior'] = $direccion->numero_interior ?? '';
             $datosPrevios['entre_calle_1'] = $direccion->entre_calle_1 ?? '';
             $datosPrevios['entre_calle_2'] = $direccion->entre_calle_2 ?? '';
-            // Cargar datos de asentamiento, municipio y estado si es necesario
             if ($direccion->asentamiento) {
                 $datosPrevios['colonia'] = $direccion->asentamiento->nombre ?? '';
                 $datosPrevios['municipio'] = $direccion->asentamiento->localidad->municipio->nombre ?? '';
@@ -114,7 +102,6 @@ class InscripcionController extends Controller
             $direccion = null;
         }
 
-        // Cargar datos de apoderado legal para la sección 5
         if ($seccion == 5 && $tramite && $tramite->detalleTramite && $tramite->detalleTramite->apoderadoLegal) {
             $apoderadoLegal = $tramite->detalleTramite->apoderadoLegal;
             $datosPrevios['nombre-apoderado'] = $apoderadoLegal->nombre ?? '';
@@ -127,11 +114,9 @@ class InscripcionController extends Controller
             $datosPrevios['fecha-inscripcion'] = $apoderadoLegal->instrumento_notarial->fecha_registro ?? '';
         }
 
-        // Cargar estados para el formulario (para todas las secciones que lo necesiten)
         $estados = $this->cargarEstados();
     }
 
-    // Cargar sectores para el formulario
     $sectores = Sector::all()->map(function ($sector) {
         return [
             'id' => $sector->id,
@@ -139,49 +124,88 @@ class InscripcionController extends Controller
         ];
     })->toArray();
 
-    // Cargar documentos para la sección 6
     $documentos = [
         'common' => [],
         'specific' => [],
     ];
 
     if ($seccion == 6 || ($tipoPersona == 'Física' && $seccion == 3)) {
-        // Documentos comunes (tipo_persona = 'Ambas')
         $documentos['common'] = Documento::where('tipo_persona', 'Ambas')
             ->where('es_visible', true)
             ->get(['id', 'nombre', 'descripcion', 'tipo'])
             ->toArray();
 
-        // Documentos específicos (tipo_persona = Física o Moral)
         $documentos['specific'] = Documento::where('tipo_persona', $tipoPersona)
             ->where('es_visible', true)
             ->get(['id', 'nombre', 'descripcion', 'tipo'])
             ->toArray();
     }
 
-    // Determinar el nombre del partial de la sección
-    $seccionPartial = $this->obtenerSeccionPartial($seccion, $tipoPersona);
+    // NUEVO: Obtener documentos subidos para el trámite actual
+    $documentosSubidos = [];
+    if (!empty($tramite)) {
+        $documentosSubidos = \App\Models\DocumentoSolicitante::where('tramite_id', $tramite->id)
+            ->get()
+            ->keyBy('documento_id');
+    }
 
-    // Pass $tramite to the view
+    $seccionPartial = $this->obtenerSeccionPartial($seccion ?? 1, $tipoPersona ?? 'Física');
+
     return view('inscripcion.formularios', [
-        'seccion' => $seccion,
+        'seccion' => $seccion ?? 1,
         'seccionPartial' => $seccionPartial,
-        'totalSecciones' => $totalSecciones,
-        'porcentaje' => $porcentaje,
-        'tipoPersona' => $tipoPersona,
-        'seccionesInfo' => $this->obtenerSecciones($tipoPersona),
-        'datosPrevios' => $datosPrevios,
-        'isConfirmationSection' => $isConfirmationSection,
-        'mostrarCurp' => ($tipoPersona == 'Física' && $user->hasRole('solicitante') && $seccion == 1),
+        'totalSecciones' => $totalSecciones ?? 1,
+        'porcentaje' => $porcentaje ?? 0,
+        'tipoPersona' => $tipoPersona ?? 'Física',
+        'seccionesInfo' => $this->obtenerSecciones($tipoPersona ?? 'Física'),
+        'datosPrevios' => $datosPrevios ?? [],
+        'isConfirmationSection' => $isConfirmationSection ?? false,
+        'mostrarCurp' => ($tipoPersona ?? 'Física') == 'Física' && $user->hasRole('solicitante') && ($seccion ?? 1) == 1,
         'sectores' => $sectores,
         'isRevisor' => $isRevisor,
-        'direccion' => $direccion,
-        'estados' => $estados, // Ahora disponible para todas las secciones
-        'tramite' => $tramite, // Explicitly pass $tramite
-        'documentos' => $documentos, // Pass documents to the view
+        'direccion' => $direccion ?? null,
+        'estados' => $estados ?? [],
+        'tramite' => $tramite ?? null,
+        'documentos' => $documentos,
+        'documentosSubidos' => $documentosSubidos, // Lo importante para mostrar ya subidos
     ]);
 }
+public function subirDocumento(Request $request)
+{
+    $user = Auth::user();
+    $solicitante = $user->solicitante;
+    $tramite = \App\Models\Tramite::where('solicitante_id', $solicitante->id)
+        ->where('estado', 'Pendiente')
+        ->first();
 
+    // Validar input
+    $request->validate([
+        'documento_id' => 'required|exists:documento,id',
+        'archivo' => 'required|file|mimes:pdf|max:10240', // 10MB
+    ]);
+
+    $documento = \App\Models\Documento::find($request->input('documento_id'));
+    $archivo = $request->file('archivo');
+    $nombreArchivo = uniqid('doc_'.$documento->id.'_').'.pdf';
+    $ruta = $archivo->storeAs('documentos_solicitante/'.$tramite->id, $nombreArchivo, 'public');
+
+    // Crear registro en documento_solicitante usando los campos correctos
+    $docSolicitante = new \App\Models\DocumentoSolicitante();
+    $docSolicitante->tramite_id = $tramite->id;
+    $docSolicitante->documento_id = $documento->id;
+    $docSolicitante->fecha_entrega = now(); // Asigna la fecha de subida
+    $docSolicitante->estado = 'Pendiente'; // o el estado inicial que manejes
+    $docSolicitante->version_documento = 1;
+    $docSolicitante->ruta_archivo = $ruta;
+    $docSolicitante->save();
+
+    return response()->json([
+        'success' => true,
+        'ruta' => Storage::disk('public')->url($ruta),
+        'docSolicitanteId' => $docSolicitante->id,
+        'mensaje' => 'Documento subido correctamente',
+    ]);
+}
     private function cargarEstados()
     {
         // Usar el FQCN (Fully Qualified Class Name) para evitar ambigüedad

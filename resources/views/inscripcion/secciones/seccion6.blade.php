@@ -1,9 +1,9 @@
-<form id="formulario6" action="{{ route('inscripcion.procesar') }}" method="POST" enctype="multipart/form-data">
+<form id="formulario6">
     @csrf
     <div id="section-6" class="form-section">
         <div class="form-container">
             <div class="form-column">
-                <!-- Documentos para ambos (Persona Física y Persona Moral) -->
+                <!-- Documentos para Ambos (Persona Física y Moral) -->
                 <div class="document-category">
                     <div class="folder-item shared-docs">
                         <div class="folder-icon">
@@ -13,17 +13,22 @@
                             <h5>Documentos para Ambos (Persona Física y Persona Moral)</h5>
                         </div>
                         <div class="folder-actions">
-                            <button type="button" class="action-btn more-btn"><i class="fas fa-ellipsis-v"></i></button>
+                            <button type="button" class="action-btn more-btn">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
                         </div>
                     </div>
-
                     <div class="folder-contents">
                         @if (empty($documentos['common']))
                             <p>No hay documentos comunes disponibles.</p>
                         @else
                             @foreach ($documentos['common'] as $documento)
                                 @php
-                                    $fieldName = str_replace(' ', '_', strtolower(preg_replace('/[^A-Za-z0-9\s]/', '', $documento['nombre'])));
+                                    $fieldName = str_replace(
+                                        ' ',
+                                        '_',
+                                        strtolower(preg_replace('/[^A-Za-z0-9\s]/', '', $documento['nombre'])),
+                                    );
                                     $iconClass = match (true) {
                                         stripos($documento['nombre'], 'Identificación') !== false => 'fa-id-card',
                                         stripos($documento['nombre'], 'Domicilio') !== false => 'fa-home',
@@ -33,9 +38,10 @@
                                         stripos($documento['nombre'], 'Situación') !== false => 'fa-file-invoice',
                                         default => 'fa-file-alt',
                                     };
+                                    $docSubido = $documentosSubidos[$documento['id']] ?? null;
                                 @endphp
 
-                                <div class="file-item formulario__grupo" id="grupo__{{ $fieldName }}">
+                                <div class="file-item formulario__grupo {{ $docSubido ? 'file-uploaded' : '' }}" id="grupo__{{ $fieldName }}">
                                     <div class="file-icon">
                                         <i class="fas {{ $iconClass }}"></i>
                                     </div>
@@ -44,18 +50,33 @@
                                         <span class="file-type">PDF</span>
                                         <span class="file-description">{{ $documento['descripcion'] ?? 'Sin descripción' }}</span>
                                     </div>
-                                    <div class="file-upload">
-                                        <input type="file" id="{{ $fieldName }}" name="{{ $fieldName }}"
-                                               class="file-upload-input" accept=".pdf">
+                                    <div class="file-upload" style="{{ $docSubido ? 'display:none' : '' }}">
+                                        <input type="file"
+                                               id="{{ $fieldName }}"
+                                               name="{{ $fieldName }}"
+                                               class="file-upload-input"
+                                               accept=".pdf"
+                                               data-documento-id="{{ $documento['id'] }}"
+                                               {{ $docSubido ? 'disabled' : '' }}>
                                         <label for="{{ $fieldName }}" class="file-upload-label">Subir</label>
                                     </div>
-                                    <div class="file-status" data-status="pending">
-                                        <span class="status-icon"><i class="fas fa-clock"></i></span>
-                                        <span class="status-text">Pendiente</span>
+                                    <div class="file-status" data-status="{{ $docSubido ? 'pending-review' : 'pending' }}">
+                                        <span class="status-icon">
+                                            <i class="fas {{ $docSubido ? 'fa-hourglass-half' : 'fa-clock' }}"></i>
+                                        </span>
+                                        <span class="status-text">
+                                            {{ $docSubido ? 'Pendiente por revisión' : 'Pendiente' }}
+                                        </span>
                                     </div>
-                                    <div class="file-preview" style="display: none;">
-                                        <button type="button" class="preview-btn" title="Ver PDF"><i
-                                                class="fas fa-eye"></i></button>
+                                    <div class="file-preview" style="{{ $docSubido ? '' : 'display:none' }}">
+                                        @if($docSubido)
+                                            <button type="button" class="preview-btn" title="Ver PDF"
+                                                    onclick="window.open('{{ Storage::disk('public')->url($docSubido->ruta_archivo) }}', '_blank')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        @else
+                                            <button type="button" class="preview-btn" title="Ver PDF"><i class="fas fa-eye"></i></button>
+                                        @endif
                                     </div>
                                     <p class="formulario__input-error">Por favor suba un archivo PDF válido (máximo 10 MB).</p>
                                 </div>
@@ -74,8 +95,9 @@
                             <h5>Documentos Exclusivos para Persona {{ $tipoPersona }}</h5>
                         </div>
                         <div class="folder-actions">
-                            <button type="button" class="action-btn more-btn"><i
-                                    class="fas fa-ellipsis-v"></i></button>
+                            <button type="button" class="action-btn more-btn">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
                         </div>
                     </div>
 
@@ -85,7 +107,11 @@
                         @else
                             @foreach ($documentos['specific'] as $documento)
                                 @php
-                                    $fieldName = str_replace(' ', '_', strtolower(preg_replace('/[^A-Za-z0-9\s]/', '', $documento['nombre'])));
+                                    $fieldName = str_replace(
+                                        ' ',
+                                        '_',
+                                        strtolower(preg_replace('/[^A-Za-z0-9\s]/', '', $documento['nombre'])),
+                                    );
                                     $iconClass = match (true) {
                                         stripos($documento['nombre'], 'CURP') !== false => 'fa-id-badge',
                                         stripos($documento['nombre'], 'Nacimiento') !== false => 'fa-certificate',
@@ -94,9 +120,10 @@
                                         stripos($documento['nombre'], 'Poder') !== false => 'fa-stamp',
                                         default => 'fa-file-alt',
                                     };
+                                    $docSubido = $documentosSubidos[$documento['id']] ?? null;
                                 @endphp
 
-                                <div class="file-item formulario__grupo" id="grupo__{{ $fieldName }}">
+                                <div class="file-item formulario__grupo {{ $docSubido ? 'file-uploaded' : '' }}" id="grupo__{{ $fieldName }}">
                                     <div class="file-icon">
                                         <i class="fas {{ $iconClass }}"></i>
                                     </div>
@@ -105,18 +132,33 @@
                                         <span class="file-type">PDF</span>
                                         <span class="file-description">{{ $documento['descripcion'] ?? 'Sin descripción' }}</span>
                                     </div>
-                                    <div class="file-upload">
-                                        <input type="file" id="{{ $fieldName }}" name="{{ $fieldName }}"
-                                               class="file-upload-input" accept=".pdf">
+                                    <div class="file-upload" style="{{ $docSubido ? 'display:none' : '' }}">
+                                        <input type="file"
+                                               id="{{ $fieldName }}"
+                                               name="{{ $fieldName }}"
+                                               class="file-upload-input"
+                                               accept=".pdf"
+                                               data-documento-id="{{ $documento['id'] }}"
+                                               {{ $docSubido ? 'disabled' : '' }}>
                                         <label for="{{ $fieldName }}" class="file-upload-label">Subir</label>
                                     </div>
-                                    <div class="file-status" data-status="pending">
-                                        <span class="status-icon"><i class="fas fa-clock"></i></span>
-                                        <span class="status-text">Pendiente</span>
+                                    <div class="file-status" data-status="{{ $docSubido ? 'pending-review' : 'pending' }}">
+                                        <span class="status-icon">
+                                            <i class="fas {{ $docSubido ? 'fa-hourglass-half' : 'fa-clock' }}"></i>
+                                        </span>
+                                        <span class="status-text">
+                                            {{ $docSubido ? 'Pendiente por revisión' : 'Pendiente' }}
+                                        </span>
                                     </div>
-                                    <div class="file-preview" style="display: none;">
-                                        <button type="button" class="preview-btn" title="Ver PDF"><i
-                                                class="fas fa-eye"></i></button>
+                                    <div class="file-preview" style="{{ $docSubido ? '' : 'display:none' }}">
+                                        @if($docSubido)
+                                            <button type="button" class="preview-btn" title="Ver PDF"
+                                                    onclick="window.open('{{ Storage::disk('public')->url($docSubido->ruta_archivo) }}', '_blank')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        @else
+                                            <button type="button" class="preview-btn" title="Ver PDF"><i class="fas fa-eye"></i></button>
+                                        @endif
                                     </div>
                                     <p class="formulario__input-error">Por favor suba un archivo PDF válido (máximo 10 MB).</p>
                                 </div>
@@ -129,10 +171,9 @@
     </div>
     <div class="form-buttons">
         <button type="button" class="btn btn-secondary" onclick="window.history.back();">Anterior</button>
-        <button type="submit" class="btn btn-primary" id="submitForm">Siguiente</button>
+        <button type="button" class="btn btn-primary" id="submitForm">Siguiente</button>
     </div>
 </form>
-
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -140,9 +181,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('formulario6');
     const submitButton = document.getElementById('submitForm');
 
-    // Handle file input changes
+    // Handle file input changes and upload
     fileInputs.forEach(input => {
-        input.addEventListener('change', (e) => {
+        input.addEventListener('change', async (e) => {
             const fileItem = e.target.closest('.file-item');
             const fileStatus = fileItem.querySelector('.file-status');
             const statusIcon = fileStatus.querySelector('.status-icon');
@@ -173,105 +214,83 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                // Update status to "Pendiente por revisión"
-                fileStatus.setAttribute('data-status', 'pending-review');
-                statusIcon.innerHTML = '<i class="fas fa-hourglass-half"></i>';
-                statusText.textContent = 'Pendiente por revisión';
+                // Obtener el ID del documento
+                const documentoId = input.getAttribute('data-documento-id');
+                const formData = new FormData();
+                formData.append('archivo', file);
+                formData.append('documento_id', documentoId);
+                formData.append('_token', document.querySelector('[name="_token"]').value);
 
-                // Show preview button
-                filePreview.style.display = 'block';
-
-                // Hide upload button and disable input
-                fileUpload.style.display = 'none';
+                // Deshabilitar input mientras sube
                 input.disabled = true;
+                fileUpload.style.display = 'none';
 
-                // Add animation
-                fileStatus.classList.add('status-uploaded');
-                fileItem.classList.add('file-uploaded-animation');
+                // Mostrar subiendo...
+                fileStatus.setAttribute('data-status', 'uploading');
+                statusIcon.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                statusText.textContent = 'Subiendo...';
 
-                // Remove animation after completion
-                setTimeout(() => {
-                    fileItem.classList.remove('file-uploaded-animation');
-                }, 1000);
-
-                // Store file and configure preview
-                const fileURL = URL.createObjectURL(file);
-                previewBtn.addEventListener('click', () => {
-                    window.open(fileURL, '_blank');
-                });
-
-                // Clean up URL when file changes
-                input.addEventListener('change', () => {
-                    URL.revokeObjectURL(fileURL);
-                }, { once: true });
-            }
-        });
-    });
-
-    // Form submission handler
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        // Disable submit button to prevent multiple submissions
-        submitButton.disabled = true;
-        submitButton.textContent = 'Enviando...';
-
-        // Clear previous error messages
-        document.querySelectorAll('.formulario__input-error').forEach(error => {
-            error.classList.remove('formulario__input-error-activo');
-        });
-
-        // Create a new FormData object and only include file inputs and CSRF token
-        const formData = new FormData();
-        fileInputs.forEach(input => {
-            if (input.files.length > 0) {
-                formData.append(input.name, input.files[0]);
-            }
-        });
-        formData.append('_token', document.querySelector('input[name="_token"]').value);
-        formData.append('seccion', '6'); // Explicitly set section
-
-        // Log form data for debugging
-        console.log('Contenido de FormData:');
-        for (let [key, value] of formData.entries()) {
-            console.log(`${key}: ${value instanceof File ? value.name : value}`);
-        }
-
-        try {
-            const response = await fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'Accept': 'application/json',
-                },
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                window.location.href = '{{ route('inscripcion.formulario') }}';
-            } else {
-                if (result.errors) {
-                    Object.keys(result.errors).forEach(field => {
-                        const input = form.querySelector(`[name="${field}"]`);
-                        if (input) {
-                            const fileItem = input.closest('.file-item');
-                            const errorMessage = fileItem.querySelector('.formulario__input-error');
-                            errorMessage.textContent = result.errors[field][0];
-                            errorMessage.classList.add('formulario__input-error-activo');
-                        }
+                try {
+                    const response = await fetch('/inscripcion/documento/upload', {
+                        method: 'POST',
+                        body: formData,
                     });
-                } else {
-                    alert('Error al enviar el formulario: ' + (result.message || 'Intente de nuevo.'));
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Update status to "Pendiente por revisión"
+                        fileStatus.setAttribute('data-status', 'pending-review');
+                        statusIcon.innerHTML = '<i class="fas fa-hourglass-half"></i>';
+                        statusText.textContent = 'Pendiente por revisión';
+
+                        // Show preview button
+                        filePreview.style.display = 'block';
+
+                        // Add animation
+                        fileStatus.classList.add('status-uploaded');
+                        fileItem.classList.add('file-uploaded-animation');
+
+                        // Remove animation after completion
+                        setTimeout(() => {
+                            fileItem.classList.remove('file-uploaded-animation');
+                        }, 1000);
+
+                        // Store file and configure preview
+                        const fileURL = URL.createObjectURL(file);
+                        previewBtn.addEventListener('click', () => {
+                            window.open(data.ruta ?? fileURL, '_blank');
+                        });
+
+                        // Clean up URL when file changes
+                        input.addEventListener('change', () => {
+                            URL.revokeObjectURL(fileURL);
+                        }, { once: true });
+
+                        // Puedes guardar el ID del documento_solicitante en un data-* si lo necesitas:
+                        fileItem.setAttribute('data-docsolicitante-id', data.docSolicitanteId);
+
+                    } else {
+                        errorMessage.textContent = data.mensaje ?? 'Error subiendo el documento.';
+                        errorMessage.classList.add('formulario__input-error-activo');
+                        input.value = '';
+                        input.disabled = false;
+                        fileUpload.style.display = '';
+                        fileStatus.setAttribute('data-status', 'pending');
+                        statusIcon.innerHTML = '<i class="fas fa-clock"></i>';
+                        statusText.textContent = 'Pendiente';
+                    }
+                } catch (error) {
+                    errorMessage.textContent = 'Ocurrió un error al subir el archivo. Intente de nuevo.';
+                    errorMessage.classList.add('formulario__input-error-activo');
+                    input.value = '';
+                    input.disabled = false;
+                    fileUpload.style.display = '';
+                    fileStatus.setAttribute('data-status', 'pending');
+                    statusIcon.innerHTML = '<i class="fas fa-clock"></i>';
+                    statusText.textContent = 'Pendiente';
                 }
             }
-        } catch (error) {
-            console.error('Error al enviar el formulario:', error);
-            alert('Ocurrió un error al enviar el formulario. Por favor, intenta de nuevo.');
-        } finally {
-            submitButton.disabled = false;
-            submitButton.textContent = 'Siguiente';
-        }
+        });
     });
 });
 </script>
