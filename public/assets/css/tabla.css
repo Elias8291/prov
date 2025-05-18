@@ -74,6 +74,7 @@ body {
   border-radius: var(--radius-lg);
   position: relative;
   overflow: hidden;
+  animation: fadeIn 0.5s ease-out;
 }
 
 .content-wrapper {
@@ -179,40 +180,118 @@ body {
 
 /* BÚSQUEDA
 -------------------------------------------------- */
+.search-container {
+  position: relative;
+  flex: 1;
+  max-width: 300px;
+}
 
-        .search-container {
-            position: relative;
-            flex: 1;
-            max-width: 300px;
-            /* Larger search input */
-        }
+.search-input {
+  width: 100%;
+  padding: 8px 12px 8px 36px;
+  border: 2px solid var(--primary-color);
+  border-radius: 25px;
+  font-size: 14px;
+  color: var(--text-dark);
+  background: var(--white);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
 
-        .search-input {
-            width: 100%;
-            padding: 8px 12px 8px 36px;
-            border: 2px solid var(--guinda);
-            border-radius: 25px;
-            /* Rounded design */
-            font-size: 14px;
-            color: #333;
-            background: #fff;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-light);
+  box-shadow: 0 0 5px rgba(157, 36, 73, 0.3);
+}
 
-        .search-input:focus {
-            outline: none;
-            border-color: var(--guinda-light);
-            box-shadow: 0 0 5px rgba(165, 42, 42, 0.3);
-        }
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--primary-color);
+  font-size: 14px;
+}
 
-        .search-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--guinda);
-            font-size: 14px;
-        }
+
+.filters-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.filter-item {
+    display: flex;
+    align-items: center;
+}
+
+.filter-label {
+    margin-right: 6px;
+    font-weight: 600;
+    color: var(--guinda);
+    font-size: 13px;
+}
+
+.filter-select {
+    padding: 6px 10px;
+    border: 2px solid var(--guinda);
+    border-radius: 25px;
+    font-size: 13px;
+    color: #333;
+    background: #fff;
+    min-width: 140px;
+    transition: border-color 0.3s;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--guinda-light);
+}
+
+.filter-button {
+    background: var(--guinda);
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 25px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+}
+
+.filter-button:hover {
+    background: var(--guinda-light);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+    .controls-bar {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 600px) {
+    .search-container {
+        max-width: 100%;
+    }
+
+    .search-input {
+        padding: 6px 10px 6px 30px;
+        font-size: 13px;
+    }
+
+    .filter-select {
+        min-width: 120px;
+    }
+}
 
 /* BOTONES
 -------------------------------------------------- */
@@ -313,14 +392,14 @@ body {
 }
 
 /* Estilos específicos para el botón de agregar usuario */
-#openUserModalBtn {
+#openUserModalBtn, #openRoleModalBtn {
   background: var(--primary-gradient);
   position: relative;
   overflow: hidden;
 }
 
 /* Animación de ondas al pasar el mouse */
-#openUserModalBtn::after {
+#openUserModalBtn::after, #openRoleModalBtn::after {
   content: "";
   position: absolute;
   top: 50%;
@@ -335,7 +414,7 @@ body {
   z-index: -1;
 }
 
-#openUserModalBtn:hover::after {
+#openUserModalBtn:hover::after, #openRoleModalBtn:hover::after {
   transform: translate(-50%, -50%) scale(20);
   opacity: 0.2;
 }
@@ -603,69 +682,468 @@ tr:hover .status-indicator {
 
 .edit-btn:hover {
   background-color: var(--primary-color);
-  color: white;
+  color: var(--white);
 }
 
 .delete-btn:hover {
   background-color: #dc2626;
-  color: white;
+  color: var(--white);
 }
 
 .view-btn:hover {
   background-color: #4f46e5;
-  color: white;
+  color: var(--white);
 }
 
 /* PAGINACIÓN
 -------------------------------------------------- */
-.pagination {
+/* PAGINACIÓN
+-------------------------------------------------- */
+.custom-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.pagination-arrow {
+    padding: 6px 10px;
+    border-radius: 5px;
+    background: #f8f9fa;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.pagination-arrow:hover {
+    background: #e9ecef;
+    color: var(--primary-light);
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(157, 36, 73, 0.15);
+}
+
+.pagination-arrow.disabled {
+    color: #ccc;
+    pointer-events: none;
+}
+
+.pagination-number {
+    padding: 6px 10px;
+    border-radius: 5px;
+    background: #f8f9fa;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 13px;
+    min-width: 32px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.pagination-number.active {
+    background: var(--primary-gradient);
+    color: var(--white);
+    box-shadow: 0 3px 10px rgba(157, 36, 73, 0.3);
+    animation: pulseBorder 2s infinite;
+}
+
+.pagination-number:hover:not(.active) {
+    background: rgba(157, 36, 73, 0.08);
+    color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(157, 36, 73, 0.15);
+}
+
+.pagination-ellipsis {
+    padding: 6px 10px;
+    color: var(--text-medium);
+    font-size: 13px;
+}
+
+@keyframes pulseBorder {
+    0% { box-shadow: 0 0 0 0 rgba(157, 36, 73, 0.4); }
+    70% { box-shadow: 0 0 0 6px rgba(157, 36, 73, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(157, 36, 73, 0); }
+}
+
+/* Mobile Responsive */
+@media (max-width: 576px) {
+    .custom-pagination {
+        gap: 5px;
+    }
+    
+    .pagination-arrow, .pagination-number {
+        padding: 5px 8px;
+        font-size: 12px;
+        min-width: 28px;
+    }
+}
+/* MODAL
+-------------------------------------------------- */
+/* MODAL - ESTILO GUBERNAMENTAL ELEGANTE
+-------------------------------------------------- */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  animation: fadeIn 0.4s ease;
+  overflow-y: auto;
+  backdrop-filter: blur(3px);
+}
+
+/* Contenido principal del modal con estilo institucional */
+.modal-content {
+  background-color: var(--white);
+  margin: 5vh auto;
+  width: 600px;
+  max-width: 90%;
+  border-radius: 8px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15), 0 10px 8px rgba(0, 0, 0, 0.08);
+  animation: slideIn 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Franja decorativa superior tipo bandea mexicana */
+.modal-content::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, 
+    var(--primary-color) 0%, 
+    var(--primary-color) 33.3%, 
+    #ffffff 33.3%, 
+    #ffffff 66.6%, 
+    var(--secondary-color) 66.6%, 
+    var(--secondary-color) 100%
+  );
+}
+
+/* Marca de agua del escudo nacional (sutil) */
+.modal-content::after {
+  content: "";
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  width: 80px;
+  height: 80px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M12 2L6 6v5a10 10 0 0 0 6 9.33A10 10 0 0 0 18 11V6l-6-4z' stroke='%23E2E8F0' stroke-width='0.5' fill='none'/%3E%3Cpath d='M12 5c-.5 0-4 3-4 3s1 2 1 4c0 2 3 5 3 5s3-3 3-5c0-2 1-4 1-4s-3.5-3-4-3z' stroke='%23E2E8F0' stroke-width='0.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.06;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Encabezado con diseño institucional */
+.modal-header {
+  background-color: #f8fafc;
+  padding: 20px 28px;
+  border-bottom: 1px solid #e2e8f0;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  margin-top: 30px;
+  position: relative;
+}
+
+/* Línea vertical decorativa */
+.modal-header::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 60%;
+  width: 4px;
+  background: var(--primary-gradient);
+  border-radius: 0 2px 2px 0;
+}
+
+/* Título del modal con tipografía institucional */
+.modal-title {
+  font-family: "Montserrat", "Inter", sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin: 0;
+  padding-left: 16px;
+  letter-spacing: -0.01em;
+  position: relative;
+}
+
+/* Botón de cierre elegante */
+.close-modal {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: #f1f5f9;
+  color: var(--text-medium);
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  position: relative;
+}
+
+.close-modal:hover {
+  background-color: #fee2e2;
+  color: var(--primary-color);
+  border-color: rgba(157, 36, 73, 0.2);
+}
+
+/* Efecto de cierre elegante */
+.close-modal::after {
+  content: "×";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Cuerpo del modal con estilo profesional */
+.modal-body {
+  padding: 28px;
+  position: relative;
+  z-index: 1;
+  background-color: #ffffff;
+  background-image: linear-gradient(rgba(241, 245, 249, 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(241, 245, 249, 0.3) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: -1px -1px;
+}
+
+/* Estilo para scrollbar cuando el contenido es largo */
+.modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background-color: #f1f5f9;
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background-color: #cbd5e1;
+}
+
+/* Footer del modal */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px 28px;
+  background-color: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  position: relative;
+}
+
+/* Estilo para grupos de formulario en el modal */
+.modal .form-group {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+/* Etiquetas de formulario con estilo institucional */
+.modal .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--text-dark);
+  font-size: 14px;
+  letter-spacing: 0.01em;
+}
+
+/* Campos de formulario en el modal */
+.modal .form-control {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: all 0.25s ease;
+  background-color: #ffffff;
+}
+
+.modal .form-control:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(157, 36, 73, 0.15);
+}
+
+/* Texto de ayuda en formularios */
+.modal .form-text {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-medium);
+  line-height: 1.5;
+}
+
+/* Estilización de botones en el footer */
+.modal .btn-secondary {
+  background-color: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: var(--text-dark);
+  padding: 10px 18px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.modal .btn-primary {
+  border-radius: 4px;
+  padding: 10px 18px;
+  font-weight: 600;
+  transition: all 0.25s ease;
+  box-shadow: 0 1px 3px rgba(157, 36, 73, 0.25);
+}
+
+/* Contenedor para opciones de permisos */
+.modal .permissions-container {
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 16px;
+  max-height: 240px;
+  overflow-y: auto;
+  background-color: #ffffff;
+}
+
+.modal .permission-item {
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  border-radius: 4px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.modal .permission-item:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+/* Estilo para checkbox institucional */
+.modal .permission-item input[type="checkbox"] {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #cbd5e1;
+  border-radius: 3px;
+  margin-right: 10px;
+  position: relative;
+  transition: all 0.2s ease;
+  vertical-align: middle;
+}
+
+.modal .permission-item input[type="checkbox"]:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.modal .permission-item input[type="checkbox"]:checked::after {
+  content: "✓";
+  position: absolute;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Estilo para información de usuario en modal de eliminación */
+.modal .user-info {
+  background-color: #f8fafc;
+  padding: 16px;
+  border-radius: 6px;
+  border-left: 4px solid var(--primary-color);
+  margin-bottom: 20px;
+}
+
+.modal .user-info p {
+  margin: 8px 0;
+  font-size: 14px;
+  color: var(--text-medium);
+}
+
+.modal .user-info strong {
+  color: var(--text-dark);
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+/* Estilo para mensaje de confirmación de eliminación */
+.modal .delete-message {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.modal .delete-warning {
+  font-size: 14px;
+  color: #9B2226;
+  background-color: #fee2e2;
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
   gap: 8px;
 }
 
-.page-item {
-  display: inline-block;
+.modal .delete-warning::before {
+  content: "⚠️";
+  font-size: 16px;
 }
 
-.page-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-medium);
-  background-color: white;
-  border: 1px solid var(--border-color);
-  transition: var(--transition);
-  cursor: pointer;
+/* Animación mejorada para la entrada del modal */
+@keyframes slideIn {
+  0% {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
-.page-link:hover {
-  background-color: rgba(157, 36, 73, 0.05);
-  color: var(--primary-color);
-  border-color: var(--primary-light);
-  transform: translateY(-2px);
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
-
-.page-item.active .page-link {
-  background: var(--primary-gradient);
-  color: white;
-  border: none;
-  box-shadow: var(--shadow-primary);
-}
-
-.page-item.disabled .page-link {
-  color: #cbd5e0;
-  pointer-events: none;
-  background-color: var(--bg-light);
-}
-
 /* ADAPTABILIDAD
 -------------------------------------------------- */
 @media (max-width: 1024px) {
@@ -732,6 +1210,16 @@ tr:hover .status-indicator {
   .page-title::after {
     width: 50px;
   }
+  
+  .pagination {
+    gap: 8px;
+  }
+  
+  .page-link {
+    width: 36px;
+    height: 36px;
+    font-size: 13px;
+  }
 }
 
 /* ANIMACIONES GLOBALES
@@ -747,8 +1235,15 @@ tr:hover .status-indicator {
   }
 }
 
-.dashboard-container {
-  animation: fadeIn 0.5s ease-out;
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* ESTILO DE SELECCIÓN

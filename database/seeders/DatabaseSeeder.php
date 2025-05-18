@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             LocalidadSeeder::class,
             TiposAsentamientoSeeder::class, 
             AsentamientosSeeder::class,
+            DocumentoSeeder::class,
             SectoresSeeder::class,
             ActividadesSeeder::class,
             SolicitanteSeeder::class,

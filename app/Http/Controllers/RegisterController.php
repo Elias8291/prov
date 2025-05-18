@@ -10,20 +10,19 @@ use App\Models\Tramite;
 use App\Models\DetalleTramite;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
-use Spatie\Permission\Models\Role; // Importar el modelo Role de Spatie
+use Spatie\Permission\Models\Role;
 
 class RegisterController extends Controller
 {
     public function register(Request $request)
     {
         Log::info('Register request received', $request->except('sat_file'));
+
         try {
-            // Validate request data
+            // Validar los datos de la solicitud
             $validated = $request->validate([
                 'sat_file' => 'required|file|mimes:pdf|max:5120',
                 'email' => 'required|email|max:255|unique:users,correo',
@@ -49,20 +48,20 @@ class RegisterController extends Controller
                 'direccion.required' => 'La dirección es obligatoria.',
             ]);
 
-            // Start database transaction
+            // Iniciar transacción
             DB::beginTransaction();
 
-            // Upload PDF file
+            // Subir el archivo PDF
             $pdfPath = $request->file('sat_file')->store('documents', 'public');
 
-            // Create direccion with only codigo_postal, calle, and asentamiento_id
+            // Crear dirección
             $direccion = Direccion::create([
                 'codigo_postal' => $request->cp,
                 'asentamiento_id' => null,
                 'calle' => $request->direccion,
             ]);
 
-            // Create user
+            // Crear usuario
             $defaultPassword = 'secretaria1234';
             $user = User::create([
                 'nombre' => $request->nombre,
@@ -74,10 +73,10 @@ class RegisterController extends Controller
                 'updated_at' => now(),
             ]);
 
-            // Assign the 'solicitante' role to the user
+            // Asignar rol de solicitante
             $user->assignRole('solicitante');
 
-            // Create solicitante
+            // Crear solicitante
             $solicitante = Solicitante::create([
                 'usuario_id' => $user->id,
                 'tipo_persona' => $request->tipo_persona,
@@ -87,7 +86,7 @@ class RegisterController extends Controller
                 'updated_at' => now(),
             ]);
 
-            // Create tramite
+            // Crear trámite
             $tramite = Tramite::create([
                 'solicitante_id' => $solicitante->id,
                 'tipo_tramite' => 'Inscripcion',
@@ -98,7 +97,7 @@ class RegisterController extends Controller
                 'updated_at' => now(),
             ]);
 
-            // Create detalle_tramite
+            // Crear detalle del trámite
             $detalleTramite = DetalleTramite::create([
                 'tramite_id' => $tramite->id,
                 'razon_social' => $request->nombre,
@@ -108,53 +107,49 @@ class RegisterController extends Controller
                 'updated_at' => now(),
             ]);
 
-            // Create documento
-            $documento = Documento::create([
-                'nombre' => 'Constancia SAT',
-                'tipo' => 'Certificado',
-                'descripcion' => 'Constancia del SAT subida durante el registro',
-                'fecha_expiracion' => now()->addYear(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            // Buscar el documento "Constancia de Situación Fiscal"
+            $documento = Documento::where('nombre', 'Constancia de Situación Fiscal')->first();
 
-            // Create documento_solicitante
+            // Verificar si el documento existe
+            if (!$documento) {
+                throw new \Exception('El documento "Constancia de Situación Fiscal" no está registrado en la base de datos.');
+            }
+
+            // Crear documento_solicitante con el id del documento encontrado
             DocumentoSolicitante::create([
                 'tramite_id' => $tramite->id,
                 'documento_id' => $documento->id,
                 'fecha_entrega' => now(),
                 'estado' => 'Pendiente',
                 'version_documento' => 1,
-                'ruta_archivo' => $pdfPath, // Almacenar la ruta del archivo aquí
+                'ruta_archivo' => $pdfPath,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
 
-            // Commit transaction
+            // Confirmar transacción
             DB::commit();
 
-            // Return JSON response with redirect instruction
+            // Respuesta JSON con instrucción de redirección
             return response()->json([
                 'success' => true,
                 'message' => 'Registro exitoso. Se te ha asignado una contraseña por defecto: secretaria1234. Por favor inicia sesión desde la página principal.',
                 'redirect' => route('welcome')
             ], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // Return validation errors as JSON
             return response()->json([
                 'success' => false,
                 'message' => 'Errores de validación',
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
-            // Rollback transaction
+            // Revertir transacción
             DB::rollBack();
             Log::error('Error durante el registro: ' . $e->getMessage(), [
                 'request' => $request->except('sat_file'),
                 'trace' => $e->getTraceAsString()
             ]);
 
-            // Return JSON error response
             return response()->json([
                 'success' => false,
                 'message' => 'Ocurrió un error durante el registro: ' . $e->getMessage()

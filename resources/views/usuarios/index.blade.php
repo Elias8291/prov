@@ -106,10 +106,8 @@
             </table>
         </div>
         
-        <!-- Pagination -->
-        <div class="pagination">
-            {{ $users->links() }}
-        </div>
+        <!-- Include Custom Pagination -->
+        @include('components.paginacion', ['paginator' => $users])
     </div>
 </div>
 
@@ -118,7 +116,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2 class="modal-title">Agregar Nuevo Usuario</h2>
-            <span class="close-modal">&times;</span>
+            <span class="close-modal">×</span>
         </div>
         
         <form id="addUserForm" action="{{ route('usuarios.store') }}" method="POST">
@@ -193,7 +191,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2 class="modal-title">Editar Usuario</h2>
-            <span class="close-modal">&times;</span>
+            <span class="close-modal">×</span>
         </div>
         
         <form id="editUserForm" method="POST">
@@ -277,7 +275,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2 class="modal-title">Confirmar Eliminación</h2>
-            <span class="close-modal">&times;</span>
+            <span class="close-modal">×</span>
         </div>
         
         <form id="deleteUserForm" method="POST">
@@ -304,188 +302,6 @@
         </form>
     </div>
 </div>
-
-<style>
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    animation: fadeIn 0.3s;
-}
-
-.modal-content {
-    background-color: #fff;
-    margin: 5% auto;
-    width: 600px;
-    max-width: 90%;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    animation: slideIn 0.3s;
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.modal-title {
-    font-size: 1.25rem;
-    margin: 0;
-    color: #2C3E50;
-}
-
-.close-modal {
-    font-size: 24px;
-    cursor: pointer;
-    color: #777;
-    transition: color 0.2s;
-}
-
-.close-modal:hover {
-    color: #333;
-}
-
-.modal-body {
-    padding: 20px;
-    max-height: 500px;
-    overflow-y: auto;
-}
-
-.modal-footer {
-    padding: 15px 20px;
-    border-top: 1px solid #e0e0e0;
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 500;
-    color: #333;
-}
-
-.form-control {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 14px;
-    transition: border-color 0.2s;
-}
-
-.form-control:focus {
-    border-color: #3498db;
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-}
-
-.form-control[readonly], .form-control[disabled] {
-    background-color: #f8f9fa;
-    cursor: not-allowed;
-}
-
-.form-row {
-    display: flex;
-    flex-wrap: wrap;
-    margin: 0 -10px;
-}
-
-.form-row .form-group {
-    padding: 0 10px;
-    flex: 1;
-}
-
-.form-text {
-    display: block;
-    margin-top: 5px;
-    font-size: 12px;
-}
-
-.password-input-wrapper {
-    position: relative;
-}
-
-.toggle-password {
-    position: absolute;
-    right: 10px;
-    top: 10px;
-    cursor: pointer;
-    color: #777;
-}
-
-/* Delete Modal Styles */
-.delete-message {
-    font-size: 18px;
-    margin-bottom: 10px;
-    color: #2C3E50;
-}
-
-.delete-warning {
-    color: #e74c3c;
-    font-weight: 500;
-    margin-bottom: 20px;
-}
-
-.user-info {
-    background-color: #f8f9fa;
-    padding: 15px;
-    border-radius: 5px;
-    border-left: 4px solid #3498db;
-}
-
-.user-info p {
-    margin: 5px 0;
-}
-
-.btn-danger {
-    background-color: #e74c3c;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    transition: background-color 0.2s;
-}
-
-.btn-danger:hover {
-    background-color: #c0392b;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateY(-50px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-</style>
 
 <!-- JavaScript for All Modals -->
 <script>

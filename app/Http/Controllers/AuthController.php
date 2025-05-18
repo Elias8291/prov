@@ -7,16 +7,31 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 use App\Models\User;
+use App\Providers\RouteServiceProvider;
+use Illuminate\Routing\Controller as BaseController;
 
-class AuthController extends Controller
+class AuthController extends BaseController
 {
+    /**
+     * Constructor para aplicar middleware guest
+     */
+    public function __construct()
+    {
+        // No usamos middleware aquí
+    }
+    
     /**
      * Muestra el formulario de inicio de sesión
      *
-     * @return \Illuminate\View\View
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
     public function showLoginForm()
     {
+        // Si el usuario ya está autenticado, redirigir a la página principal
+        if (Auth::check()) {
+            return redirect(RouteServiceProvider::HOME);
+        }
+        
         return view('welcome');
     }
 
@@ -68,7 +83,7 @@ class AuthController extends Controller
         Auth::login($user);
 
         // Redirigir al dashboard o página prevista
-        return redirect()->intended('/index');
+        return redirect()->intended(RouteServiceProvider::HOME);
     }
 
     /**

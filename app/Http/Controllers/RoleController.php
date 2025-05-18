@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -10,8 +9,7 @@ class RoleController extends Controller
 {
     public function index()
     {
-        // Get all roles with their permissions
-        $roles = Role::with(['permissions', 'users'])->paginate(10);
+        $roles = Role::with(['permissions', 'users'])->paginate(2);
         $permissions = Permission::all();
         
         return view('roles.index', compact('roles', 'permissions'));
@@ -55,7 +53,6 @@ class RoleController extends Controller
     
     public function destroy(Role $role)
     {
-        // Check if the role has users before deleting
         if ($role->users()->count() > 0) {
             return redirect()->route('roles.index')
                 ->with('error', 'Este rol no puede ser eliminado porque tiene usuarios asignados');
