@@ -14,6 +14,13 @@ use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\RevisionController;
 use App\Http\Controllers\EstadoController;
 use App\Http\Controllers\DocumentoController;
+use App\Http\Controllers\ActividadController;
+use App\Http\Controllers\Formularios\DatosGeneralesController;
+use App\Http\Controllers\Formularios\DomicilioController;
+use App\Http\Controllers\Formularios\ConstitucionController;
+use App\Http\Controllers\Formularios\AccionistasController;
+use App\Http\Controllers\Formularios\ApoderadoLegalController;
+use App\Http\Controllers\Formularios\DocumentosController;
 use App\Providers\RouteServiceProvider;
 
 // Ruta para verificar autenticación (usada por JavaScript)
@@ -59,13 +66,36 @@ Route::middleware(['auth'])->group(function () {
         ->name('inscripcion.terminos_y_condiciones');
     Route::post('/inscripcion/aceptar-terminos', [SolicitanteController::class, 'aceptarTerminos'])
         ->name('inscripcion.aceptar_terminos');
-    // Inscripción - formulario multisección
+    
+    // RUTAS PARA LA INSCRIPCIÓN (MANTÉN COMPATIBILIDAD CON LAS EXISTENTES)
+    // Rutas originales (para mantener compatibilidad)
     Route::get('/inscripcion', [InscripcionController::class, 'mostrarFormulario'])->name('inscripcion.formulario');
-    Route::post('/inscripcion', [InscripcionController::class, 'procesarSeccion'])->name('inscripcion.procesar');
+    Route::post('/inscripcion', [InscripcionController::class, 'procesarSeccion'])->name('inscripcion.procesar'); // Restaurada esta ruta original
     Route::get('/inscripcion/exito', [InscripcionController::class, 'exito'])->name('inscripcion.exito');
-    Route::get('/inscripcion/actividades', [InscripcionController::class, 'obtenerActividades'])->name('inscripcion.actividades');
-    Route::post('/inscripcion/guardar', [InscripcionController::class, 'guardarSeccion'])->name('inscripcion.guardar');
+    Route::post('/inscripcion/documento/upload', [DocumentosController::class, 'subir'])->name('inscripcion.documento.upload'); // Restaurada esta ruta original
+Route::post('/inscripcion/obtener-datos-direccion', [DireccionController::class, 'obtenerDatosDireccion'])->name('inscripcion.obtener-datos-direccion');
+   Route::get('/inscripcion/actividades', [ActividadController::class, 'obtenerActividades'])->name('inscripcion.actividades');
+    
+    // Rutas nuevas (para el código refactorizado)
+    Route::post('/inscripcion/procesar-seccion', [InscripcionController::class, 'procesarSeccion'])->name('inscripcion.procesar_seccion');
+    Route::post('/registro-datos-constitucion', [ConstitucionController::class, 'guardar'])->name('registro.datos.constitucion'); // Restaurada
+    
+    // Rutas para datos de actividades (AJAX)
+    Route::get('/actividades/por-sector', [ActividadController::class, 'obtenerActividades'])->name('actividades.porSector');
+    
+    // Rutas para datos de dirección (AJAX)
+    Route::get('/direccion/datos', [DireccionController::class, 'obtenerDatosDireccion'])->name('direccion.datos');
+    
+    // Rutas para formularios específicos
+    Route::post('/inscripcion/datos-generales', [DatosGeneralesController::class, 'guardar'])->name('inscripcion.datos_generales.guardar');
 
+    Route::post('/inscripcion/constitucion', [ConstitucionController::class, 'guardar'])->name('inscripcion.constitucion.guardar');
+    Route::post('/inscripcion/accionistas', [AccionistasController::class, 'guardar'])->name('inscripcion.accionistas.guardar');
+    Route::post('/inscripcion/apoderado-legal', [ApoderadoLegalController::class, 'guardar'])->name('inscripcion.apoderado_legal.guardar');
+    
+    // Ruta para subir documentos
+    Route::post('/documentos/subir', [DocumentosController::class, 'subir'])->name('documentos.subir');
+    
     // Resto de rutas de tu sistema...
     Route::get('/sectores', [SectorActividadController::class, 'getSectores'])->name('sectores.index');
     Route::get('/sectores/{sectorId}/actividades', [SectorActividadController::class, 'getActividadesBySector'])->name('sectores.actividades');
@@ -90,12 +120,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/revision/iniciar/{rfc}', [RevisionController::class, 'iniciarRevision'])->name('revision.iniciar');
     Route::get('/solicitante/address-info', [DireccionController::class, 'getSolicitanteAddressInfo']);
     Route::get('/direccion/by-codigo-postal/{codigo}', [DireccionController::class, 'getAddressByCodigoPostal']);
-    Route::post('/inscripcion/obtener-datos-direccion', [InscripcionController::class, 'obtenerDatosDireccion'])->name('inscripcion.obtener-datos-direccion');
 
-    Route::post('/inscripcion/procesar-seccion', [InscripcionController::class, 'procesarSeccion'])
-        ->name('inscripcion.procesar_seccion');
-    Route::post('/registro-datos-constitucion', [InscripcionController::class, 'guardarDatosConstitucion'])
-        ->name('registro.datos.constitucion');
     Route::get('/estados', [EstadoController::class, 'getEstados'])->name('estados');
 
     // Rutas para el CRUD de documentos
@@ -106,6 +131,4 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/documentos/{documento}/edit', [DocumentoController::class, 'edit'])->name('documentos.edit');
     Route::put('/documentos/{documento}', [DocumentoController::class, 'update'])->name('documentos.update');
     Route::delete('/documentos/{documento}', [DocumentoController::class, 'destroy'])->name('documentos.destroy');
-    Route::post('/inscripcion/documento/upload', [InscripcionController::class, 'subirDocumento'])
-    ->name('inscripcion.documento.upload');
 });

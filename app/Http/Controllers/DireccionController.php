@@ -2,96 +2,65 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Direccion;
-use App\Models\Asentamiento;
-use App\Models\Localidad;
-use App\Models\Municipio;
-use App\Models\Estado;
-use App\Models\Tramite;
-use App\Models\DetalleTramite;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Asentamiento;
+use Illuminate\Support\Facades\Log;
 
 class DireccionController extends Controller
 {
-    /**
-     * Get address information for the current authenticated solicitante
-     */
-    public function getSolicitanteAddressInfo()
-    {
-        // Get the current user
-        $user = Auth::user();
-        
-        if (!$user || !$user->solicitante) {
-            return response()->json(['success' => false, 'message' => 'No solicitante found for this user'], 404);
-        }
-        
-        // Get the most recent tramite for this solicitante
-        $tramite = Tramite::where('solicitante_id', $user->solicitante->id)
-            ->orderBy('created_at', 'desc')
-            ->first();
-            
-        if (!$tramite) {
-            return response()->json(['success' => false, 'message' => 'No tramite found for this solicitante'], 404);
-        }
-        
-        // Get the detalle_tramite
-        $detalleTramite = DetalleTramite::where('tramite_id', $tramite->id)->first();
-        
-        if (!$detalleTramite || !$detalleTramite->direccion_id) {
-            return response()->json(['success' => false, 'message' => 'No address found for this tramite'], 404);
-        }
-        
-        // Get the direccion
-        $direccion = Direccion::find($detalleTramite->direccion_id);
-        
-        if (!$direccion) {
-            return response()->json(['success' => false, 'message' => 'Address not found'], 404);
-        }
-        
+   public function obtenerDatosDireccion(Request $request)
+{
+    $codigoPostal = $request->input('codigo_postal');
+
+    // Validate postal code
+    if (!$codigoPostal || !preg_match('/^\d{4,5}$/', $codigoPostal)) {
         return response()->json([
-            'success' => true,
-            'data' => [
-                'codigo_postal' => $direccion->codigo_postal,
-                'calle' => $direccion->calle,
-                'numero_exterior' => $direccion->numero_exterior,
-                'numero_interior' => $direccion->numero_interior,
-                'entre_calle_1' => $direccion->entre_calle_1,
-                'entre_calle_2' => $direccion->entre_calle_2,
-                'asentamiento_id' => $direccion->asentamiento_id
-            ]
-        ]);
+            'success' => false,
+            'message' => 'Código postal inválido. Debe contener 4 o 5 dígitos.'
+        ], 400);
     }
-    
-    /**
-     * Get address information by postal code
-     */
-    public function getAddressByCodigoPostal($codigo)
-    {
-        // Find asentamientos with this postal code
-        $asentamientos = Asentamiento::where('codigo_postal', $codigo)->get();
-        
+
+    try {
+        // Normalize postal code to 5 digits
+        $codigoPostal = str_pad($codigoPostal, 5, '0', STR_PAD_LEFT);
+
+        // Query asentamientos with related localidad, municipio, and estado
+        $asentamientos = \App\Models\Asentamiento::where('codigo_postal', $codigoPostal)
+            ->with(['localidad.municipio.estado'])
+            ->get();
+
         if ($asentamientos->isEmpty()) {
-            return response()->json(['success' => false, 'message' => 'No locations found with this postal code'], 404);
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontraron datos para el código postal proporcionado.'
+            ], 404);
         }
-        
-        // Get a sample asentamiento to retrieve location data
-        $sampleAsentamiento = $asentamientos->first();
-        $localidad = Localidad::find($sampleAsentamiento->localidad_id);
-        $municipio = $localidad ? Municipio::find($localidad->municipio_id) : null;
-        $estado = $municipio ? Estado::find($municipio->estado_id) : null;
-        
+
+        // Extract estado and municipio from the first asentamiento
+        $primerAsentamiento = $asentamientos->first();
+        $estado = $primerAsentamiento->localidad->municipio->estado->nombre ?? '';
+        $municipio = $primerAsentamiento->localidad->municipio->nombre ?? '';
+
+        // Prepare asentamientos list for the dropdown
+        $asentamientosList = $asentamientos->map(function ($asentamiento) {
+            return [
+                'id' => $asentamiento->id,
+                'nombre' => $asentamiento->nombre
+            ];
+        })->toArray();
+
         return response()->json([
             'success' => true,
-            'estado' => $estado ? $estado->nombre : '',
-            'municipio' => $municipio ? $municipio->nombre : '',
-            'asentamientos' => $asentamientos->map(function($asentamiento) {
-                return [
-                    'id' => $asentamiento->id,
-                    'nombre' => $asentamiento->nombre,
-                    'tipo' => $asentamiento->tipoAsentamiento ? $asentamiento->tipoAsentamiento->nombre : ''
-                ];
-            })
+            'estado' => $estado,
+            'municipio' => $municipio,
+            'asentamientos' => $asentamientosList
         ]);
+    } catch (\Exception $e) {
+        \Illuminate\Support\Facades\Log::error('Error obteniendo datos de dirección: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al procesar la solicitud. Por favor, intenta de nuevo.'
+        ], 500);
     }
+}
 }
