@@ -123,8 +123,19 @@ body {
   height: 2px;
   background-color: var(--border-light);
   z-index: 0;
+  transition: background 0.5s, width 0.5s;
 }
 
+.progress-tracker .progress-bar-advance {
+  position: absolute;
+  top: 17px;
+  left: 40px;
+  height: 2px;
+  background: var(--primary-color);
+  z-index: 1;
+  border-radius: 2px;
+  transition: width 0.6s cubic-bezier(.4,1.4,.5,1.05);
+}
 .seccion {
   display: flex;
   flex-direction: column;

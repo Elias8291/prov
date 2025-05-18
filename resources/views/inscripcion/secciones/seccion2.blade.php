@@ -234,342 +234,318 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-    $(document).ready(function() {
-        // Validation rules for each field
-        const validationRules = {
-            codigo_postal: {
-                pattern: /^\d{4,5}$/,
-                message: "El código postal debe contener 4 o 5 dígitos numéricos.",
-                required: true,
-                label: "Código Postal"
-            },
-            estado: {
-                pattern: /^[A-Za-z\s]{1,100}$/,
-                message: "El estado debe contener solo letras y espacios, máximo 100 caracteres.",
-                required: true,
-                label: "Estado"
-            },
-            municipio: {
-                pattern: /^[A-Za-z\s]{1,100}$/,
-                message: "El municipio debe contener solo letras y espacios, máximo 100 caracteres.",
-                required: true,
-                label: "Municipio"
-            },
-            colonia: {
-                pattern: /.+/,
-                message: "Debe seleccionar un asentamiento.",
-                required: true,
-                label: "Asentamiento"
-            },
-            calle: {
-                pattern: /^[A-Za-z0-9\s]{1,100}$/,
-                message: "La calle debe contener letras, números o espacios, máximo 100 caracteres.",
-                required: true,
-                label: "Calle"
-            },
-            numero_exterior: {
-                pattern: /^[A-Za-z0-9\/]{1,10}$/,
-                message: "El número exterior debe contener letras, números o /, entre 1 y 10 caracteres.",
-                required: true,
-                label: "Número Exterior"
-            },
-            numero_interior: {
-                pattern: /^[A-Za-z0-9]{1,10}$/,
-                message: "El número interior debe contener letras o números, máximo 10 caracteres.",
-                required: false,
-                label: "Número Interior"
-            },
-            entre_calle_1: {
-                pattern: /^[A-Za-z0-9\s]{1,100}$/,
-                message: "Entre calle 1 debe contener letras, números o espacios, máximo 100 caracteres.",
-                required: true,
-                label: "Entre Calle 1"
-            },
-            entre_calle_2: {
-                pattern: /^[A-Za-z0-9\s]{1,100}$/,
-                message: "Entre calle 2 debe contener letras, números o espacios, máximo 100 caracteres.",
-                required: true,
-                label: "Entre Calle 2"
-            }
-        };
+  $(document).ready(function() {
+    // Validation rules for each field
+    const validationRules = {
+        codigo_postal: {
+            pattern: /^\d{4,5}$/,
+            message: "El código postal debe contener 4 o 5 dígitos numéricos.",
+            required: true,
+            label: "Código Postal"
+        },
+        estado: {
+            pattern: /^[A-Za-z\s]{1,100}$/,
+            message: "El estado debe contener solo letras y espacios, máximo 100 caracteres.",
+            required: true,
+            label: "Estado"
+        },
+        municipio: {
+            pattern: /^[A-Za-z\s]{1,100}$/,
+            message: "El municipio debe contener solo letras y espacios, máximo 100 caracteres.",
+            required: true,
+            label: "Municipio"
+        },
+        colonia: {
+            pattern: /.+/,
+            message: "Debe seleccionar un asentamiento.",
+            required: true,
+            label: "Asentamiento"
+        },
+        calle: {
+            pattern: /^[A-Za-z0-9\s]{1,100}$/,
+            message: "La calle debe contener letras, números o espacios, máximo 100 caracteres.",
+            required: true,
+            label: "Calle"
+        },
+        numero_exterior: {
+            pattern: /^[A-Za-z0-9\/]{1,10}$/,
+            message: "El número exterior debe contener letras, números o /, entre 1 y 10 caracteres.",
+            required: true,
+            label: "Número Exterior"
+        },
+        numero_interior: {
+            pattern: /^[A-Za-z0-9]{1,10}$/,
+            message: "El número interior debe contener letras o números, máximo 10 caracteres.",
+            required: false,
+            label: "Número Interior"
+        },
+        entre_calle_1: {
+            pattern: /^[A-Za-z0-9\s]{1,100}$/,
+            message: "Entre calle 1 debe contener letras, números o espacios, máximo 100 caracteres.",
+            required: true,
+            label: "Entre Calle 1"
+        },
+        entre_calle_2: {
+            pattern: /^[A-Za-z0-9\s]{1,100}$/,
+            message: "Entre calle 2 debe contener letras, números o espacios, máximo 100 caracteres.",
+            required: true,
+            label: "Entre Calle 2"
+        }
+    };
 
-        // Fields exempt from validation (green if filled, no errors)
-        const exemptFields = ['estado'];
+    // Fields exempt from validation (green if filled, no errors)
+    const exemptFields = ['estado'];
 
-        // Fields always green, no validation
-        const alwaysGreenFields = ['calle', 'municipio'];
+    // Fields always green, no validation
+    const alwaysGreenFields = ['calle', 'municipio'];
 
-        // Track which fields have been interacted with
-        const interactedFields = new Set();
+    // Track which fields have been interacted with
+    const interactedFields = new Set();
 
-        // Debounce function for delayed actions
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
+    // Debounce function for delayed actions
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
                 clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
+                func(...args);
             };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // Function to check if a field is applicable based on role and visibility
+    function isFieldApplicable(fieldName) {
+        const isSolicitante = {{ auth()->check() && auth()->user()->hasRole('solicitante') ? 'true' : 'false' }};
+        if (isSolicitante && ['codigo_postal', 'estado', 'municipio'].includes(fieldName)) {
+            return false; // Display-only for solicitante
+        }
+        return true;
+    }
+
+    // Function to validate a single field (returns validity without updating UI)
+    function isFieldValid(field) {
+        const fieldName = field.attr('id');
+        if (!validationRules[fieldName] || !isFieldApplicable(fieldName)) {
+            return true; // Skip inapplicable fields
         }
 
-        // Function to check if a field is applicable based on role and visibility
-        function isFieldApplicable(fieldName) {
-            const isSolicitante = {{ auth()->check() && auth()->user()->hasRole('solicitante') ? 'true' : 'false' }};
-            if (isSolicitante && ['codigo_postal', 'estado', 'municipio'].includes(fieldName)) {
-                return false; // Display-only for solicitante
-            }
-            return true;
+        const rules = validationRules[fieldName];
+        const value = field.val()?.trim();
+
+        if (alwaysGreenFields.includes(fieldName)) {
+            return true; // Always green fields are always valid
         }
 
-        // Function to validate a single field (returns validity without updating UI)
-        function isFieldValid(field) {
-            const fieldName = field.attr('id');
-            if (!validationRules[fieldName] || !isFieldApplicable(fieldName)) {
-                return true; // Skip inapplicable fields
-            }
-
-            const rules = validationRules[fieldName];
-            const value = field.val()?.trim();
-
-            if (alwaysGreenFields.includes(fieldName)) {
-                return true; // Always green fields are always valid
-            }
-
-            if (exemptFields.includes(fieldName)) {
-                return !rules.required || (value && (!rules.pattern || rules.pattern.test(value)));
-            }
-
-            if (rules.required && (!value || value === '')) {
-                return false;
-            }
-            if (value && rules.pattern && !rules.pattern.test(value)) {
-                return false;
-            }
-            if (!rules.required && value && rules.pattern && !rules.pattern.test(value)) {
-                return false; // For optional fields like numero_interior
-            }
-            return true;
+        if (exemptFields.includes(fieldName)) {
+            return !rules.required || (value && (!rules.pattern || rules.pattern.test(value)));
         }
 
-        // Function to update field UI (borders and optional error message)
-        function updateFieldUI(field, showError = false) {
-            const fieldName = field.attr('id');
-            if (!validationRules[fieldName] || !isFieldApplicable(fieldName)) {
-                field.closest('.form-group').removeClass('valid invalid');
-                field.removeClass('valid invalid');
-                field.closest('.form-group').find('.formulario__input-error').hide();
-                return true; // Skip inapplicable fields
-            }
+        if (rules.required && (!value || value === '')) {
+            return false;
+        }
+        if (value && rules.pattern && !rules.pattern.test(value)) {
+            return false;
+        }
+        if (!rules.required && value && rules.pattern && !rules.pattern.test(value)) {
+            return false; // For optional fields like numero_interior
+        }
+        return true;
+    }
 
-            const group = field.closest('.form-group');
-            const rules = validationRules[fieldName];
-            const isValid = isFieldValid(field);
+    // Function to update field UI (borders and optional error message)
+    function updateFieldUI(field, showError = false) {
+        const fieldName = field.attr('id');
+        if (!validationRules[fieldName] || !isFieldApplicable(fieldName)) {
+            field.closest('.form-group').removeClass('valid invalid');
+            field.removeClass('valid invalid');
+            field.closest('.form-group').find('.formulario__input-error').hide();
+            return true; // Skip inapplicable fields
+        }
 
-            if (!interactedFields.has(fieldName) && !showError) {
-                // If field hasn't been interacted with, don't show validation state
-                group.removeClass('valid invalid');
-                field.removeClass('valid invalid');
-                group.find('.formulario__input-error').hide();
-                return isValid;
-            }
+        const group = field.closest('.form-group');
+        const rules = validationRules[fieldName];
+        const isValid = isFieldValid(field);
 
+        if (!interactedFields.has(fieldName) && !showError) {
+            // If field hasn't been interacted with, don't show validation state
             group.removeClass('valid invalid');
             field.removeClass('valid invalid');
-
-            if (alwaysGreenFields.includes(fieldName)) {
-                group.addClass('valid');
-                field.addClass('valid');
-                group.find('.formulario__input-error').hide();
-            } else if (exemptFields.includes(fieldName)) {
-                const value = field.val()?.trim();
-                const isExemptValid = !rules.required || (value && (!rules.pattern || rules.pattern.test(value)));
-                group.addClass(isExemptValid ? 'valid' : 'invalid');
-                field.addClass(isExemptValid ? 'valid' : 'invalid');
-                group.find('.formulario__input-error').hide();
-            } else if (isValid) {
-                group.addClass('valid');
-                field.addClass('valid');
-                group.find('.formulario__input-error').hide();
-            } else {
-                group.addClass('invalid');
-                field.addClass('invalid');
-                if (showError) {
-                    group.find('.formulario__input-error').text(rules.message).show();
-                } else {
-                    group.find('.formulario__input-error').hide();
-                }
-            }
-
+            group.find('.formulario__input-error').hide();
             return isValid;
         }
 
-        // Function to check if all validated fields are valid and update submit button
-        function checkAllFields() {
-            let allValid = true;
-            const fields = [
-                '#codigo_postal',
-                '#estado',
-                '#municipio',
-                '#colonia',
-                '#calle',
-                '#numero_exterior',
-                '#numero_interior',
-                '#entre_calle_1',
-                '#entre_calle_2'
-            ];
+        group.removeClass('valid invalid');
+        field.removeClass('valid invalid');
 
-            fields.forEach(function(fieldSelector) {
-                const field = $(fieldSelector);
-                if (field.length && !field.is(':hidden') && isFieldApplicable(field.attr('id'))) {
-                    if (!isFieldValid(field)) {
-                        allValid = false;
-                    }
-                }
-            });
-
-            $('#submit-btn').prop('disabled', !allValid);
+        if (alwaysGreenFields.includes(fieldName)) {
+            group.addClass('valid');
+            field.addClass('valid');
+            group.find('.formulario__input-error').hide();
+        } else if (exemptFields.includes(fieldName)) {
+            const value = field.val()?.trim();
+            const isExemptValid = !rules.required || (value && (!rules.pattern || rules.pattern.test(value)));
+            group.addClass(isExemptValid ? 'valid' : 'invalid');
+            field.addClass(isExemptValid ? 'valid' : 'invalid');
+            group.find('.formulario__input-error').hide();
+        } else if (isValid) {
+            group.addClass('valid');
+            field.addClass('valid');
+            group.find('.formulario__input-error').hide();
+        } else {
+            group.addClass('invalid');
+            field.addClass('invalid');
+            if (showError) {
+                group.find('.formulario__input-error').text(rules.message).show();
+            } else {
+                group.find('.formulario__input-error').hide();
+            }
         }
 
-        // Function to handle "Anterior" button click
-        window.goToPreviousSection = function() {
-            $('#formulario2 input[name="action"]').val('previous');
-            $('#formulario2').submit();
-        };
+        return isValid;
+    }
 
-        // Real-time input filtering
-        $('#codigo_postal').on('keypress', function(e) {
-            const char = String.fromCharCode(e.which);
-            if (!/[0-9]/.test(char)) {
-                e.preventDefault();
+    // Function to check if all validated fields are valid and update submit button
+    function checkAllFields() {
+        let allValid = true;
+        const fields = [
+            '#codigo_postal',
+            '#estado',
+            '#municipio',
+            '#colonia',
+            '#calle',
+            '#numero_exterior',
+            '#numero_interior',
+            '#entre_calle_1',
+            '#entre_calle_2'
+        ];
+
+        fields.forEach(function(fieldSelector) {
+            const field = $(fieldSelector);
+            if (field.length && !field.is(':hidden') && isFieldApplicable(field.attr('id'))) {
+                if (!isFieldValid(field)) {
+                    allValid = false;
+                }
             }
         });
 
-        $('#numero_exterior').on('keypress', function(e) {
-            const char = String.fromCharCode(e.which);
-            if (!/[A-Za-z0-9\/]/.test(char)) {
-                e.preventDefault();
-            }
-        });
+        $('#submit-btn').prop('disabled', !allValid);
+    }
 
-        $('#numero_interior').on('keypress', function(e) {
-            const char = String.fromCharCode(e.which);
-            if (!/[A-Za-z0-9]/.test(char)) {
-                e.preventDefault();
-            }
-        });
+    // Function to handle "Anterior" button click
+    window.goToPreviousSection = function() {
+        $('#formulario2 input[name="action"]').val('previous');
+        $('#formulario2').submit();
+    };
 
-        $('#calle, #entre_calle_1, #entre_calle_2').on('keypress', function(e) {
-            const char = String.fromCharCode(e.which);
-            if (!/[A-Za-z0-9\s]/.test(char)) {
-                e.preventDefault();
-            }
-        });
+    // Real-time input filtering
+    $('#codigo_postal').on('keypress', function(e) {
+        const char = String.fromCharCode(e.which);
+        if (!/[0-9]/.test(char)) {
+            e.preventDefault();
+        }
+    });
 
-        // Real-time validation on input/change
-        $('#codigo_postal, #calle, #numero_exterior, #numero_interior, #entre_calle_1, #entre_calle_2').on('input', function() {
-            const fieldName = $(this).attr('id');
+    $('#numero_exterior').on('keypress', function(e) {
+        const char = String.fromCharCode(e.which);
+        if (!/[A-Za-z0-9\/]/.test(char)) {
+            e.preventDefault();
+        }
+    });
+
+    $('#numero_interior').on('keypress', function(e) {
+        const char = String.fromCharCode(e.which);
+        if (!/[A-Za-z0-9]/.test(char)) {
+            e.preventDefault();
+        }
+    });
+
+    $('#calle, #entre_calle_1, #entre_calle_2').on('keypress', function(e) {
+        const char = String.fromCharCode(e.which);
+        if (!/[A-Za-z0-9\s]/.test(char)) {
+            e.preventDefault();
+        }
+    });
+
+    // Real-time validation on input/change
+    $('#codigo_postal, #calle, #numero_exterior, #numero_interior, #entre_calle_1, #entre_calle_2').on('input', function() {
+        const fieldName = $(this).attr('id');
+        interactedFields.add(fieldName); // Mark as interacted
+        updateFieldUI($(this), true); // Show errors
+        checkAllFields();
+    });
+
+    $('#colonia').on('change', function() {
+        const fieldName = $(this).attr('id');
+        interactedFields.add(fieldName); // Mark as interacted
+        updateFieldUI($(this), true); // Show errors
+        checkAllFields();
+    });
+
+    // Delayed error message display
+    const showErrorMessage = debounce(function(field) {
+        const fieldName = field.attr('id');
+        if (!alwaysGreenFields.includes(fieldName) && !exemptFields.includes(fieldName)) {
             interactedFields.add(fieldName); // Mark as interacted
-            updateFieldUI($(this), true); // Show errors
-            checkAllFields();
-        });
+            updateFieldUI(field, true); // Show error after pause
+        }
+        checkAllFields();
+    }, 500);
 
-        $('#colonia').on('change', function() {
-            const fieldName = $(this).attr('id');
-            interactedFields.add(fieldName); // Mark as interacted
-            updateFieldUI($(this), true); // Show errors
-            checkAllFields();
-        });
+    $('#calle, #numero_exterior, #numero_interior, #entre_calle_1, #entre_calle_2').on('input', function() {
+        showErrorMessage($(this));
+    });
 
-        // Delayed error message display
-        const showErrorMessage = debounce(function(field) {
-            const fieldName = field.attr('id');
-            if (!alwaysGreenFields.includes(fieldName) && !exemptFields.includes(fieldName)) {
-                interactedFields.add(fieldName); // Mark as interacted
-                updateFieldUI(field, true); // Show error after pause
-            }
-            checkAllFields();
-        }, 500);
+    // Handle postal code AJAX validation with debounce
+    const validatePostalCode = debounce(function(codigoPostal, input) {
+        const fieldName = input.attr('id');
+        interactedFields.add(fieldName); // Mark as interacted
 
-        $('#calle, #numero_exterior, #numero_interior, #entre_calle_1, #entre_calle_2').on('input', function() {
-            showErrorMessage($(this));
-        });
+        if (codigoPostal.length >= 4 && codigoPostal.match(/^\d{4,5}$/)) {
+            console.log('Sending AJAX request for postal code:', codigoPostal); // Depuración
+            $.ajax({
+                url: '{{ route("inscripcion.obtener-datos-direccion") }}', // Corregido: coma añadida
+                method: 'POST',
+                data: {
+                    codigo_postal: codigoPostal,
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    console.log('AJAX response:', response); // Depuración
+                    if (response.success) {
+                        $('#estado').val(response.estado);
+                        $('#estado_display').text(response.estado);
+                        $('#municipio').val(response.municipio);
+                        $('#municipio_display').text(response.municipio);
+                        $('#colonia').empty().append('<option value="">Seleccione un Asentamiento</option>');
+                        $.each(response.asentamientos, function(index, asentamiento) {
+                            $('#colonia').append(
+                                $('<option>', {
+                                    value: asentamiento.nombre,
+                                    text: asentamiento.nombre
+                                })
+                            );
+                        });
 
-        // Handle postal code AJAX validation with debounce
-        const validatePostalCode = debounce(function(codigoPostal, input) {
-            const fieldName = input.attr('id');
-            interactedFields.add(fieldName); // Mark as interacted
-
-            if (codigoPostal.length >= 4 && codigoPostal.match(/^\d{4,5}$/)) {
-                $.ajax({
-                    url: '{{ route("inscripcion.obtener_datos_direccion") }}',
-                    method: 'POST',
-                    data: {
-                        codigo_postal: codigoPostal,
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            $('#estado').val(response.estado);
-                            $('#estado_display').text(response.estado);
-                            $('#municipio').val(response.municipio);
-                            $('#municipio_display').text(response.municipio);
-                            $('#colonia').empty().append('<option value="">Seleccione un Asentamiento</option>');
-                            $.each(response.asentamientos, function(index, asentamiento) {
-                                $('#colonia').append(
-                                    $('<option>', {
-                                        value: asentamiento.nombre,
-                                        text: asentamiento.nombre
-                                    })
-                                );
-                            });
-
-                            // Update UI only if fields have been interacted with
-                            if (interactedFields.has('estado')) {
-                                updateFieldUI($('#estado'), true);
-                            } else {
-                                updateFieldUI($('#estado'), false);
-                            }
-                            if (interactedFields.has('municipio')) {
-                                updateFieldUI($('#municipio'), true);
-                            } else {
-                                updateFieldUI($('#municipio'), false);
-                            }
-                            if (interactedFields.has('colonia')) {
-                                updateFieldUI($('#colonia'), true);
-                            } else {
-                                updateFieldUI($('#colonia'), false);
-                            }
-                            updateFieldUI(input, true);
+                        // Update UI only if fields have been interacted with
+                        if (interactedFields.has('estado')) {
+                            updateFieldUI($('#estado'), true);
                         } else {
-                            updateFieldUI(input, true);
-                            $('#estado').val('');
-                            $('#estado_display').text('');
-                            $('#municipio').val('');
-                            $('#municipio_display').text('');
-                            $('#colonia').empty().append('<option value="">Seleccione un Asentamiento</option>');
-                            if (interactedFields.has('estado')) {
-                                updateFieldUI($('#estado'), true);
-                            } else {
-                                updateFieldUI($('#estado'), false);
-                            }
-                            if (interactedFields.has('municipio')) {
-                                updateFieldUI($('#municipio'), true);
-                            } else {
-                                updateFieldUI($('#municipio'), false);
-                            }
-                            if (interactedFields.has('colonia')) {
-                                updateFieldUI($('#colonia'), true);
-                            } else {
-                                updateFieldUI($('#colonia'), false);
-                            }
+                            updateFieldUI($('#estado'), false);
                         }
-                        checkAllFields();
-                    },
-                    error: function(xhr) {
-                        console.error('Error fetching address data:', xhr);
+                        if (interactedFields.has('municipio')) {
+                            updateFieldUI($('#municipio'), true);
+                        } else {
+                            updateFieldUI($('#municipio'), false);
+                        }
+                        if (interactedFields.has('colonia')) {
+                            updateFieldUI($('#colonia'), true);
+                        } else {
+                            updateFieldUI($('#colonia'), false);
+                        }
+                        updateFieldUI(input, true);
+                    } else {
                         updateFieldUI(input, true);
                         $('#estado').val('');
                         $('#estado_display').text('');
@@ -591,117 +567,146 @@
                         } else {
                             updateFieldUI($('#colonia'), false);
                         }
-                        checkAllFields();
                     }
-                });
-            } else {
-                updateFieldUI(input, true);
-                $('#estado').val('');
-                $('#estado_display').text('');
-                $('#municipio').val('');
-                $('#municipio_display').text('');
-                $('#colonia').empty().append('<option value="">Seleccione un Asentamiento</option>');
-                if (interactedFields.has('estado')) {
-                    updateFieldUI($('#estado'), true);
-                } else {
-                    updateFieldUI($('#estado'), false);
-                }
-                if (interactedFields.has('municipio')) {
-                    updateFieldUI($('#municipio'), true);
-                } else {
-                    updateFieldUI($('#municipio'), false);
-                }
-                if (interactedFields.has('colonia')) {
-                    updateFieldUI($('#colonia'), true);
-                } else {
-                    updateFieldUI($('#colonia'), false);
-                }
-                checkAllFields();
-            }
-        }, 500);
-
-        $('#codigo_postal').on('input', function() {
-            const fieldName = $(this).attr('id');
-            interactedFields.add(fieldName); // Mark as interacted
-            let value = $(this).val();
-            value = value.replace(/[^0-9]/g, '');
-            $(this).val(value);
-            validatePostalCode($(this).val(), $(this));
-        });
-
-        // Validate all fields on form submission
-        $('#formulario2').on('submit', function(e) {
-            const fields = [
-                '#codigo_postal',
-                '#estado',
-                '#municipio',
-                '#colonia',
-                '#calle',
-                '#numero_exterior',
-                '#numero_interior',
-                '#entre_calle_1',
-                '#entre_calle_2'
-            ];
-
-            let hasErrors = false;
-            fields.forEach(function(fieldSelector) {
-                const field = $(fieldSelector);
-                if (field.length && !field.is(':hidden') && isFieldApplicable(field.attr('id'))) {
-                    const fieldName = field.attr('id');
-                    interactedFields.add(fieldName); // Mark as interacted
-                    if (!updateFieldUI(field, true)) {
-                        hasErrors = true;
+                    checkAllFields();
+                },
+                error: function(xhr) {
+                    console.error('Error fetching address data:', xhr); // Depuración
+                    updateFieldUI(input, true);
+                    $('#estado').val('');
+                    $('#estado_display').text('');
+                    $('#municipio').val('');
+                    $('#municipio_display').text('');
+                    $('#colonia').empty().append('<option value="">Seleccione un Asentamiento</option>');
+                    if (interactedFields.has('estado')) {
+                        updateFieldUI($('#estado'), true);
+                    } else {
+                        updateFieldUI($('#estado'), false);
                     }
+                    if (interactedFields.has('municipio')) {
+                        updateFieldUI($('#municipio'), true);
+                    } else {
+                        updateFieldUI($('#municipio'), false);
+                    }
+                    if (interactedFields.has('colonia')) {
+                        updateFieldUI($('#colonia'), true);
+                    } else {
+                        updateFieldUI($('#colonia'), false);
+                    }
+                    checkAllFields();
                 }
             });
+        } else {
+            updateFieldUI(input, true);
+            $('#estado').val('');
+            $('#estado_display').text('');
+            $('#municipio').val('');
+            $('#municipio_display').text('');
+            $('#colonia').empty().append('<option value="">Seleccione un Asentamiento</option>');
+            if (interactedFields.has('estado')) {
+                updateFieldUI($('#estado'), true);
+            } else {
+                updateFieldUI($('#estado'), false);
+            }
+            if (interactedFields.has('municipio')) {
+                updateFieldUI($('#municipio'), true);
+            } else {
+                updateFieldUI($('#municipio'), false);
+            }
+            if (interactedFields.has('colonia')) {
+                updateFieldUI($('#colonia'), true);
+            } else {
+                updateFieldUI($('#colonia'), false);
+            }
+            checkAllFields();
+        }
+    }, 500);
 
-            if (hasErrors) {
-                e.preventDefault();
-                checkAllFields();
+    $('#codigo_postal').on('input', function() {
+        const fieldName = $(this).attr('id');
+        interactedFields.add(fieldName); // Mark as interacted
+        let value = $(this).val();
+        value = value.replace(/[^0-9]/g, '');
+        $(this).val(value);
+        console.log('Validating postal code:', value); // Depuración
+        validatePostalCode($(this).val(), $(this));
+    });
+
+    // Validate all fields on form submission
+    $('#formulario2').on('submit', function(e) {
+        const fields = [
+            '#codigo_postal',
+            '#estado',
+            '#municipio',
+            '#colonia',
+            '#calle',
+            '#numero_exterior',
+            '#numero_interior',
+            '#entre_calle_1',
+            '#entre_calle_2'
+        ];
+
+        let hasErrors = false;
+        fields.forEach(function(fieldSelector) {
+            const field = $(fieldSelector);
+            if (field.length && !field.is(':hidden') && isFieldApplicable(field.attr('id'))) {
+                const fieldName = field.attr('id');
+                interactedFields.add(fieldName); // Mark as interacted
+                if (!updateFieldUI(field, true)) {
+                    hasErrors = true;
+                }
             }
         });
 
-        // Trigger postal code validation for pre-filled value without UI update
-        if ($('#codigo_postal').val()) {
-            const codigoPostal = $('#codigo_postal').val();
-            if (codigoPostal.length >= 4 && codigoPostal.match(/^\d{4,5}$/)) {
-                $.ajax({
-                    url: '{{ route("inscripcion.obtener_datos_direccion") }}',
-                    method: 'POST',
-                    data: {
-                        codigo_postal: codigoPostal,
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            $('#estado').val(response.estado);
-                            $('#estado_display').text(response.estado);
-                            $('#municipio').val(response.municipio);
-                            $('#municipio_display').text(response.municipio);
-                            $('#colonia').empty().append('<option value="">Seleccione un Asentamiento</option>');
-                            $.each(response.asentamientos, function(index, asentamiento) {
-                                $('#colonia').append(
-                                    $('<option>', {
-                                        value: asentamiento.nombre,
-                                        text: asentamiento.nombre
-                                    })
-                                );
-                            });
-                            // Do not update UI to avoid red/green borders
-                        }
-                        checkAllFields();
-                    },
-                    error: function(xhr) {
-                        console.error('Error fetching address data:', xhr);
-                        checkAllFields();
-                    }
-                });
-            }
+        if (hasErrors) {
+            e.preventDefault();
+            checkAllFields();
         }
-
-        // Initial check for submit button state (no UI validation)
-        checkAllFields();
     });
+
+    // Trigger postal code validation for pre-filled value without UI update
+    if ($('#codigo_postal').val()) {
+        const codigoPostal = $('#codigo_postal').val();
+        if (codigoPostal.length >= 4 && codigoPostal.match(/^\d{4,5}$/)) {
+            console.log('Validating pre-filled postal code:', codigoPostal); // Depuración
+            $.ajax({
+                url: '{{ route("inscripcion.obtener-datos-direccion") }}', // Corregido: coma añadida
+                method: 'POST',
+                data: {
+                    codigo_postal: codigoPostal,
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    console.log('AJAX response for pre-filled postal code:', response); // Depuración
+                    if (response.success) {
+                        $('#estado').val(response.estado);
+                        $('#estado_display').text(response.estado);
+                        $('#municipio').val(response.municipio);
+                        $('#municipio_display').text(response.municipio);
+                        $('#colonia').empty().append('<option value="">Seleccione un Asentamiento</option>');
+                        $.each(response.asentamientos, function(index, asentamiento) {
+                            $('#colonia').append(
+                                $('<option>', {
+                                    value: asentamiento.nombre,
+                                    text: asentamiento.nombre
+                                })
+                            );
+                        });
+                        // Do not update UI to avoid red/green borders
+                    }
+                    checkAllFields();
+                },
+                error: function(xhr) {
+                    console.error('Error fetching address data for pre-filled postal code:', xhr); // Depuración
+                    checkAllFields();
+                }
+            });
+        }
+    }
+
+    // Initial check for submit button state (no UI validation)
+    checkAllFields();
+});
     </script>
 </body>
 </html>

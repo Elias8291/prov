@@ -20,6 +20,7 @@
         </div>
         <div class="progress-tracker">
             @foreach ($seccionesInfo as $i => $titulo)
+            <div class="progress-bar-advance" id="progressBarAdvance"></div>
                 <div class="seccion {{ $i <= $seccion ? 'active' : '' }}">
                     <div class="seccion-numero">{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}</div>
                     <div class="seccion-titulo">{{ $titulo }}</div>
@@ -54,3 +55,30 @@
     </div>
 </div>
 @endsection
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+  // ANIMAR BARRA DE PORCENTAJE
+  const progressFill = document.getElementById('progressFill');
+  if (progressFill) {
+    // Forzamos recalcular el width (trigger transition)
+    setTimeout(() => {
+      progressFill.style.width = progressFill.dataset.target + '%';
+    }, 80);
+  }
+
+  // ANIMAR TRACKER (rayita)
+  const tracker = document.querySelector('.progress-tracker');
+  const advanceBar = document.getElementById('progressBarAdvance');
+  if (tracker && advanceBar) {
+    const secciones = tracker.querySelectorAll('.seccion');
+    const active = tracker.querySelectorAll('.seccion.active').length;
+    // Calcula avance: 0% si 1 sección, 100% si todas, proporcional si no
+    let percent = 0;
+    if (secciones.length > 1) {
+      percent = ((active - 1) / (secciones.length - 1)) * 100;
+    }
+    advanceBar.style.width = percent + '%';
+  }
+});
+    </script>
