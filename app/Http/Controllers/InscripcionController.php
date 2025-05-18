@@ -301,87 +301,110 @@ public function subirDocumento(Request $request)
         return view('inscripcion.exito');
     }
 
-    public function procesarSeccion(Request $request)
-    {
-        $user = Auth::user();
-        
-        // Prevent revisors from submitting the form
-        if ($user->hasRole('revisor')) {
-            return redirect()->route('inscripcion.formulario')->with('info', 'Los revisores no pueden enviar formularios.');
-        }
+public function procesarSeccion(Request $request)
+{
+    $user = Auth::user();
 
-        $solicitante = $user->solicitante;
-
-        // Ensure solicitante exists
-        if (!$solicitante) {
-            return redirect()->route('dashboard')->withErrors(['error' => 'No tienes un perfil de solicitante asociado.']);
-        }
-
-        // Find the pending tramite
-        $tramite = Tramite::where('solicitante_id', $solicitante->id)
-            ->where('estado', 'Pendiente')
-            ->first();
-
-        if (!$tramite) {
-            return redirect()->route('inscripcion.terminos_y_condiciones');
-        }
-
-        // Get current section and tipo_persona
-        $seccion = $tramite->progreso_tramite;
-        $tipoPersona = $solicitante->tipo_persona ?? 'No definido';
-        
-        // Debug the current section being processed
-        Log::info('Processing section: ' . $seccion);
-        Log::info('Form data received: ', $request->all());
-
-        // Validar datos para la sección actual (excepto sección 6 Documentos)
-        if (!($seccion == 6 && $tipoPersona == 'Moral')) {
-            $this->validarDatosSeccion($request, $seccion, $tipoPersona);
-        }
-
-        try {
-            DB::beginTransaction();
-
-            if ($seccion == 1) {
-                $this->procesarDatosGenerales($request, $tramite);
-            }
-            elseif ($seccion == 2) {
-                $this->procesarDatosLegales($request, $tramite);
-            }
-            elseif ($seccion == 3) {
-                if ($tipoPersona == 'Moral') {
-                    $this->procesarDatosConstitucion($request, $tramite);
-                } else if ($tipoPersona == 'Física') {
-                    $this->procesarAccionistas($request, $tramite);
-                }
-            }
-            elseif ($seccion == 4 && $tipoPersona == 'Moral') {
-                $this->procesarAccionistas($request, $tramite);
-            }
-            elseif ($seccion == 5 && $tipoPersona == 'Moral') {
-                $this->procesarApoderadoLegal($request, $tramite);
-            }
-            // OMITIDO: sección 6 (Documentos) - no se procesa nada
-
-            DB::commit();
-
-            // Increment the progreso_tramite to move to the next section
-            if ($seccion < $this->obtenerTotalSecciones($tipoPersona)) {
-                $tramite->increment('progreso_tramite');
-            }
-
-            return redirect()->route('inscripcion.formulario');
-            
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error processing section ' . $seccion . ': ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
-            ]);
-            
-            return back()->withErrors(['error' => 'Ocurrió un error al guardar los datos: ' . $e->getMessage()])->withInput();
-        }
+    // Evita que revisores envíen el formulario
+    if ($user->hasRole('revisor')) {
+        return redirect()->route('inscripcion.formulario')->with('info', 'Los revisores no pueden enviar formularios.');
     }
 
+    $solicitante = $user->solicitante;
+
+    // Asegura que exista un solicitante
+    if (!$solicitante) {
+        return redirect()->route('dashboard')->withErrors(['error' => 'No tienes un perfil de solicitante asociado.']);
+    }
+
+    // Encuentra el trámite pendiente
+    $tramite = Tramite::where('solicitante_id', $solicitante->id)
+        ->where('estado', 'Pendiente')
+        ->first();
+
+    if (!$tramite) {
+        return redirect()->route('inscripcion.terminos_y_condiciones');
+    }
+
+    // Sección actual y tipo de persona
+    $seccion = $tramite->progreso_tramite;
+    $tipoPersona = $solicitante->tipo_persona ?? 'No definido';
+
+    // VALIDACIÓN DE DOCUMENTOS para la sección de documentos
+    if (
+        ($tipoPersona == 'Moral' && $seccion == 6) ||
+        ($tipoPersona == 'Física' && $seccion == 3)
+    ) {
+        // Obtén los IDs de documentos requeridos (comunes + específicos)
+        $documentosRequeridos = Documento::where(function($q) use ($tipoPersona) {
+                $q->where('tipo_persona', $tipoPersona)
+                  ->orWhere('tipo_persona', 'Ambas');
+            })
+            ->where('es_visible', true)
+            ->pluck('id')
+            ->toArray();
+
+        // ¿Cuántos ha subido ya el usuario?
+        $docsSubidos = DocumentoSolicitante::where('tramite_id', $tramite->id)
+            ->whereIn('documento_id', $documentosRequeridos)
+            ->count();
+
+        if ($docsSubidos < count($documentosRequeridos)) {
+            return redirect()->route('inscripcion.formulario')
+                ->withErrors(['error' => 'Debe subir todos los documentos requeridos antes de continuar.']);
+        }
+
+        // Si ya están todos, avanzar a sección 7 (confirmación/final)
+        $tramite->progreso_tramite = ($tipoPersona == 'Moral') ? 7 : 4;
+        $tramite->save();
+
+        return redirect()->route('inscripcion.formulario')
+            ->with('success', 'Documentos completos. Continúe con la confirmación.');
+    }
+
+    // Procesamiento para el resto de secciones
+    try {
+        DB::beginTransaction();
+
+        if ($seccion == 1) {
+            $this->procesarDatosGenerales($request, $tramite);
+        }
+        elseif ($seccion == 2) {
+            $this->procesarDatosLegales($request, $tramite);
+        }
+        elseif ($seccion == 3) {
+            if ($tipoPersona == 'Moral') {
+                $this->procesarDatosConstitucion($request, $tramite);
+            } else if ($tipoPersona == 'Física') {
+                $this->procesarAccionistas($request, $tramite);
+            }
+        }
+        elseif ($seccion == 4 && $tipoPersona == 'Moral') {
+            $this->procesarAccionistas($request, $tramite);
+        }
+        elseif ($seccion == 5 && $tipoPersona == 'Moral') {
+            $this->procesarApoderadoLegal($request, $tramite);
+        }
+        // OMITIDO: sección 6 para Moral (ya validada arriba)
+
+        DB::commit();
+
+        // Aumenta progreso_tramite para avanzar a la siguiente sección (excepto cuando ya se avanzó por documentos)
+        if ($seccion < $this->obtenerTotalSecciones($tipoPersona)) {
+            $tramite->increment('progreso_tramite');
+        }
+
+        return redirect()->route('inscripcion.formulario');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        \Log::error('Error processing section ' . $seccion . ': ' . $e->getMessage(), [
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return back()->withErrors(['error' => 'Ocurrió un error al guardar los datos: ' . $e->getMessage()])->withInput();
+    }
+}
     private function procesarDatosGenerales(Request $request, $tramite)
     {
         $solicitante = Auth::user()->solicitante;
