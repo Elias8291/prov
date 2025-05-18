@@ -58,46 +58,48 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th data-label="ID Proveedor">ID</th>
-                        <th data-label="Razón Social">Razón Social</th>
-                        <th data-label="RFC">RFC</th>
-                        <th data-label="Estado">Estado</th>
-                        <th data-label="Fecha Registro">Registro</th>
-                        <th data-label="Fecha Vencimiento">Vencimiento</th>
-                        <th data-label="Acciones">Acciones</th>
+                        <th>ID</th>
+                        <th>Razón Social</th>
+                        <th>RFC</th>
+                        <th>Estado</th>
+                        <th>Registro</th>
+                        <th>Vencimiento</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($proveedores as $proveedor)
                         <tr>
-                            <td data-label="ID Proveedor">{{ $proveedor->pv }}</td>
-                            <td data-label="Razón Social" class="razon-social">
-                                {{ Str::limit($proveedor->razon_social, 40) }}</td>
-                            <td data-label="RFC" class="rfc">{{ $proveedor->rfc }}</td>
-                            <td data-label="Estado">
-                                <span
-                                    class="status-badge {{ strtolower($proveedor->estado) == 'activo' ? 'active' : 'inactive' }}">
+                            <td>{{ $proveedor->pv }}</td>
+                            <td class="product-name-cell">
+                                <div>
+                                    <div class="product-name">{{ Str::limit($proveedor->razon_social, 40) }}</div>
+                                    <div class="product-id">{{ $proveedor->rfc }}</div>
+                                </div>
+                            </td>
+                            <td class="rfc">{{ $proveedor->rfc }}</td>
+                            <td>
+                                <span class="status-badge {{ strtolower($proveedor->estado) == 'activo' ? 'active' : 'inactive' }}">
                                     {{ $proveedor->estado }}
                                 </span>
                             </td>
-                            <td data-label="Fecha Registro">
+                            <td>
                                 @if ($proveedor->fecha_registro)
-                                    {{ \Carbon\Carbon::createFromFormat('Y-m-d', $proveedor->fecha_registro)->format('d/m/Y') }}
+                                    {{ \Carbon\Carbon::createFromFormat('Y-m-d', $proveedor->fecha_registro)->format('d M Y') }}
                                 @else
                                     <span class="text-muted">No asignada</span>
                                 @endif
                             </td>
-                            <td data-label="Fecha Vencimiento">
+                            <td>
                                 @if ($proveedor->fecha_vencimiento)
-                                    {{ \Carbon\Carbon::createFromFormat('Y-m-d', $proveedor->fecha_vencimiento)->format('d/m/Y') }}
+                                    {{ \Carbon\Carbon::createFromFormat('Y-m-d', $proveedor->fecha_vencimiento)->format('d M Y') }}
                                 @else
                                     <span class="text-muted">No asignada</span>
                                 @endif
                             </td>
-                            <td data-label="Acciones">
+                            <td>
                                 <div class="action-buttons">
-                                    <button class="btn-action view-btn" data-id="{{ $proveedor->pv }}"
-                                        title="Ver detalles">
+                                    <button class="btn-action view-btn" data-id="{{ $proveedor->pv }}" title="Ver detalles">
                                         <i class="fas fa-eye"></i>
                                     </button>
                                 </div>
@@ -112,7 +114,7 @@
             </table>
         </div>
 
-        <!-- Stylish Pagination -->
+        <!-- Pagination -->
         <div class="custom-pagination">
             @if ($proveedores->onFirstPage())
                 <span class="pagination-arrow disabled">
@@ -178,34 +180,29 @@
 
             <div class="modal-body">
                 <div class="provider-details">
-                    <div class="detail-group">
-                        <span class="detail-label">ID Proveedor:</span>
-                        <span class="detail-value" id="view_pv"></span>
+                    <div class="form-group">
+                        <label>ID Proveedor:</label>
+                        <p id="view_pv" class="form-text"></p>
                     </div>
-
-                    <div class="detail-group">
-                        <span class="detail-label">Razón Social:</span>
-                        <span class="detail-value" id="view_razon_social"></span>
+                    <div class="form-group">
+                        <label>Razón Social:</label>
+                        <p id="view_razon_social" class="form-text"></p>
                     </div>
-
-                    <div class="detail-group">
-                        <span class="detail-label">RFC:</span>
-                        <span class="detail-value" id="view_rfc"></span>
+                    <div class="form-group">
+                        <label>RFC:</label>
+                        <p id="view_rfc" class="form-text"></p>
                     </div>
-
-                    <div class="detail-group">
-                        <span class="detail-label">Estado:</span>
-                        <span class="detail-value" id="view_estado"></span>
+                    <div class="form-group">
+                        <label>Estado:</label>
+                        <p id="view_estado" class="form-text"></p>
                     </div>
-
-                    <div class="detail-group">
-                        <span class="detail-label">Fecha de Registro:</span>
-                        <span class="detail-value" id="view_fecha_registro"></span>
+                    <div class="form-group">
+                        <label>Fecha de Registro:</label>
+                        <p id="view_fecha_registro" class="form-text"></p>
                     </div>
-
-                    <div class="detail-group">
-                        <span class="detail-label">Fecha de Vencimiento:</span>
-                        <span class="detail-value" id="view_fecha_vencimiento"></span>
+                    <div class="form-group">
+                        <label>Fecha de Vencimiento:</label>
+                        <p id="view_fecha_vencimiento" class="form-text"></p>
                     </div>
                 </div>
             </div>
@@ -215,470 +212,6 @@
             </div>
         </div>
     </div>
-
-    <style>
-        /* Guinda Color Scheme */
-        :root {
-            --guinda: #800000;
-            --guinda-light: #a52a2a;
-            --guinda-dark: #660000;
-        }
-
-        /* Compact Dashboard Container */
-        .dashboard-container {
-            padding: 15px;
-            max-width: 1220px;
-            /* Compact container */
-           margin: 40px auto;
-            box-sizing: border-box;
-        }
-
-       
-        /* Table Styles */
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #fff;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 15px;
-            table-layout: auto;
-        }
-
-        .table th,
-        .table td {
-            padding: 8px 10px;
-            text-align: left;
-            border-bottom: 1px solid #dee2e6;
-            font-size: 13px;
-            white-space: normal;
-            word-break: break-word;
-        }
-
-        .table th {
-            background: var(--guinda);
-            color: #fff;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 12px;
-        }
-
-        .table td {
-            color: #333;
-        }
-
-        /* Adjusted Column Widths */
-        .table th:nth-child(1),
-        .table td:nth-child(1) {
-            width: 10%;
-            text-align: center;
-        }
-
-        /* ID Proveedor (increased from 7% to 10%) */
-        .table th:nth-child(2),
-        .table td:nth-child(2) {
-            width: 32%;
-            text-align: center;
-        }
-
-        /* Razón Social (adjusted from 35% to 32%) */
-        .table th:nth-child(3),
-        .table td:nth-child(3) {
-            width: 15%;
-            text-align: center;
-        }
-
-        /* RFC */
-        .table th:nth-child(4),
-        .table td:nth-child(4) {
-            width: 10%;
-            text-align: center;
-        }
-
-        /* Estado */
-        .table th:nth-child(5),
-        .table td:nth-child(5) {
-            width: 15%;
-            text-align: center;
-        }
-
-        /* Fecha Registro */
-        .table th:nth-child(6),
-        .table td:nth-child(6) {
-            width: 15%;
-            text-align: center;
-        }
-
-        /* Fecha Vencimiento */
-        .table th:nth-child(7),
-        .table td:nth-child(7) {
-            width: 5%;
-            /* Acciones */
-            text-align: center;
-            /* Already centered, kept for consistency */
-        }
-
-        .table tr:hover {
-            background: #f8f9fa;
-        }
-
-        /* Status Badge */
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 500;
-            display: inline-block;
-        }
-
-        .status-badge.active {
-            background: #28a745;
-            color: #fff;
-        }
-
-        .status-badge.inactive {
-            background: #6c757d;
-            /* Gray for inactive */
-            color: #fff;
-        }
-
-        /* Action Buttons */
-        .action-buttons {
-            display: flex;
-            justify-content: center;
-            /* Center icon */
-            gap: 6px;
-        }
-
-        .btn-action {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 4px;
-            font-size: 13px;
-            color: var(--guinda);
-        }
-
-        .btn-action:hover {
-            color: var(--guinda-light);
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            overflow-y: auto;
-        }
-
-        .modal-content {
-            background: #fff;
-            max-width: 500px;
-            margin: 5% auto;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-            position: relative;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #dee2e6;
-            padding-bottom: 8px;
-        }
-
-        .modal-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--guinda);
-        }
-
-        .close-modal {
-            cursor: pointer;
-            font-size: 20px;
-            color: #666;
-        }
-
-        .close-modal:hover {
-            color: var(--guinda);
-        }
-
-        .modal-body {
-            padding: 15px 0;
-        }
-
-        .detail-group {
-            display: flex;
-            margin-bottom: 12px;
-        }
-
-        .detail-label {
-            font-weight: 600;
-            color: var(--guinda);
-            width: 130px;
-            font-size: 13px;
-        }
-
-        .detail-value {
-            color: #333;
-            flex: 1;
-            font-size: 13px;
-        }
-
-        .modal-footer {
-            border-top: 1px solid #dee2e6;
-            padding-top: 8px;
-            text-align: right;
-        }
-
-        .btn-secondary {
-            background: var(--guinda);
-            color: #fff;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 13px;
-        }
-
-        .btn-secondary:hover {
-            background: var(--guinda-light);
-        }
-
-        /* Enhanced Search and Filter Controls */
-        .controls-bar {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .search-container {
-            position: relative;
-            flex: 1;
-            max-width: 300px;
-            /* Larger search input */
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 8px 12px 8px 36px;
-            border: 2px solid var(--guinda);
-            border-radius: 25px;
-            /* Rounded design */
-            font-size: 14px;
-            color: #333;
-            background: #fff;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: var(--guinda-light);
-            box-shadow: 0 0 5px rgba(165, 42, 42, 0.3);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--guinda);
-            font-size: 14px;
-        }
-
-        .filters-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .filter-item {
-            display: flex;
-            align-items: center;
-        }
-
-        .filter-label {
-            margin-right: 6px;
-            font-weight: 600;
-            color: var(--guinda);
-            font-size: 13px;
-        }
-
-        .filter-select {
-            padding: 6px 10px;
-            border: 2px solid var(--guinda);
-            border-radius: 25px;
-            font-size: 13px;
-            color: #333;
-            background: #fff;
-            min-width: 140px;
-            transition: border-color 0.3s;
-        }
-
-        .filter-select:focus {
-            outline: none;
-            border-color: var(--guinda-light);
-        }
-
-        .filter-button {
-            background: var(--guinda);
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 25px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-        }
-
-        .filter-button:hover {
-            background: var(--guinda-light);
-            transform: translateY(-1px);
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        @media (min-width: 768px) {
-            .controls-bar {
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-between;
-            }
-        }
-
-        /* Pagination Styles */
-        .custom-pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            margin-top: 15px;
-        }
-
-        .pagination-arrow {
-            padding: 6px 10px;
-            border-radius: 5px;
-            background: #f8f9fa;
-            color: var(--guinda);
-            text-decoration: none;
-            font-size: 13px;
-        }
-
-        .pagination-arrow:hover {
-            background: #e9ecef;
-            color: var(--guinda-light);
-        }
-
-        .pagination-arrow.disabled {
-            color: #ccc;
-            pointer-events: none;
-        }
-
-        .pagination-number {
-            padding: 6px 10px;
-            border-radius: 5px;
-            background: #f8f9fa;
-            color: var(--guinda);
-            text-decoration: none;
-            font-size: 13px;
-        }
-
-        .pagination-number.active {
-            background: var(--guinda);
-            color: #fff;
-        }
-
-        .pagination-number:hover {
-            background: #e9ecef;
-            color: var(--guinda-light);
-        }
-
-        .pagination-ellipsis {
-            padding: 6px 10px;
-            color: #666;
-            font-size: 13px;
-        }
-
-        /* Responsive Table for Small Screens */
-        @media (max-width: 600px) {
-            .dashboard-container {
-                padding: 10px;
-            }
-
-            .table th,
-            .table td {
-                padding: 6px 8px;
-                font-size: 12px;
-            }
-
-            .table {
-                display: block;
-                overflow-x: hidden;
-            }
-
-            .table thead {
-                display: none;
-            }
-
-            .table tbody,
-            .table tr,
-            .table td {
-                display: block;
-                width: 100%;
-            }
-
-            .table tr {
-                margin-bottom: 8px;
-                border-bottom: 1px solid #dee2e6;
-            }
-
-            .table td {
-                text-align: right;
-                padding-left: 50%;
-                position: relative;
-            }
-
-            .table td:before {
-                content: attr(data-label);
-                position: absolute;
-                left: 8px;
-                width: 45%;
-                font-weight: 600;
-                text-align: left;
-                font-size: 12px;
-                color: var(--guinda);
-            }
-
-            .table td:nth-child(7) {
-                text-align: center;
-                /* Keep Acciones centered */
-            }
-
-            .search-container {
-                max-width: 100%;
-            }
-
-            .search-input {
-                padding: 6px 10px 6px 30px;
-                font-size: 13px;
-            }
-
-            .filter-select {
-                min-width: 120px;
-            }
-        }
-    </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -701,30 +234,31 @@
             cancelViewBtn.addEventListener('click', closeViewModal);
 
             // Open View Modal when view button is clicked
-            document.querySelectorAll('.view-btn').forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    const row = this.closest('tr');
-                    if (row) {
-                        const pv = row.cells[0].textContent.trim();
-                        const razonSocial = row.cells[1].textContent.trim();
-                        const rfc = row.cells[2].textContent.trim();
-                        const estado = row.cells[3].textContent.trim();
-                        const fechaRegistro = row.cells[4].textContent.trim();
-                        const fechaVencimiento = row.cells[5].textContent.trim();
+            function attachViewButtonListeners() {
+                document.querySelectorAll('.view-btn').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        const row = this.closest('tr');
+                        if (row) {
+                            const pv = row.cells[0].textContent.trim();
+                            const razonSocial = row.querySelector('.product-name').textContent.trim();
+                            const rfc = row.querySelector('.rfc').textContent.trim();
+                            const estado = row.cells[3].textContent.trim();
+                            const fechaRegistro = row.cells[4].textContent.trim();
+                            const fechaVencimiento = row.cells[5].textContent.trim();
 
-                        document.getElementById('view_pv').textContent = pv;
-                        document.getElementById('view_razon_social').textContent = razonSocial;
-                        document.getElementById('view_rfc').textContent = rfc;
-                        document.getElementById('view_estado').textContent = estado;
-                        document.getElementById('view_fecha_registro').textContent = fechaRegistro;
-                        document.getElementById('view_fecha_vencimiento').textContent =
-                            fechaVencimiento;
+                            document.getElementById('view_pv').textContent = pv;
+                            document.getElementById('view_razon_social').textContent = razonSocial;
+                            document.getElementById('view_rfc').textContent = rfc;
+                            document.getElementById('view_estado').textContent = estado;
+                            document.getElementById('view_fecha_registro').textContent = fechaRegistro;
+                            document.getElementById('view_fecha_vencimiento').textContent = fechaVencimiento;
 
-                        viewModal.style.display = 'block';
-                        document.body.style.overflow = 'hidden';
-                    }
+                            viewModal.style.display = 'block';
+                            document.body.style.overflow = 'hidden';
+                        }
+                    });
                 });
-            });
+            }
 
             // Close modal when clicking outside
             window.addEventListener('click', function(event) {
@@ -741,7 +275,7 @@
                 const days = document.getElementById('daysFilter').value;
 
                 if (searchTerm.length >= 2) {
-                    let searchUrl = `{{ route('proveedores.search') }}?term=${searchTerm}`;
+                    let searchUrl = `{{ route('proveedores.search') }}?term=${encodeURIComponent(searchTerm)}`;
                     if (status) searchUrl += `&status=${status}`;
                     if (days) searchUrl += `&days=${days}`;
 
@@ -780,7 +314,7 @@
                 if (status) url += `status=${status}&`;
 
                 if (searchTerm && searchTerm.length >= 2) {
-                    url = `{{ route('proveedores.search') }}?term=${searchTerm}`;
+                    url = `{{ route('proveedores.search') }}?term=${encodeURIComponent(searchTerm)}`;
                     if (days) url += `&days=${days}`;
                     if (status) url += `&status=${status}`;
 
@@ -815,27 +349,31 @@
                     let formattedFechaRegistro = '<span class="text-muted">No asignada</span>';
                     if (proveedor.fecha_registro) {
                         const [year, month, day] = proveedor.fecha_registro.split('-');
-                        formattedFechaRegistro = `${day}/${month}/${year}`;
+                        formattedFechaRegistro = `${day} ${new Date(year, month - 1).toLocaleString('es', { month: 'short' })} ${year}`;
                     }
 
                     let formattedFechaVencimiento = '<span class="text-muted">No asignada</span>';
                     if (proveedor.fecha_vencimiento) {
                         const [year, month, day] = proveedor.fecha_vencimiento.split('-');
-                        formattedFechaVencimiento = `${day}/${month}/${year}`;
+                        formattedFechaVencimiento = `${day} ${new Date(year, month - 1).toLocaleString('es', { month: 'short' })} ${year}`;
                     }
 
                     row.innerHTML = `
-                        <td data-label="ID Proveedor">${proveedor.pv}</td>
-                        <td data-label="Razón Social" class="razon-social">${proveedor.razon_social ? proveedor.razon_social.substring(0, 40) + (proveedor.razon_social.length > 40 ? '...' : '') : ''}</td>
-                        <td data-label="RFC" class="rfc">${proveedor.rfc || ''}</td>
-                        <td data-label="Estado">
+                        <td>${proveedor.pv}</td>
+                        <td class="product-name-cell">
+                            <div>
+                                <div class="product-name">${proveedor.razon_social ? proveedor.razon_social.substring(0, 40) + (proveedor.razon_social.length > 40 ? '...' : '') : ''}</div>
+                                <div class="product-id">${proveedor.rfc || ''}</div>
+                            </td>
+                        <td class="rfc">${proveedor.rfc || ''}</td>
+                        <td>
                             <span class="status-badge ${proveedor.estado.toLowerCase() === 'activo' ? 'active' : 'inactive'}">
                                 ${proveedor.estado}
                             </span>
                         </td>
-                        <td data-label="Fecha Registro">${formattedFechaRegistro}</td>
-                        <td data-label="Fecha Vencimiento">${formattedFechaVencimiento}</td>
-                        <td data-label="Acciones">
+                        <td>${formattedFechaRegistro}</td>
+                        <td>${formattedFechaVencimiento}</td>
+                        <td>
                             <div class="action-buttons">
                                 <button class="btn-action view-btn" data-id="${proveedor.pv}" title="Ver detalles">
                                     <i class="fas fa-eye"></i>
@@ -847,36 +385,7 @@
                     tableBody.appendChild(row);
                 });
 
-                attachEventListenersToButtons();
-            }
-
-            // Function to attach event listeners to dynamically created buttons
-            function attachEventListenersToButtons() {
-                document.querySelectorAll('.view-btn').forEach(function(btn) {
-                    btn.addEventListener('click', function() {
-                        const row = this.closest('tr');
-                        if (row) {
-                            const pv = row.cells[0].textContent.trim();
-                            const razonSocial = row.cells[1].textContent.trim();
-                            const rfc = row.cells[2].textContent.trim();
-                            const estado = row.cells[3].textContent.trim();
-                            const fechaRegistro = row.cells[4].textContent.trim();
-                            const fechaVencimiento = row.cells[5].textContent.trim();
-
-                            document.getElementById('view_pv').textContent = pv;
-                            document.getElementById('view_razon_social').textContent = razonSocial;
-                            document.getElementById('view_rfc').textContent = rfc;
-                            document.getElementById('view_estado').textContent = estado;
-                            document.getElementById('view_fecha_registro').textContent =
-                                fechaRegistro;
-                            document.getElementById('view_fecha_vencimiento').textContent =
-                                fechaVencimiento;
-
-                            viewModal.style.display = 'block';
-                            document.body.style.overflow = 'hidden';
-                        }
-                    });
-                });
+                attachViewButtonListeners();
             }
 
             // Show alert message
@@ -889,7 +398,7 @@
             }
 
             // Initialize event listeners
-            attachEventListenersToButtons();
+            attachViewButtonListeners();
         });
     </script>
 @endsection

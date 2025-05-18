@@ -1,6 +1,6 @@
 /* Proveedores de Oaxaca - Sistema de Administración
    CSS Elegante y Profesional
-   Versión 2.0
+   Versión 2.1
 */
 
 /* VARIABLES GLOBALES
@@ -66,7 +66,7 @@ body {
 /* LAYOUT PRINCIPAL
 -------------------------------------------------- */
 .dashboard-container {
-  max-width: 1280px;
+  max-width: 1780px;
   margin: 40px auto;
   padding: 40px;
   background-color: var(--white);
@@ -212,85 +212,103 @@ body {
   font-size: 14px;
 }
 
-
+/* FILTROS
+-------------------------------------------------- */
 .filters-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .filter-item {
-    display: flex;
-    align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .filter-label {
-    margin-right: 6px;
-    font-weight: 600;
-    color: var(--guinda);
-    font-size: 13px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dark);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 .filter-select {
-    padding: 6px 10px;
-    border: 2px solid var(--guinda);
-    border-radius: 25px;
-    font-size: 13px;
-    color: #333;
-    background: #fff;
-    min-width: 140px;
-    transition: border-color 0.3s;
+  padding: 8px 28px 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-dark);
+  background-color: var(--white);
+  transition: var(--transition);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%239d2449' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  min-width: 140px;
+  cursor: pointer;
 }
 
 .filter-select:focus {
-    outline: none;
-    border-color: var(--guinda-light);
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 4px rgba(157, 36, 73, 0.2);
+}
+
+.filter-select:hover {
+  border-color: var(--primary-light);
+  background-color: var(--bg-light);
 }
 
 .filter-button {
-    background: var(--guinda);
-    color: white;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 25px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
+  background: var(--primary-gradient);
+  color: var(--white);
+  border: none;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: var(--shadow-primary-sm);
+  letter-spacing: 0.02em;
+  position: relative;
+  overflow: hidden;
 }
 
 .filter-button:hover {
-    background: var(--guinda-light);
-    transform: translateY(-1px);
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-primary);
+  background: var(--hover-gradient);
 }
 
-/* Responsive Design */
-@media (min-width: 768px) {
-    .controls-bar {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-    }
+.filter-button:active {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-primary-sm);
 }
 
-@media (max-width: 600px) {
-    .search-container {
-        max-width: 100%;
-    }
+.filter-button::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: transform 0.4s, opacity 0.4s;
+}
 
-    .search-input {
-        padding: 6px 10px 6px 30px;
-        font-size: 13px;
-    }
-
-    .filter-select {
-        min-width: 120px;
-    }
+.filter-button:hover::before {
+  transform: translate(-50%, -50%) scale(15);
+  opacity: 0.2;
 }
 
 /* BOTONES
@@ -300,7 +318,6 @@ body {
   gap: 12px;
 }
 
-/* Botón Primario - Mejorado */
 .btn-primary {
   background: var(--primary-gradient);
   color: var(--white);
@@ -348,7 +365,6 @@ body {
   box-shadow: 0 3px 10px rgba(157, 36, 73, 0.2);
 }
 
-/* Botón Secundario */
 .btn-secondary {
   background-color: var(--white);
   color: var(--text-medium);
@@ -381,7 +397,6 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
-/* Iconos en botones */
 .btn-icon {
   font-size: 15px;
   transition: transform 0.3s ease;
@@ -391,14 +406,12 @@ body {
   transform: rotate(90deg);
 }
 
-/* Estilos específicos para el botón de agregar usuario */
 #openUserModalBtn, #openRoleModalBtn {
   background: var(--primary-gradient);
   position: relative;
   overflow: hidden;
 }
 
-/* Animación de ondas al pasar el mouse */
 #openUserModalBtn::after, #openRoleModalBtn::after {
   content: "";
   position: absolute;
@@ -431,6 +444,9 @@ body {
   position: relative;
   z-index: 1;
   border: 1px solid var(--border-color);
+   overflow-x: auto;
+  scrollbar-width: thin; /* Para Firefox */
+  scrollbar-color: var(--primary-light) var(--bg-light);
 }
 
 .table {
@@ -438,23 +454,30 @@ body {
   border-collapse: separate;
   border-spacing: 0;
   font-size: 14px;
+  table-layout: auto;
 }
 
-/* Encabezados de tabla */
+.table-container::-webkit-scrollbar {
+  height: 8px; /* Altura de la barra horizontal */
+  width: 8px; /* Ancho de la barra vertical si la hubiera */
+}
+
 .table thead th {
-  padding: 20px 18px;
+  padding: 16px 14px;
   text-align: left;
   color: var(--primary-color);
   background-color: var(--bg-light);
   font-weight: 700;
   border-bottom: 1px solid var(--border-color);
   cursor: pointer;
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 2;
   white-space: nowrap;
   transition: var(--transition);
   font-family: "Montserrat", "Inter", sans-serif;
   letter-spacing: 0.03em;
-  font-size: 13.5px;
+  font-size: 12.5px;
   text-transform: uppercase;
 }
 
@@ -472,7 +495,7 @@ body {
   margin-left: 6px;
   display: inline-block;
   transition: var(--transition);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .table th:hover {
@@ -484,13 +507,15 @@ body {
   opacity: 0.7;
 }
 
-/* Celdas de tabla */
 .table tbody td {
-  padding: 18px;
+  padding: 14px;
   border-bottom: 1px solid var(--border-color);
   color: var(--text-medium);
   transition: var(--transition);
   font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .table tbody tr:hover {
@@ -515,7 +540,6 @@ body {
   border-bottom-right-radius: var(--radius-lg);
 }
 
-/* Celdas de producto/usuario */
 .product-name-cell {
   display: flex;
   align-items: center;
@@ -524,113 +548,176 @@ body {
 .product-name {
   font-weight: 600;
   color: var(--text-dark);
-  font-size: 14.5px;
+  font-size: 14px;
   letter-spacing: 0.01em;
 }
 
 .product-id {
   color: var(--text-light);
-  font-size: 12px;
+  font-size: 11.5px;
   margin-top: 3px;
   letter-spacing: 0.03em;
   font-weight: 400;
 }
 
-/* INDICADORES DE ESTADO
+/* ESTILOS PARA AVANCE (PROGRESO Y ESTADO)
 -------------------------------------------------- */
-.status-indicator {
+.progress-badge {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 7px 14px;
+  padding: 6px 12px;
   border-radius: var(--radius-xl);
   font-size: 12px;
   font-weight: 600;
-  text-align: center;
-  letter-spacing: 0.03em;
+  color: var(--white);
+  background: var(--secondary-gradient);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.progress-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.progress-1 { background: linear-gradient(135deg, #9d2449, #c1526f); }
+.progress-2 { background: linear-gradient(135deg, #c1526f, #d65c7b); }
+.progress-3 { background: linear-gradient(135deg, #006341, #00875a); }
+.progress-4 { background: linear-gradient(135deg, #00875a, #00a86b); }
+.progress-5 { background: linear-gradient(135deg, #4f46e5, #6b7280); }
+.progress-6 { background: linear-gradient(135deg, #6b7280, #9ca3af); }
+.progress-7 { background: linear-gradient(135deg, #d97706, #f59e0b); }
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: var(--radius-xl);
+  font-size: 12px;
+  font-weight: 600;
   transition: var(--transition);
   box-shadow: var(--shadow-sm);
 }
 
-.status-indicator::before {
+.complete-status {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.complete-status::before {
   content: "";
   display: inline-block;
   width: 8px;
   height: 8px;
   border-radius: 50%;
   margin-right: 6px;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.2);
-  }
-  70% {
-    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
-  }
-}
-
-.status-activo {
-  background-color: #dcfce7;
-  color: #16a34a;
-}
-
-.status-activo::before {
   background-color: #16a34a;
 }
 
-.status-inactivo {
-  background-color: #fee2e2;
-  color: #dc2626;
-}
-
-.status-inactivo::before {
-  background-color: #dc2626;
-}
-
-.status-suspendido {
+.pending-status {
   background-color: #fef3c7;
   color: #d97706;
 }
 
-.status-suspendido::before {
+.pending-status::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
   background-color: #d97706;
 }
 
-tr:hover .status-indicator {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-}
-
-/* INSIGNIAS DE ROL
--------------------------------------------------- */
-.role-badge {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 11.5px;
+.estado-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: var(--radius-xl);
+  font-size: 12px;
   font-weight: 600;
-  background-color: rgba(157, 36, 73, 0.1);
-  color: var(--primary-color);
-  margin-right: 4px;
-  margin-bottom: 4px;
   transition: var(--transition);
-}
-
-.role-badge:hover {
-  background-color: var(--primary-color);
-  color: var(--white);
-  transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
 
-.no-role {
+.estado-aprobado {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.estado-aprobado::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  background-color: #16a34a;
+}
+
+.estado-rechazado {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.estado-rechazado::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  background-color: #dc2626;
+}
+
+.estado-revision {
+  background-color: #e0e7ff;
+  color: #4f46e5;
+}
+
+.estado-revision::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  background-color: #4f46e5;
+}
+
+.estado-pendiente {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.estado-pendiente::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  background-color: #d97706;
+}
+
+.estado-default {
   background-color: #f1f5f9;
   color: var(--text-light);
+}
+
+.estado-default::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  background-color: var(--text-light);
+}
+
+.status-badge:hover, .estado-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 /* BOTONES DE ACCIÓN
@@ -675,6 +762,11 @@ tr:hover .status-indicator {
   color: #4f46e5;
 }
 
+.begin-review-btn {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
 .btn-action:hover {
   transform: translateY(-2px);
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
@@ -695,96 +787,85 @@ tr:hover .status-indicator {
   color: var(--white);
 }
 
-/* PAGINACIÓN
--------------------------------------------------- */
+.begin-review-btn:hover {
+  background-color: #d97706;
+  color: var(--white);
+}
+
 /* PAGINACIÓN
 -------------------------------------------------- */
 .custom-pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    margin-top: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 15px;
 }
 
 .pagination-arrow {
-    padding: 6px 10px;
-    border-radius: 5px;
-    background: #f8f9fa;
-    color: var(--primary-color);
-    text-decoration: none;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
+  padding: 6px 10px;
+  border-radius: 5px;
+  background: #f8f9fa;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
 }
 
 .pagination-arrow:hover {
-    background: #e9ecef;
-    color: var(--primary-light);
-    transform: translateY(-2px);
-    box-shadow: 0 3px 8px rgba(157, 36, 73, 0.15);
+  background: #e9ecef;
+  color: var(--primary-light);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(157, 36, 73, 0.15);
 }
 
 .pagination-arrow.disabled {
-    color: #ccc;
-    pointer-events: none;
+  color: #ccc;
+  pointer-events: none;
 }
 
 .pagination-number {
-    padding: 6px 10px;
-    border-radius: 5px;
-    background: #f8f9fa;
-    color: var(--primary-color);
-    text-decoration: none;
-    font-size: 13px;
-    min-width: 32px;
-    text-align: center;
-    transition: all 0.3s ease;
+  padding: 6px 10px;
+  border-radius: 5px;
+  background: #f8f9fa;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-size: 13px;
+  min-width: 32px;
+  text-align: center;
+  transition: all 0.3s ease;
 }
 
 .pagination-number.active {
-    background: var(--primary-gradient);
-    color: var(--white);
-    box-shadow: 0 3px 10px rgba(157, 36, 73, 0.3);
-    animation: pulseBorder 2s infinite;
+  background: var(--primary-gradient);
+  color: var(--white);
+  box-shadow: 0 3px 10px rgba(157, 36, 73, 0.3);
+  animation: pulseBorder 2s infinite;
 }
 
 .pagination-number:hover:not(.active) {
-    background: rgba(157, 36, 73, 0.08);
-    color: var(--primary-color);
-    transform: translateY(-2px);
-    box-shadow: 0 3px 8px rgba(157, 36, 73, 0.15);
+  background: rgba(157, 36, 73, 0.08);
+  color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(157, 36, 73, 0.15);
 }
 
 .pagination-ellipsis {
-    padding: 6px 10px;
-    color: var(--text-medium);
-    font-size: 13px;
+  padding: 6px 10px;
+  color: var(--text-medium);
+  font-size: 13px;
 }
 
 @keyframes pulseBorder {
-    0% { box-shadow: 0 0 0 0 rgba(157, 36, 73, 0.4); }
-    70% { box-shadow: 0 0 0 6px rgba(157, 36, 73, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(157, 36, 73, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(157, 36, 73, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(157, 36, 73, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(157, 36, 73, 0); }
 }
 
-/* Mobile Responsive */
-@media (max-width: 576px) {
-    .custom-pagination {
-        gap: 5px;
-    }
-    
-    .pagination-arrow, .pagination-number {
-        padding: 5px 8px;
-        font-size: 12px;
-        min-width: 28px;
-    }
-}
 /* MODAL
--------------------------------------------------- */
-/* MODAL - ESTILO GUBERNAMENTAL ELEGANTE
 -------------------------------------------------- */
 .modal {
   display: none;
@@ -800,7 +881,6 @@ tr:hover .status-indicator {
   backdrop-filter: blur(3px);
 }
 
-/* Contenido principal del modal con estilo institucional */
 .modal-content {
   background-color: var(--white);
   margin: 5vh auto;
@@ -814,7 +894,6 @@ tr:hover .status-indicator {
   overflow: hidden;
 }
 
-/* Franja decorativa superior tipo bandea mexicana */
 .modal-content::before {
   content: "";
   position: absolute;
@@ -832,7 +911,6 @@ tr:hover .status-indicator {
   );
 }
 
-/* Marca de agua del escudo nacional (sutil) */
 .modal-content::after {
   content: "";
   position: absolute;
@@ -849,7 +927,6 @@ tr:hover .status-indicator {
   z-index: 0;
 }
 
-/* Encabezado con diseño institucional */
 .modal-header {
   background-color: #f8fafc;
   padding: 20px 28px;
@@ -860,7 +937,6 @@ tr:hover .status-indicator {
   position: relative;
 }
 
-/* Línea vertical decorativa */
 .modal-header::before {
   content: "";
   position: absolute;
@@ -873,7 +949,6 @@ tr:hover .status-indicator {
   border-radius: 0 2px 2px 0;
 }
 
-/* Título del modal con tipografía institucional */
 .modal-title {
   font-family: "Montserrat", "Inter", sans-serif;
   font-size: 1.25rem;
@@ -882,10 +957,8 @@ tr:hover .status-indicator {
   margin: 0;
   padding-left: 16px;
   letter-spacing: -0.01em;
-  position: relative;
 }
 
-/* Botón de cierre elegante */
 .close-modal {
   width: 32px;
   height: 32px;
@@ -899,7 +972,6 @@ tr:hover .status-indicator {
   cursor: pointer;
   transition: all 0.2s ease;
   border: 1px solid transparent;
-  position: relative;
 }
 
 .close-modal:hover {
@@ -908,7 +980,6 @@ tr:hover .status-indicator {
   border-color: rgba(157, 36, 73, 0.2);
 }
 
-/* Efecto de cierre elegante */
 .close-modal::after {
   content: "×";
   position: absolute;
@@ -921,7 +992,6 @@ tr:hover .status-indicator {
   justify-content: center;
 }
 
-/* Cuerpo del modal con estilo profesional */
 .modal-body {
   padding: 28px;
   position: relative;
@@ -933,7 +1003,6 @@ tr:hover .status-indicator {
   background-position: -1px -1px;
 }
 
-/* Estilo para scrollbar cuando el contenido es largo */
 .modal-body::-webkit-scrollbar {
   width: 8px;
 }
@@ -952,7 +1021,6 @@ tr:hover .status-indicator {
   background-color: #cbd5e1;
 }
 
-/* Footer del modal */
 .modal-footer {
   display: flex;
   justify-content: flex-end;
@@ -963,13 +1031,11 @@ tr:hover .status-indicator {
   position: relative;
 }
 
-/* Estilo para grupos de formulario en el modal */
 .modal .form-group {
   margin-bottom: 20px;
   position: relative;
 }
 
-/* Etiquetas de formulario con estilo institucional */
 .modal .form-group label {
   display: block;
   margin-bottom: 8px;
@@ -979,7 +1045,6 @@ tr:hover .status-indicator {
   letter-spacing: 0.01em;
 }
 
-/* Campos de formulario en el modal */
 .modal .form-control {
   width: 100%;
   padding: 10px 14px;
@@ -996,7 +1061,6 @@ tr:hover .status-indicator {
   box-shadow: 0 0 0 3px rgba(157, 36, 73, 0.15);
 }
 
-/* Texto de ayuda en formularios */
 .modal .form-text {
   display: block;
   margin-top: 6px;
@@ -1005,7 +1069,6 @@ tr:hover .status-indicator {
   line-height: 1.5;
 }
 
-/* Estilización de botones en el footer */
 .modal .btn-secondary {
   background-color: #f1f5f9;
   border: 1px solid #cbd5e1;
@@ -1023,7 +1086,6 @@ tr:hover .status-indicator {
   box-shadow: 0 1px 3px rgba(157, 36, 73, 0.25);
 }
 
-/* Contenedor para opciones de permisos */
 .modal .permissions-container {
   border: 1px solid #cbd5e1;
   border-radius: 4px;
@@ -1047,7 +1109,6 @@ tr:hover .status-indicator {
   border-color: #cbd5e1;
 }
 
-/* Estilo para checkbox institucional */
 .modal .permission-item input[type="checkbox"] {
   appearance: none;
   width: 18px;
@@ -1076,7 +1137,6 @@ tr:hover .status-indicator {
   transform: translate(-50%, -50%);
 }
 
-/* Estilo para información de usuario en modal de eliminación */
 .modal .user-info {
   background-color: #f8fafc;
   padding: 16px;
@@ -1097,7 +1157,6 @@ tr:hover .status-indicator {
   margin-right: 6px;
 }
 
-/* Estilo para mensaje de confirmación de eliminación */
 .modal .delete-message {
   font-size: 17px;
   font-weight: 600;
@@ -1124,7 +1183,8 @@ tr:hover .status-indicator {
   font-size: 16px;
 }
 
-/* Animación mejorada para la entrada del modal */
+/* ANIMACIONES
+-------------------------------------------------- */
 @keyframes slideIn {
   0% {
     transform: translateY(-30px);
@@ -1144,7 +1204,20 @@ tr:hover .status-indicator {
     opacity: 1;
   }
 }
-/* ADAPTABILIDAD
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.2);
+  }
+  70% {
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+
+/* RESPONSIVE
 -------------------------------------------------- */
 @media (max-width: 1024px) {
   .dashboard-container {
@@ -1155,31 +1228,18 @@ tr:hover .status-indicator {
   .page-title {
     font-size: 28px;
   }
-}
-
-@media (max-width: 768px) {
-  .dashboard-container {
-    padding: 20px;
-  }
-  
-  .controls-bar {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 16px;
-  }
-  
-  .search-container {
-    max-width: 100%;
-  }
-  
-  .button-group {
-    width: 100%;
-    justify-content: space-between;
-  }
   
   .table thead th,
   .table tbody td {
-    padding: 14px 12px;
+    padding: 12px 10px;
+  }
+}
+/* RESPONSIVE TABLES FOR PROVEEDORES
+-------------------------------------------------- */
+@media (max-width: 767px) {
+  .dashboard-container {
+    margin: 15px;
+    padding: 20px;
   }
   
   .page-title {
@@ -1189,61 +1249,278 @@ tr:hover .status-indicator {
   .page-subtitle {
     font-size: 14px;
   }
-}
-
-@media (max-width: 576px) {
-  .button-group {
+  
+  .controls-bar {
     flex-direction: column;
+    align-items: stretch;
+    padding: 15px;
+    gap: 15px;
+  }
+  
+  .search-container {
+    max-width: none;
     width: 100%;
   }
   
-  .btn-primary, .btn-secondary {
+  .filters-container {
+    flex-direction: column;
+    align-items: stretch;
     width: 100%;
+    gap: 10px;
+  }
+  
+  .filter-item {
+    width: 100%;
+  }
+  
+  .filter-select {
+    width: 100%;
+  }
+  
+  .filter-button {
+    width: 100%;
+    margin-top: 5px;
     justify-content: center;
   }
   
-  .dashboard-container {
-    padding: 15px;
-    margin: 10px;
+  .table-container {
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    margin: 20px 0;
+    overflow: visible;
   }
   
-  .page-title::after {
-    width: 50px;
+  .table {
+    display: block;
   }
   
-  .pagination {
-    gap: 8px;
+  .table thead {
+    display: none; /* Hide table headers on mobile */
   }
   
-  .page-link {
-    width: 36px;
-    height: 36px;
+  .table tbody {
+    display: block;
+    width: 100%;
+  }
+  
+  .table tbody tr {
+    display: block;
+    margin-bottom: 16px;
+    background-color: var(--white);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    padding: 12px;
+    position: relative;
+  }
+  
+  .table tbody tr:hover {
+    transform: none;
+  }
+  
+  .table tbody td {
+    display: flex;
+    padding: 8px 10px;
+    border-bottom: none;
+    align-items: center;
+    text-align: left;
+    font-size: 14px;
+    white-space: normal;
+    border-bottom: 1px dashed var(--border-color);
+  }
+  
+  .table tbody td:last-child {
+    border-bottom: none;
+    padding-top: 12px;
+  }
+  
+  /* Show labels for each field */
+  .table tbody td:nth-of-type(1)::before { content: "ID: "; }
+  .table tbody td:nth-of-type(3)::before { content: "RFC: "; }
+  .table tbody td:nth-of-type(4)::before { content: "Estado: "; }
+  .table tbody td:nth-of-type(5)::before { content: "Registro: "; }
+  .table tbody td:nth-of-type(6)::before { content: "Vencimiento: "; }
+  .table tbody td:nth-of-type(7)::before { content: "Acciones: "; }
+  
+  .table tbody td::before {
+    min-width: 35%;
+    max-width: 35%;
+    padding-right: 10px;
+    font-weight: 600;
+    color: var(--primary-color);
     font-size: 13px;
+    text-align: left;
+  }
+  
+  /* Special styling for Razón Social cell */
+  .table tbody td:nth-of-type(2)::before {
+    content: ""; /* We'll handle this differently since it has nested content */
+  }
+  
+  .product-name-cell div {
+    display: block;
+    width: 100%;
+  }
+  
+  .product-name-cell::before {
+    content: "Razón Social: ";
+    min-width: 35%;
+    max-width: 35%;
+    padding-right: 10px;
+    font-weight: 600;
+    color: var(--primary-color);
+    font-size: 13px;
+    text-align: left;
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  .table tbody td .product-name {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 2px;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+  
+  .table tbody td .product-id {
+    display: block;
+    font-size: 12px;
+    margin-top: 2px;
+    color: var(--text-medium);
+  }
+  
+  /* Hide the RFC column since it's already displayed in the Razón Social cell */
+  .table tbody td:nth-of-type(3) {
+    display: none;
+  }
+  
+  /* Status badges */
+  .status-badge {
+    width: auto;
+    margin-left: auto;
+  }
+  
+  /* Action buttons */
+  .action-buttons {
+    justify-content: flex-start;
+    gap: 12px;
+    margin-top: 6px;
+  }
+  
+  .btn-action {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+  }
+  
+  /* Empty state */
+  .table tbody tr td.text-center {
+    justify-content: center;
+    padding: 20px;
+    font-weight: 600;
+    color: var(--text-medium);
+  }
+  
+  /* Pagination */
+  .custom-pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 20px 0;
+  }
+  
+  .pagination-arrow, .pagination-number {
+    min-width: 35px;
+    min-height: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /* Modal responsiveness */
+  .modal-content {
+    width: 90%;
+    margin: 10vh auto;
+  }
+  
+  .modal-body {
+    padding: 20px;
+  }
+  
+  .modal-header, .modal-footer {
+    padding: 15px 20px;
   }
 }
 
-/* ANIMACIONES GLOBALES
--------------------------------------------------- */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+/* Extra small devices (phones, 480px and down) */
+@media (max-width: 480px) {
+  .dashboard-container {
+    margin: 10px;
+    padding: 15px;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  
+  .btn-action {
+    width: 44px;
+    height: 44px;
+    font-size: 16px;
+  }
+  
+  .product-name-cell::before {
+    min-width: 100%;
+    display: block;
+    margin-bottom: 8px;
+  }
+  
+  .pagination-number:not(.active) {
+    display: none;
+  }
+  
+  .pagination-number.active {
+    display: flex;
+  }
+  
+  /* Only show next/prev pagination on very small screens */
+  .pagination-ellipsis {
+    display: none;
   }
 }
 
-@keyframes slideIn {
-  from {
-    transform: translateY(-50px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+/* Add this class to style text-muted spans */
+.text-muted {
+  color: var(--text-light);
+  font-style: italic;
+  font-size: 13px;
+}
+
+/* Style the active/inactive status badges */
+.status-badge.active {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.status-badge.active::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  background-color: #16a34a;
+}
+
+.status-badge.inactive {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.status-badge.inactive::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  background-color: #dc2626;
 }
 
 /* ESTILO DE SELECCIÓN
