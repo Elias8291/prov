@@ -192,7 +192,7 @@ class InscripcionController extends Controller
 
     
 
- public function procesarSeccion(Request $request)
+public function procesarSeccion(Request $request)
 {
     $user = Auth::user();
 
@@ -238,8 +238,7 @@ class InscripcionController extends Controller
         $tramite->progreso_tramite = ($tipoPersona == 'Moral') ? 7 : 4;
         $tramite->save();
 
-        return redirect()->route('inscripcion.formulario')
-            ->with('success', 'Documentos completos. Continúe con la confirmación.');
+        return redirect()->route('inscripcion.formulario');
     }
 
     // Procesamiento para el resto de secciones
@@ -285,7 +284,6 @@ class InscripcionController extends Controller
         return back()->withErrors(['error' => 'Ocurrió un error al guardar los datos: ' . $e->getMessage()])->withInput();
     }
 }
-
     public function exito()
     {
         return view('inscripcion.exito');
