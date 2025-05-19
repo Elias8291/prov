@@ -192,103 +192,99 @@ class InscripcionController extends Controller
 
     
 
-    public function procesarSeccion(Request $request)
-    {
-        $user = Auth::user();
+ public function procesarSeccion(Request $request)
+{
+    $user = Auth::user();
 
-        if ($user->hasRole('revisor')) {
-            return redirect()->route('inscripcion.formulario')->with('info', 'Los revisores no pueden enviar formularios.');
-        }
-
-        $solicitante = $user->solicitante;
-        if (!$solicitante) {
-            return redirect()->route('dashboard')->withErrors(['error' => 'No tienes un perfil de solicitante asociado.']);
-        }
-
-        $tramite = Tramite::where('solicitante_id', $solicitante->id)
-            ->where('estado', 'Pendiente')
-            ->first();
-
-        if (!$tramite) {
-            return redirect()->route('inscripcion.terminos_y_condiciones');
-        }
-
-        $seccion = $tramite->progreso_tramite;
-        $tipoPersona = $solicitante->tipo_persona ?? 'No definido';
-
-        // Validación de documentos para las secciones correspondientes
-        if (($tipoPersona == 'Moral' && $seccion == 6) || ($tipoPersona == 'Física' && $seccion == 3)) {
-            $documentosRequeridos = Documento::where(function($q) use ($tipoPersona) {
-                    $q->where('tipo_persona', $tipoPersona)
-                      ->orWhere('tipo_persona', 'Ambas');
-                })
-                ->where('es_visible', true)
-                ->pluck('id')
-                ->toArray();
-
-            $docsSubidos = DocumentoSolicitante::where('tramite_id', $tramite->id)
-                ->whereIn('documento_id', $documentosRequeridos)
-                ->count();
-
-            if ($docsSubidos < count($documentosRequeridos)) {
-                return redirect()->route('inscripcion.formulario')
-                    ->withErrors(['error' => 'Debe subir todos los documentos requeridos antes de continuar.']);
-            }
-
-            $tramite->progreso_tramite = ($tipoPersona == 'Moral') ? 7 : 4;
-            $tramite->save();
-
-            return redirect()->route('inscripcion.formulario')
-                ->with('success', 'Documentos completos. Continúe con la confirmación.');
-        }
-
-        // Procesamiento para el resto de secciones
-        try {
-            DB::beginTransaction();
-
-            $resultado = false;
-
-            if ($seccion == 1) {
-                $resultado = $this->datosGeneralesController->guardar($request, $tramite);
-            }
-            elseif ($seccion == 2) {
-                $resultado = $this->domicilioController->guardar($request, $tramite);
-            }
-            elseif ($seccion == 3) {
-                if ($tipoPersona == 'Moral') {
-                    $resultado = $this->constitucionController->guardar($request, $tramite);
-                } else if ($tipoPersona == 'Física') {
-                    $resultado = $this->accionistasController->guardar($request, $tramite);
-                }
-            }
-            elseif ($seccion == 4 && $tipoPersona == 'Moral') {
-                $resultado = $this->accionistasController->guardar($request, $tramite);
-            }
-            elseif ($seccion == 5 && $tipoPersona == 'Moral') {
-                $resultado = $this->apoderadoLegalController->guardar($request, $tramite);
-            }
-
-            if (!$resultado) {
-                throw new \Exception('No se pudo procesar la sección correctamente.');
-            }
-
-            DB::commit();
-
-            if ($seccion < $this->obtenerTotalSecciones($tipoPersona)) {
-                $tramite->increment('progreso_tramite');
-            }
-
-            return redirect()->route('inscripcion.formulario');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error processing section ' . $seccion . ': ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return back()->withErrors(['error' => 'Ocurrió un error al guardar los datos: ' . $e->getMessage()])->withInput();
-        }
+    if ($user->hasRole('revisor')) {
+        return redirect()->route('inscripcion.formulario')->with('info', 'Los revisores no pueden enviar formularios.');
     }
+
+    $solicitante = $user->solicitante;
+    if (!$solicitante) {
+        return redirect()->route('dashboard')->withErrors(['error' => 'No tienes un perfil de solicitante asociado.']);
+    }
+
+    $tramite = Tramite::where('solicitante_id', $solicitante->id)
+        ->where('estado', 'Pendiente')
+        ->first();
+
+    if (!$tramite) {
+        return redirect()->route('inscripcion.terminos_y_condiciones');
+    }
+
+    $seccion = $tramite->progreso_tramite;
+    $tipoPersona = $solicitante->tipo_persona ?? 'No definido';
+
+    // Validación de documentos para las secciones correspondientes
+    if (($tipoPersona == 'Moral' && $seccion == 6) || ($tipoPersona == 'Física' && $seccion == 3)) {
+        $documentosRequeridos = Documento::where(function($q) use ($tipoPersona) {
+                $q->where('tipo_persona', $tipoPersona)
+                  ->orWhere('tipo_persona', 'Ambas');
+            })
+            ->where('es_visible', true)
+            ->pluck('id')
+            ->toArray();
+
+        $docsSubidos = DocumentoSolicitante::where('tramite_id', $tramite->id)
+            ->whereIn('documento_id', $documentosRequeridos)
+            ->count();
+
+        if ($docsSubidos < count($documentosRequeridos)) {
+            return redirect()->route('inscripcion.formulario')
+                ->withErrors(['error' => 'Debe subir todos los documentos requeridos antes de continuar.']);
+        }
+
+        $tramite->progreso_tramite = ($tipoPersona == 'Moral') ? 7 : 4;
+        $tramite->save();
+
+        return redirect()->route('inscripcion.formulario')
+            ->with('success', 'Documentos completos. Continúe con la confirmación.');
+    }
+
+    // Procesamiento para el resto de secciones
+    try {
+        DB::beginTransaction();
+
+        $resultado = false;
+
+        if ($seccion == 1) {
+            $resultado = $this->datosGeneralesController->guardar($request, $tramite);
+        }
+        elseif ($seccion == 2) {
+            $resultado = $this->domicilioController->guardar($request, $tramite);
+        }
+        elseif ($seccion == 3 && $tipoPersona == 'Moral') {
+            $resultado = $this->constitucionController->guardar($request, $tramite);
+        }
+        elseif ($seccion == 4 && $tipoPersona == 'Moral') {
+            $resultado = $this->accionistasController->guardar($request, $tramite);
+        }
+        elseif ($seccion == 5 && $tipoPersona == 'Moral') {
+            $resultado = $this->apoderadoLegalController->guardar($request, $tramite);
+        }
+
+        if (!$resultado) {
+            throw new \Exception('No se pudo procesar la sección correctamente.');
+        }
+
+        DB::commit();
+
+        if ($seccion < $this->obtenerTotalSecciones($tipoPersona)) {
+            $tramite->increment('progreso_tramite');
+        }
+
+        return redirect()->route('inscripcion.formulario');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Error processing section ' . $seccion . ': ' . $e->getMessage(), [
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return back()->withErrors(['error' => 'Ocurrió un error al guardar los datos: ' . $e->getMessage()])->withInput();
+    }
+}
 
     public function exito()
     {
