@@ -28,7 +28,7 @@
     <script type="module" src="{{ asset('assets/js/sat/pdf-processor.js') }}"></script>
     <script type="module" src="{{ asset('assets/js/sat/sat-scraper.js') }}"></script>
     <script type="module" src="{{ asset('assets/js/sat/utils.js') }}"></script>
-    
+     <script type="module" src="{{ asset('assets/js/validaciones.js') }}"></script>
     <script>
         const menuToggle = document.getElementById('menu-toggle');
         const sidebar = document.getElementById('sidebar');

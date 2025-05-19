@@ -81,7 +81,7 @@ Route::post('/inscripcion/obtener-datos-direccion', [DireccionController::class,
     Route::post('/registro-datos-constitucion', [ConstitucionController::class, 'guardar'])->name('registro.datos.constitucion'); // Restaurada
     
     // Rutas para datos de actividades (AJAX)
-    Route::get('/actividades/por-sector', [ActividadController::class, 'obtenerActividades'])->name('actividades.porSector');
+
     
     // Rutas para datos de dirección (AJAX)
     Route::get('/direccion/datos', [DireccionController::class, 'obtenerDatosDireccion'])->name('direccion.datos');

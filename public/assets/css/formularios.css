@@ -380,26 +380,222 @@ h4 i {
 .remove-actividad:hover {
   background-color: var(--danger-light);
 }
+ .form-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            gap: 15px;
+        }
 
-.navigation-buttons {
-  display: flex;
-  justify-content: space-between;
-  max-width: 800px;
-  margin: 30px auto 10px;
-}
+        .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 500;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            min-width: 120px;
+        }
 
-.navigation-buttons button {
-  padding: 12px 28px;
-  font-size: 0.95rem;
-  border: none;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  color: white;
-  transition: all var(--transition);
-  font-weight: 500;
-  letter-spacing: 0.3px;
-}
+        .btn-primary {
+            background-color: #9d2449;
+            color: white;
+        }
 
+        .btn-primary:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            box-shadow: 0 2px 4px rgba(108, 117, 125, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background-color: #5c636a;
+            box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Form validation styles */
+        .form-group {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .form-control {
+            border: 1px solid #ced4da;
+            padding: 8px;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control.valid {
+            border-color: #28a745 !important;
+        }
+
+        .form-control.invalid {
+            border-color: #dc3545 !important;
+        }
+
+        .formulario__input-error {
+            color: #dc3545;
+            font-size: 0.85em;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .form-group.invalid .formulario__input-error {
+            display: block;
+        }
+
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        /* Layout styles */
+        .horizontal-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .half-width {
+            flex: 1;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 576px) {
+            .form-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .horizontal-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+         /* Objeto Social styling */
+        #formulario__grupo--objeto_social {
+            margin-top: 15px;
+        }
+
+        #formulario__grupo--objeto_social .form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .form-group.has-error .form-control {
+            border-color: #dc3545;
+        }
+
+        .formulario__input-error {
+            color: #dc3545;
+            font-size: 0.85em;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .form-group.has-error .formulario__input-error {
+            display: block;
+        }
+
+        /* Match form-step-2 validation styles */
+        .form-control.valid {
+            border-color: #28a745 !important;
+        }
+
+        .form-control.invalid {
+            border-color: #dc3545 !important;
+        }
+
+        .form-group.valid .form-control {
+            border-color: #28a745 !important;
+        }
+
+        .form-group.invalid .form-control {
+            border-color: #dc3545 !important;
+        }
+
+        /* Actividades seleccionadas styling */
+        .actividades-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            min-height: 40px;
+            align-items: center;
+        }
+
+        .actividad-seleccionada {
+            display: inline-flex;
+            align-items: center;
+            background-color: #f1f1f1;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .actividad-seleccionada span {
+            margin-right: 8px;
+        }
+
+        .remove-activity {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 14px;
+            line-height: 1;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .remove-activity:hover {
+            background-color: #c82333;
+            transform: scale(1.1);
+        }
+
+        .remove-activity:active {
+            background-color: #bd2130;
+            transform: scale(0.95);
+        }
 #btnAnterior {
   background: var(--secondary-color);
 }
@@ -1020,13 +1216,7 @@ h4 i {
   display: block;
 }
 
-.formulario__grupo-incorrecto .form-control {
-  border-color: var(--danger-color);
-}
 
-.formulario__grupo-correcto .form-control {
-  border-color: var(--success-color);
-}
 
 /* Improved validation styles with checkmark inside input */
 
@@ -1043,53 +1233,118 @@ h4 i {
   border-radius: 4px;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
-
-/* Validation state icon */
-.formulario__validacion-estado {
-  position: absolute;
-  right: 10px;
-  bottom: 15px;
-  z-index: 100;
-  font-size: 16px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+/* Estilos para campos con error - colores más suaves */
+.formulario__grupo-incorrecto .form-control {
+  border: 2px solid #e07a7a !important; /* Rosa suave en lugar de rojo intenso */
+  box-shadow: 0 0 0 0.2rem rgba(224, 122, 122, 0.15);
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
-/* Error messages */
+/* Estilos para campos correctos - verde más suave */
+.formulario__grupo-correcto .form-control {
+  border: 2px solid #6ebe9b !important; /* Verde menta suave */
+  transition: border-color 0.2s ease-in-out;
+}
+
+/* Mensajes de error debajo de los campos - color más suave */
 .formulario__input-error {
-  font-size: 12px;
-  margin-bottom: 0;
-  color: #bb2929;
+  color: #d98686; /* Rosa más suave para el texto */
+  font-size: 0.85rem;
+  margin-top: 0.3rem;
   display: none;
+  position: relative;
+  padding-left: 1.5rem;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.formulario__input-error::before {
+  content: "⚠️";
+  position: absolute;
+  left: 0;
+  top: 0;
 }
 
 .formulario__input-error-activo {
   display: block;
-}
-
-/* Success state styling */
-.formulario__grupo-correcto .formulario__validacion-estado {
-  color: #1ed12d;
   opacity: 1;
+  transform: translateY(0);
 }
 
-.formulario__grupo-correcto .form-control {
-  border: 2px solid #1ed12d;
+/* Mensaje de error general - colores más suaves y agradables */
+.formulario__mensaje-error {
+  width: 100%;
+  background-color: #fdefef; /* Rosa muy pálido */
+  border: 1px solid #e8b0b0; /* Borde rosa suave */
+  border-left: 5px solid #e07a7a; /* Borde izquierdo rosa medio */
+  color: #c96868; /* Texto rosa oscuro pero suave */
+  border-radius: 8px; /* Bordes más redondeados */
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  font-weight: 500; /* Un poco menos bold */
+  display: flex;
+  align-items: center;
+  animation: fadeInDown 0.5s;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
-/* Error state styling */
-.formulario__grupo-incorrecto .formulario__label {
-  color: #bb2929;
+.formulario__mensaje-error::before {
+  content: "⚠️";
+  font-size: 1.2rem;
+  margin-right: 0.8rem;
 }
 
-.formulario__grupo-incorrecto .formulario__validacion-estado {
-  color: #bb2929;
-  opacity: 1;
+/* Estilo para inputs con error - fondo más suave */
+.input-error {
+  background-color: #fef7f7; /* Rosa muy pálido, casi blanco */
+  transition: background-color 0.3s ease;
 }
 
+/* Animación para resaltar campos con error - más sutil */
 .formulario__grupo-incorrecto .form-control {
-  border: 2px solid #bb2929;
+  animation: gentleShake 0.5s;
 }
+
+@keyframes gentleShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-2px); }
+  40%, 80% { transform: translateX(2px); }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Estilos de hover para mejorar UX */
+.form-control:hover {
+  border-color: #c4c4c4;
+}
+
+.formulario__grupo-incorrecto .form-control:hover {
+  border-color: #e07a7a !important;
+}
+
+.formulario__grupo-correcto .form-control:hover {
+  border-color: #6ebe9b !important;
+}
+
+/* Tooltips mejorados para mensajes de error en móviles */
+@media (max-width: 768px) {
+  .formulario__input-error {
+    font-size: 0.75rem;
+    padding-left: 1.2rem;
+  }
+}
+
 
 /* Message containers */
 .formulario__mensaje {

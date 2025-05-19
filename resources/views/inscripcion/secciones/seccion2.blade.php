@@ -224,10 +224,10 @@
                 <p class="formulario__input-error">Entre calle 2 debe contener letras, números o espacios, máximo 100 caracteres.</p>
             </div>
         </div>
-        <div class="form-buttons">
-            <button type="button" class="btn btn-secondary" onclick="goToPreviousSection()">Anterior</button>
-            <button type="submit" class="btn btn-primary" id="submit-btn" disabled>Siguiente</button>
-        </div>
+      <div class="form-buttons">
+        <button type="button" class="btn btn-secondary" onclick="window.history.back();">Anterior</button>
+        <button type="submit" class="btn btn-primary" id="submitForm">Siguiente</button>
+    </div>
     </form>
 
     <!-- Include jQuery -->
