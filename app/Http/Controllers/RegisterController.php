@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Crypt;
 use Spatie\Permission\Models\Role;
 
 class RegisterController extends Controller
@@ -50,9 +51,6 @@ class RegisterController extends Controller
 
             // Iniciar transacción
             DB::beginTransaction();
-
-            // Subir el archivo PDF
-            $pdfPath = $request->file('sat_file')->store('documents', 'public');
 
             // Crear dirección
             $direccion = Direccion::create([
@@ -115,14 +113,22 @@ class RegisterController extends Controller
                 throw new \Exception('El documento "Constancia de Situación Fiscal" no está registrado en la base de datos.');
             }
 
-            // Crear documento_solicitante con el id del documento encontrado
+            // Guardar el archivo utilizando la lógica de DocumentosController
+            $archivo = $request->file('sat_file');
+            $nombreArchivo = uniqid('doc_'.$documento->id.'_').'.pdf';
+            $ruta = $archivo->storeAs('documentos_solicitante/'.$tramite->id, $nombreArchivo, 'public');
+
+            // Encriptar la ruta del archivo
+            $rutaEncriptada = Crypt::encryptString($ruta);
+
+            // Crear documento_solicitante
             DocumentoSolicitante::create([
                 'tramite_id' => $tramite->id,
                 'documento_id' => $documento->id,
                 'fecha_entrega' => now(),
                 'estado' => 'Pendiente',
                 'version_documento' => 1,
-                'ruta_archivo' => $pdfPath,
+                'ruta_archivo' => $rutaEncriptada, // Guardamos la ruta encriptada
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

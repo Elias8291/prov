@@ -27,10 +27,10 @@ class DatabaseSeeder extends Seeder
             DocumentoSeeder::class,
             SectoresSeeder::class,
             ActividadesSeeder::class,
-            SolicitanteSeeder::class,
-            TramiteSeeder::class,
-            DetalleTramiteSeeder::class,
-            ProveedorSeeder::class,
+           //// SolicitanteSeeder::class,
+           // TramiteSeeder::class,
+           // DetalleTramiteSeeder::class,
+           // ProveedorSeeder::class,
         ]);
     }
 }

@@ -16,11 +16,6 @@ class Seccion2 extends Component
     public $totalSecciones;
     public $isConfirmationSection;
 
-    /**
-     * Create a new component instance.
-     *
-     * @return void
-     */
     public function __construct(
         $action = null,
         $method = 'POST',
@@ -43,11 +38,6 @@ class Seccion2 extends Component
         $this->isConfirmationSection = $isConfirmationSection;
     }
 
-    /**
-     * Get the view / contents that represent the component.
-     *
-     * @return \Illuminate\Contracts\View\View|\Closure|string
-     */
     public function render()
     {
         return view('components.seccion2');

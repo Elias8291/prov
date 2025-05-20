@@ -2,9 +2,11 @@
 const formulario1 = document.getElementById('formulario1');
 const formulario2 = document.getElementById('formulario2');
 const formulario3 = document.getElementById('formulario3');
+const formulario5 = document.getElementById('formulario5');
 const inputs1 = formulario1 ? document.querySelectorAll('#formulario1 input, #formulario1 select, #formulario1 textarea') : [];
 const inputs2 = formulario2 ? document.querySelectorAll('#formulario2 input, #formulario2 select') : [];
 const inputs3 = formulario3 ? document.querySelectorAll('#formulario3 input, #formulario3 select') : [];
+const inputs5 = formulario5 ? document.querySelectorAll('#formulario5 input, #formulario5 select') : [];
 
 // Expresiones regulares para los formularios
 const expresiones = {
@@ -36,7 +38,17 @@ const expresiones = {
     numero_notario: /^\d{1,10}$/,
     numero_registro: /^(?:[A-Za-z]{0,3}\d{6,14}|\d{9,14})$/,
     fecha_constitucion: /.+/,
-    fecha_inscripcion: /.+/
+    fecha_inscripcion: /.+/,
+    
+    // Formulario 5
+    'nombre-apoderado': /^[A-Za-z\s\.]{1,100}$/,
+    'numero-escritura': /^\d{1,10}(\/\d{4})?$/,
+    'nombre-notario': /^[A-Za-z\s\.]{1,100}$/,
+    'numero-notario': /^\d{1,10}$/,
+    'entidad-federativa': /.+/,
+    'fecha-escritura': /.+/,
+    'numero-registro': /^(?:[A-Za-z]{0,3}\d{6,14}|\d{9,14})$/,
+    'fecha-inscripcion': /.+/
 };
 
 // Mensajes de error
@@ -70,7 +82,16 @@ const mensajesError = {
     fecha_constitucion: 'Por favor, seleccione una fecha válida (no futura)',
     numero_notario: 'El número de notario debe contener solo números (máx. 10 dígitos)',
     numero_registro: 'Debe contener de 9 a 14 caracteres: 0 a 3 letras iniciales seguidas de 6 a 14 dígitos (ej: 0123456789, FME123456789)',
-    fecha_inscripcion: 'Por favor, seleccione una fecha válida (no anterior a la fecha de constitución)'
+    fecha_inscripcion: 'Por favor, seleccione una fecha válida (no anterior a la fecha de constitución)',
+    
+    // Formulario 5
+    'nombre-apoderado': 'El nombre solo puede contener letras, puntos y espacios, máximo 100 caracteres.',
+    'numero-escritura': 'Debe contener de 1 a 10 dígitos, opcionalmente seguido de / y un año de 4 dígitos (ej: 1234, 1234/2024).',
+    'nombre-notario': 'El nombre del notario solo puede contener letras, puntos y espacios, máximo 100 caracteres.',
+    'numero-notario': 'El número del notario debe contener solo números, máximo 10 dígitos.',
+    'entidad-federativa': 'Por favor, seleccione una entidad federativa.',
+    'fecha-escritura': 'Por favor, seleccione una fecha válida (no futura).',
+    'fecha-inscripcion': 'Por favor, seleccione una fecha válida (no anterior a la fecha de escritura).'
 };
 
 // Estado de los campos
@@ -98,20 +119,29 @@ const campos = {
     numero_interior: true,
     entre_calle_1: false,
     entre_calle_2: false,
-    numero_escritura: false, // Now mandatory
-    nombre_notario: false, // Now mandatory
+    numero_escritura: false,
+    nombre_notario: false,
     entidad_federativa: false,
     fecha_constitucion: false,
-    numero_notario: false, // Now mandatory
-    numero_registro: false, // Now mandatory
-    fecha_inscripcion: false
+    numero_notario: false,
+    numero_registro: false,
+    fecha_inscripcion: false,
+    
+    // Formulario 5
+    'nombre-apoderado': false,
+    'numero-escritura': false,
+    'nombre-notario': false,
+    'numero-notario': false,
+    'entidad-federativa': false,
+    'fecha-escritura': false,
+    'fecha-inscripcion': false
 };
 
 // Validar campo individual
 const validarCampo = (expresion, input, campo) => {
     if (expresion.test(input.value) && input.value) { // Ensure non-empty
         // Special case for numero_escritura: validate year range
-        if (campo === 'numero_escritura') {
+        if (campo === 'numero_escritura' || campo === 'numero-escritura') {
             const match = input.value.match(/\/(\d{4})$/);
             if (match) {
                 const year = parseInt(match[1], 10);
@@ -200,6 +230,41 @@ const validarFechaInscripcion = (input) => {
     } else {
         mostrarError('fecha_inscripcion', mensajesError.fecha_inscripcion);
         campos.fecha_inscripcion = false;
+    }
+};
+
+// Validar fecha de escritura (formulario 5)
+const validarFechaEscritura = (input) => {
+    const fecha = new Date(input.value);
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0); // Normalizar a medianoche
+    if (input.value && !isNaN(fecha) && fecha <= hoy) {
+        ocultarError('fecha-escritura');
+        campos['fecha-escritura'] = true;
+    } else {
+        mostrarError('fecha-escritura', mensajesError['fecha-escritura']);
+        campos['fecha-escritura'] = false;
+    }
+};
+
+// Validar fecha de inscripción (formulario 5)
+const validarFechaInscripcionForm5 = (input) => {
+    const fechaInscripcion = new Date(input.value);
+    const fechaEscrituraInput = document.getElementById('fecha-escritura');
+    const fechaEscritura = fechaEscrituraInput ? new Date(fechaEscrituraInput.value) : null;
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0); // Normalizar a medianoche
+    if (
+        input.value &&
+        !isNaN(fechaInscripcion) &&
+        fechaInscripcion <= hoy &&
+        (!fechaEscritura || fechaInscripcion >= fechaEscritura)
+    ) {
+        ocultarError('fecha-inscripcion');
+        campos['fecha-inscripcion'] = true;
+    } else {
+        mostrarError('fecha-inscripcion', mensajesError['fecha-inscripcion']);
+        campos['fecha-inscripcion'] = false;
     }
 };
 
@@ -340,6 +405,37 @@ const validarFormulario = (e) => {
         case 'fecha_inscripcion':
             validarFechaInscripcion(input);
             break;
+            
+        // Formulario 5
+        case 'nombre-apoderado':
+            validarCampo(expresiones['nombre-apoderado'], input, 'nombre-apoderado');
+            break;
+        case 'numero-escritura':
+            validarCampo(expresiones['numero-escritura'], input, 'numero-escritura');
+            break;
+        case 'nombre-notario':
+            validarCampo(expresiones['nombre-notario'], input, 'nombre-notario');
+            break;
+        case 'numero-notario':
+            validarCampo(expresiones['numero-notario'], input, 'numero-notario');
+            break;
+        case 'entidad-federativa':
+            validarCampo(expresiones['entidad-federativa'], input, 'entidad-federativa');
+            break;
+        case 'fecha-escritura':
+            validarFechaEscritura(input);
+            // Revalidar fecha-inscripcion si existe
+            const fechaInscripcionForm5Input = document.getElementById('fecha-inscripcion');
+            if (fechaInscripcionForm5Input && fechaInscripcionForm5Input.value) {
+                validarFechaInscripcionForm5(fechaInscripcionForm5Input);
+            }
+            break;
+        case 'numero-registro':
+            validarCampo(expresiones['numero-registro'], input, 'numero-registro');
+            break;
+        case 'fecha-inscripcion':
+            validarFechaInscripcionForm5(input);
+            break;
     }
 };
 
@@ -386,6 +482,15 @@ inputs3.forEach(input => {
     }
 });
 
+// Asignar eventos a los inputs del formulario 5
+inputs5.forEach(input => {
+    input.addEventListener('keyup', validarFormulario);
+    input.addEventListener('blur', validarFormulario);
+    if (input.tagName === 'SELECT' || input.type === 'date') {
+        input.addEventListener('change', validarFormulario);
+    }
+});
+
 // Validar al enviar formularios
 const validarSubmit = (formulario, camposRequeridos) => {
     formulario.addEventListener('submit', (e) => {
@@ -416,7 +521,7 @@ const validarSubmit = (formulario, camposRequeridos) => {
             errorGeneral.style.marginBottom = '15px';
             errorGeneral.style.textAlign = 'center';
             errorGeneral.style.fontWeight = 'bold';
-            const submitBtn = formulario.querySelector('#submitForm');
+            const submitBtn = formulario.querySelector('#submit-btn');
             if (submitBtn && !formulario.querySelector('.formulario__mensaje-error')) {
                 submitBtn.parentNode.insertBefore(errorGeneral, submitBtn);
                 setTimeout(() => {
@@ -455,3 +560,30 @@ if (formulario3) {
     ];
     validarSubmit(formulario3, camposRequeridos3);
 }
+
+// Campos requeridos para formulario 5
+if (formulario5) {
+    const camposRequeridos5 = [
+        'nombre-apoderado',
+        'numero-escritura',
+        'nombre-notario',
+        'numero-notario',
+        'entidad-federativa',
+        'fecha-escritura',
+        'numero-registro',
+        'fecha-inscripcion'
+    ];
+    validarSubmit(formulario5, camposRequeridos5);
+}
+
+// Inicializar validación en carga de página
+document.addEventListener('DOMContentLoaded', () => {
+    // Prevalidar campos con datos previos
+    if (formulario5) {
+        inputs5.forEach(input => {
+            if (input.value !== '') {
+                validarFormulario({ target: input });
+            }
+        });
+    }
+});
