@@ -69,7 +69,7 @@
 
     <div id="pdf-data-preview">
         <div class="success-card" id="pdf-data-card">
-            <!-- HEADER SECTION -->
+            <!-- Sección de encabezado -->
             <div class="success-header" style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -93,12 +93,12 @@
                     </div>
                 </div>
                 <div class="sat-actions">
-                    <button class="small-btn" id="viewSatDataBtn" disabled>VER MAS DATOS SAT</button>
+                    <button class="small-btn" id="viewSatDataBtn" disabled>MIS DATOS SAT</button>
                 </div>
             </div>
 
-            <!-- DATA FIELDS -->
-            <div class="name-display">
+            <!-- Datos personales (ocultos) -->
+            <div class="name-display" style="display: none;">
                 <p><strong id="label-nombre"></strong> <span id="nombre"></span></p>
                 <p><strong>TIPO DE PERSONA:</strong> <span id="tipo-persona"></span></p>
                 <p><strong>RFC:</strong> <span id="rfc"></span></p>
@@ -109,13 +109,51 @@
                 </div>
             </div>
 
-            <!-- EMAIL SECTION -->
+            <!-- Sección de correo -->
             <div class="email-section">
-                <p class="name-display"><strong>CORREO ELECTRÓNICO:</strong></p>
+                <p class="name-display"><strong>Correo Electronico:</strong></p>
                 <input type="email" id="email-input" class="email-input" placeholder="INGRESE CORREO">
             </div>
 
-            <!-- LOADING SECTION -->
+            <div class="password-section">
+                <p class="name-display"><strong>Contraseña:</strong></p>
+                <div class="password-input-container" style="position: relative;">
+                    <input type="password" id="password-input" class="email-input" placeholder="INGRESE CONTRASEÑA"
+                        required>
+                    <button type="button" class="password-toggle"
+                        style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            xmlns="http://www.w3.org/2000/svg" class="password-toggle-icon">
+                            <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor"
+                                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.5"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Updated confirm password section with toggle icon -->
+            <div class="password-confirm-section">
+                <p class="name-display"><strong>Contraseña:</strong></p>
+                <div class="password-input-container" style="position: relative;">
+                    <input type="password" id="password-confirm-input" class="email-input"
+                        placeholder="CONFIRME CONTRASEÑA" required>
+                    <button type="button" class="password-toggle"
+                        style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            xmlns="http://www.w3.org/2000/svg" class="password-toggle-icon">
+                            <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor"
+                                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.5"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+
+            <!-- Sección de carga -->
             <div id="sat-data-loading" style="display: none;">
                 <div class="spinner"></div>
             </div>
@@ -133,7 +171,33 @@
         const errorMessage = document.getElementById('errorMessage');
         const closeButtons = document.querySelectorAll('.close-modal');
 
-        // Close modal when clicking the X
+        const passwordToggles = document.querySelectorAll('.password-toggle');
+
+        passwordToggles.forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                const input = this.parentElement.querySelector('input');
+                const icon = this.querySelector('.password-toggle-icon');
+
+                // Toggle between password and text input type
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    // Change to "hide password" icon (eye with slash)
+                    icon.innerHTML = `
+                        <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M3 3l18 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    `;
+                } else {
+                    input.type = 'password';
+                    // Change back to "show password" icon (eye)
+                    icon.innerHTML = `
+                        <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    `;
+                }
+            });
+        });
+        // Cerrar modal al hacer clic en X
         closeButtons.forEach(button => {
             button.addEventListener('click', function() {
                 successModal.style.display = 'none';
@@ -141,7 +205,7 @@
             });
         });
 
-        // Close modal when clicking outside of it
+        // Cerrar modal al hacer clic fuera de él
         window.addEventListener('click', function(event) {
             if (event.target === successModal) {
                 successModal.style.display = 'none';
@@ -151,7 +215,7 @@
             }
         });
 
-        // Handle success modal button click (redirect to welcome page)
+        // Manejar clic en botón de éxito
         document.getElementById('successModalBtn').addEventListener('click', function() {
             successModal.style.display = 'none';
             if (window.redirectUrl) {
@@ -159,21 +223,41 @@
             }
         });
 
-        // Handle error modal button click
+        // Manejar clic en botón de error
         document.getElementById('errorModalBtn').addEventListener('click', function() {
             errorModal.style.display = 'none';
         });
 
-        // Update the register button click handler
+        // Manejar clic en botón de registro
         document.getElementById('registerBtn').addEventListener('click', function() {
-            // Disable button to prevent multiple submissions
+            // Deshabilitar botón para prevenir múltiples envíos
             this.disabled = true;
             this.textContent = 'Procesando...';
 
-            // Collect form data
+            // Recopilar datos del formulario
             const satFileInput = document.getElementById('register-file');
             const satFile = satFileInput.files[0];
             const email = document.getElementById('email-input').value.trim();
+            const password = document.getElementById('password-input').value;
+            const passwordConfirm = document.getElementById('password-confirm-input').value;
+
+            // Validación de contraseñas
+            if (!password) {
+                errorMessage.textContent = 'Por favor, ingrese una contraseña.';
+                errorModal.style.display = 'block';
+                this.disabled = false;
+                this.textContent = 'Registrarse';
+                return;
+            }
+
+            if (password !== passwordConfirm) {
+                errorMessage.textContent = 'Las contraseñas no coinciden.';
+                errorModal.style.display = 'block';
+                this.disabled = false;
+                this.textContent = 'Registrarse';
+                return;
+            }
+
             const pdfData = {
                 nombre: document.getElementById('nombre').textContent.trim(),
                 tipoPersona: document.getElementById('tipo-persona').textContent.trim(),
@@ -181,13 +265,11 @@
                 curp: document.getElementById('curp').textContent.trim() || null,
                 cp: document.getElementById('cp').textContent.trim(),
                 direccion: document.getElementById('direccion').textContent.trim(),
-                email: email
+                email: email,
+                password: password
             };
 
-            // Log raw tipo_persona for debugging
-            console.log('Raw tipo_persona:', pdfData.tipoPersona);
-
-            // Normalize tipo_persona
+            // Normalizar tipo de persona
             let normalizedTipoPersona;
             const tipoPersonaLower = pdfData.tipoPersona.toLowerCase().replace(/\s+/g, '');
             if (['física', 'fisica', 'personafísica', 'personafisica'].includes(tipoPersonaLower)) {
@@ -195,7 +277,6 @@
             } else if (['moral', 'personamoral'].includes(tipoPersonaLower)) {
                 normalizedTipoPersona = 'Moral';
             } else {
-                // Show error modal instead of alert
                 errorMessage.textContent =
                     'El tipo de persona extraído del PDF no es válido. Debe ser "Física" o "Moral".';
                 errorModal.style.display = 'block';
@@ -204,9 +285,8 @@
                 return;
             }
 
-            // Client-side validation
+            // Validación del lado del cliente
             if (!satFile) {
-                // Show error modal instead of alert
                 errorMessage.textContent = 'Por favor, sube la constancia del SAT.';
                 errorModal.style.display = 'block';
                 this.disabled = false;
@@ -214,7 +294,6 @@
                 return;
             }
             if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                // Show error modal instead of alert
                 errorMessage.textContent = 'Por favor, ingrese un correo electrónico válido.';
                 errorModal.style.display = 'block';
                 this.disabled = false;
@@ -223,7 +302,6 @@
             }
             if (!pdfData.nombre || !normalizedTipoPersona || !pdfData.rfc || !pdfData.cp || !pdfData
                 .direccion) {
-                // Show error modal instead of alert
                 errorMessage.textContent =
                     'Faltan datos extraídos del PDF. Por favor, verifica el archivo subido.';
                 errorModal.style.display = 'block';
@@ -232,12 +310,13 @@
                 return;
             }
 
-            // Create FormData object
+            // Crear objeto FormData
             const formData = new FormData();
             formData.append('sat_file', satFile);
             formData.append('nombre', pdfData.nombre);
             formData.append('tipo_persona', normalizedTipoPersona);
             formData.append('rfc', pdfData.rfc);
+            formData.append('password', password);
             if (pdfData.curp) {
                 formData.append('curp', pdfData.curp);
             }
@@ -246,23 +325,12 @@
             formData.append('email', pdfData.email);
             formData.append('_token', document.querySelector('input[name="_token"]').value);
 
-            // Log form data for debugging
-            console.log('Form Data:');
-            for (let [key, value] of formData.entries()) {
-                console.log(`${key}: ${value}`);
-            }
-
-            // Send AJAX request
+            // Enviar solicitud AJAX
             fetch('/register', {
                     method: 'POST',
                     body: formData
                 })
                 .then(response => {
-                    // Log the raw response for debugging
-                    response.clone().text().then(text => {
-                        console.log('Raw server response:', text);
-                    });
-
                     if (!response.ok) {
                         if (response.status === 422) {
                             return response.json().then(data => {
@@ -286,27 +354,25 @@
                 })
                 .then(data => {
                     if (data.success) {
-                        // Get message from server or use default
                         let msg = data.message ||
                             'Registro exitoso. Por favor inicia sesión desde la página principal.';
 
-                        // Remove any HTML tags (especially <strong>) from the message
+                        // Eliminar etiquetas HTML del mensaje
                         const tempDiv = document.createElement('div');
                         tempDiv.innerHTML = msg;
                         msg = tempDiv.textContent || tempDiv.innerText;
 
-                        // Add RFC information to the success message
+                        // Añadir información del RFC al mensaje
                         msg = msg + '\n\nEl RFC ' + pdfData.rfc + ' ha quedado registrado.';
 
-                        // Show success modal with plain text message and RFC
+                        // Mostrar modal de éxito
                         successMessage.textContent = msg;
                         successModal.style.display = 'block';
 
-                        // Store redirect URL for later use
+                        // Almacenar URL de redirección
                         if (data.redirect) {
                             window.redirectUrl = data.redirect;
                         } else {
-                            // Show error if redirect is missing
                             errorMessage.textContent =
                                 'No se proporcionó una URL de redirección. Contacte al administrador.';
                             errorModal.style.display = 'block';
@@ -314,7 +380,7 @@
                             this.textContent = 'Registrarse';
                         }
                     } else {
-                        // Show error modal for other server errors
+                        // Mostrar modal de error
                         errorMessage.textContent = data.message ||
                             'No se pudo completar el registro.';
                         errorModal.style.display = 'block';
@@ -323,8 +389,7 @@
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    // Show error modal instead of alert
+                    // Mostrar modal de error
                     errorMessage.textContent = error.message ||
                         'Ocurrió un error al enviar el formulario. Por favor, intenta de nuevo.';
                     errorModal.style.display = 'block';
