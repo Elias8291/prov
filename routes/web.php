@@ -61,6 +61,7 @@ Route::middleware(['auth'])->group(function () {
         return view('index.index');
     })->name('index');
 
+    Route::get('/inscripcion/index', [InscripcionController::class, 'index'])->name('inscripcion.index');
     // Términos y condiciones de inscripción
     Route::get('/inscripcion/terminos_y_condiciones', [SolicitanteController::class, 'mostrarTerminosYCondiciones'])
         ->name('inscripcion.terminos_y_condiciones');

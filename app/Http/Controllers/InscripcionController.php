@@ -42,160 +42,165 @@ class InscripcionController extends Controller
         $this->accionistasController = $accionistasController;
         $this->apoderadoLegalController = $apoderadoLegalController;
     }
-    
-   public function mostrarFormulario(Request $request)
-{
-    $user = Auth::user();
-    $solicitante = $user->solicitante;
-    $isRevisor = $user->hasRole('revisor');
 
-    if ($isRevisor && !$solicitante) {
-        $tipoPersona = 'Física';
-        $tramite = null;
-        $seccion = 1;
-        $totalSecciones = $this->obtenerTotalSecciones($tipoPersona);
-        $datosPrevios = [
-            'rfc' => '', // Initialize RFC for revisors
-        ];
-        $porcentaje = 0;
-        $seccionesCompletadas = 0;
-        $isConfirmationSection = false;
-        $direccion = null;
-        $estados = $this->cargarEstados();
-    } else {
-        if (!$solicitante) {
-            return redirect()->route('dashboard')->withErrors(['error' => 'No tienes un perfil de solicitante asociado.']);
-        }
 
-        $tipoPersona = $solicitante->tipo_persona ?? 'No Redacted';
-        $tramite = Tramite::where('solicitante_id', $solicitante->id)
-            ->where('estado', 'Pendiente')
-            ->with('detalleTramite.direccion')
-            ->first();
+    public function index()
+    {
+        return view('inscripcion.index');
+    }
+    public function mostrarFormulario(Request $request)
+    {
+        $user = Auth::user();
+        $solicitante = $user->solicitante;
+        $isRevisor = $user->hasRole('revisor');
 
-        if (!$tramite && !$isRevisor) {
-            return redirect()->route('inscripcion.terminos_y_condiciones');
-        }
-
-        if ($tramite && $tramite->progreso_tramite == 0 && !$isRevisor) {
-            return redirect()->route('inscripcion.terminos_y_condiciones');
-        }
-
-        if ($request->has('retroceder') && $tramite && $tramite->progreso_tramite > 1) {
-            $tramite->decrement('progreso_tramite');
-        }
-
-        $seccion = $tramite ? $tramite->progreso_tramite : 1;
-        $totalSecciones = $this->obtenerTotalSecciones($tipoPersona);
-
-        $isConfirmationSection = ($tipoPersona == 'Física' && $seccion == 4) || ($tipoPersona == 'Moral' && $seccion == 7);
-
-        if ($isConfirmationSection) {
-            $porcentaje = 100;
-            $seccionesCompletadas = $totalSecciones;
-        } else {
-            $seccionesCompletadas = max(0, $seccion - 1);
-            $porcentaje = $totalSecciones > 0 ? round(($seccionesCompletadas / $totalSecciones) * 100) : 0;
-        }
-
-        $datosPrevios = $tramite && method_exists($tramite, 'getDatosPorSeccion')
-            ? $tramite->getDatosPorSeccion($seccion)
-            : [];
-
-        // Ensure RFC is included for non-revisors
-        if (!$isRevisor && $tipoPersona == 'Física' && $seccion == 1 && $user->hasRole('solicitante')) {
-            $datosPrevios['curp'] = $solicitante->curp ?? 'No disponible';
-            $datosPrevios['rfc'] = $solicitante->rfc ?? 'No disponible'; // Add RFC
-        } elseif (!$isRevisor) {
-            $datosPrevios['rfc'] = $solicitante->rfc ?? 'No disponible'; // Add RFC for all sections
-        }
-
-        if ($seccion == 2 && $tramite && $tramite->detalleTramite && $tramite->detalleTramite->direccion) {
-            $direccion = $tramite->detalleTramite->direccion;
-            $datosPrevios['codigo_postal'] = $direccion->codigo_postal ?? '';
-            $datosPrevios['calle'] = $direccion->calle ?? '';
-            $datosPrevios['numero_exterior'] = $direccion->numero_exterior ?? '';
-            $datosPrevios['numero_interior'] = $direccion->numero_interior ?? '';
-            $datosPrevios['entre_calle_1'] = $direccion->entre_calle_1 ?? '';
-            $datosPrevios['entre_calle_2'] = $direccion->entre_calle_2 ?? '';
-            if ($direccion->asentamiento) {
-                $datosPrevios['colonia'] = $direccion->asentamiento->nombre ?? '';
-                $datosPrevios['municipio'] = $direccion->asentamiento->localidad->municipio->nombre ?? '';
-                $datosPrevios['estado'] = $direccion->asentamiento->localidad->municipio->estado->nombre ?? '';
-            }
-        } else {
+        if ($isRevisor && !$solicitante) {
+            $tipoPersona = 'Física';
+            $tramite = null;
+            $seccion = 1;
+            $totalSecciones = $this->obtenerTotalSecciones($tipoPersona);
+            $datosPrevios = [
+                'rfc' => '', // Initialize RFC for revisors
+            ];
+            $porcentaje = 0;
+            $seccionesCompletadas = 0;
+            $isConfirmationSection = false;
             $direccion = null;
+            $estados = $this->cargarEstados();
+        } else {
+            if (!$solicitante) {
+                return redirect()->route('dashboard')->withErrors(['error' => 'No tienes un perfil de solicitante asociado.']);
+            }
+
+            $tipoPersona = $solicitante->tipo_persona ?? 'No Redacted';
+            $tramite = Tramite::where('solicitante_id', $solicitante->id)
+                ->where('estado', 'Pendiente')
+                ->with('detalleTramite.direccion')
+                ->first();
+
+            if (!$tramite && !$isRevisor) {
+                return redirect()->route('inscripcion.terminos_y_condiciones');
+            }
+
+            if ($tramite && $tramite->progreso_tramite == 0 && !$isRevisor) {
+                return redirect()->route('inscripcion.terminos_y_condiciones');
+            }
+
+            if ($request->has('retroceder') && $tramite && $tramite->progreso_tramite > 1) {
+                $tramite->decrement('progreso_tramite');
+            }
+
+            $seccion = $tramite ? $tramite->progreso_tramite : 1;
+            $totalSecciones = $this->obtenerTotalSecciones($tipoPersona);
+
+            $isConfirmationSection = ($tipoPersona == 'Física' && $seccion == 4) || ($tipoPersona == 'Moral' && $seccion == 7);
+
+            if ($isConfirmationSection) {
+                $porcentaje = 100;
+                $seccionesCompletadas = $totalSecciones;
+            } else {
+                $seccionesCompletadas = max(0, $seccion - 1);
+                $porcentaje = $totalSecciones > 0 ? round(($seccionesCompletadas / $totalSecciones) * 100) : 0;
+            }
+
+            $datosPrevios = $tramite && method_exists($tramite, 'getDatosPorSeccion')
+                ? $tramite->getDatosPorSeccion($seccion)
+                : [];
+
+            // Ensure RFC is included for non-revisors
+            if (!$isRevisor && $tipoPersona == 'Física' && $seccion == 1 && $user->hasRole('solicitante')) {
+                $datosPrevios['curp'] = $solicitante->curp ?? 'No disponible';
+                $datosPrevios['rfc'] = $solicitante->rfc ?? 'No disponible'; // Add RFC
+            } elseif (!$isRevisor) {
+                $datosPrevios['rfc'] = $solicitante->rfc ?? 'No disponible'; // Add RFC for all sections
+            }
+
+            if ($seccion == 2 && $tramite && $tramite->detalleTramite && $tramite->detalleTramite->direccion) {
+                $direccion = $tramite->detalleTramite->direccion;
+                $datosPrevios['codigo_postal'] = $direccion->codigo_postal ?? '';
+                $datosPrevios['calle'] = $direccion->calle ?? '';
+                $datosPrevios['numero_exterior'] = $direccion->numero_exterior ?? '';
+                $datosPrevios['numero_interior'] = $direccion->numero_interior ?? '';
+                $datosPrevios['entre_calle_1'] = $direccion->entre_calle_1 ?? '';
+                $datosPrevios['entre_calle_2'] = $direccion->entre_calle_2 ?? '';
+                if ($direccion->asentamiento) {
+                    $datosPrevios['colonia'] = $direccion->asentamiento->nombre ?? '';
+                    $datosPrevios['municipio'] = $direccion->asentamiento->localidad->municipio->nombre ?? '';
+                    $datosPrevios['estado'] = $direccion->asentamiento->localidad->municipio->estado->nombre ?? '';
+                }
+            } else {
+                $direccion = null;
+            }
+
+            if ($seccion == 5 && $tramite && $tramite->detalleTramite && $tramite->detalleTramite->apoderadoLegal) {
+                $apoderadoLegal = $tramite->detalleTramite->apoderadoLegal;
+                $datosPrevios['nombre-apoderado'] = $apoderadoLegal->nombre ?? '';
+                $datosPrevios['numero-escritura'] = $apoderadoLegal->instrumento_notarial->numero_escritura ?? '';
+                $datosPrevios['nombre-notario'] = $apoderadoLegal->instrumento_notarial->nombre_notario ?? '';
+                $datosPrevios['numero-notario'] = $apoderadoLegal->instrumento_notarial->numero_notario ?? '';
+                $datosPrevios['entidad-federativa'] = $apoderadoLegal->instrumento_notarial->estado_id ?? '';
+                $datosPrevios['fecha-escritura'] = $apoderadoLegal->instrumento_notarial->fecha ?? '';
+                $datosPrevios['numero-registro'] = $apoderadoLegal->instrumento_notarial->registro_mercantil ?? '';
+                $datosPrevios['fecha-inscripcion'] = $apoderadoLegal->instrumento_notarial->fecha_registro ?? '';
+            }
+
+            $estados = $this->cargarEstados();
         }
 
-        if ($seccion == 5 && $tramite && $tramite->detalleTramite && $tramite->detalleTramite->apoderadoLegal) {
-            $apoderadoLegal = $tramite->detalleTramite->apoderadoLegal;
-            $datosPrevios['nombre-apoderado'] = $apoderadoLegal->nombre ?? '';
-            $datosPrevios['numero-escritura'] = $apoderadoLegal->instrumento_notarial->numero_escritura ?? '';
-            $datosPrevios['nombre-notario'] = $apoderadoLegal->instrumento_notarial->nombre_notario ?? '';
-            $datosPrevios['numero-notario'] = $apoderadoLegal->instrumento_notarial->numero_notario ?? '';
-            $datosPrevios['entidad-federativa'] = $apoderadoLegal->instrumento_notarial->estado_id ?? '';
-            $datosPrevios['fecha-escritura'] = $apoderadoLegal->instrumento_notarial->fecha ?? '';
-            $datosPrevios['numero-registro'] = $apoderadoLegal->instrumento_notarial->registro_mercantil ?? '';
-            $datosPrevios['fecha-inscripcion'] = $apoderadoLegal->instrumento_notarial->fecha_registro ?? '';
-        }
+        $sectores = Sector::all()->map(function ($sector) {
+            return [
+                'id' => $sector->id,
+                'nombre' => $sector->nombre,
+            ];
+        })->toArray();
 
-        $estados = $this->cargarEstados();
-    }
-
-    $sectores = Sector::all()->map(function ($sector) {
-        return [
-            'id' => $sector->id,
-            'nombre' => $sector->nombre,
+        $documentos = [
+            'common' => [],
+            'specific' => [],
         ];
-    })->toArray();
 
-    $documentos = [
-        'common' => [],
-        'specific' => [],
-    ];
+        if ($seccion == 6 || ($tipoPersona == 'Física' && $seccion == 3)) {
+            $documentos['common'] = Documento::where('tipo_persona', 'Ambas')
+                ->where('es_visible', true)
+                ->get(['id', 'nombre', 'descripcion', 'tipo'])
+                ->toArray();
 
-    if ($seccion == 6 || ($tipoPersona == 'Física' && $seccion == 3)) {
-        $documentos['common'] = Documento::where('tipo_persona', 'Ambas')
-            ->where('es_visible', true)
-            ->get(['id', 'nombre', 'descripcion', 'tipo'])
-            ->toArray();
+            $documentos['specific'] = Documento::where('tipo_persona', $tipoPersona)
+                ->where('es_visible', true)
+                ->get(['id', 'nombre', 'descripcion', 'tipo'])
+                ->toArray();
+        }
 
-        $documentos['specific'] = Documento::where('tipo_persona', $tipoPersona)
-            ->where('es_visible', true)
-            ->get(['id', 'nombre', 'descripcion', 'tipo'])
-            ->toArray();
+        $documentosSubidos = [];
+        if (!empty($tramite)) {
+            $documentosSubidos = DocumentoSolicitante::where('tramite_id', $tramite->id)
+                ->get()
+                ->keyBy('documento_id');
+        }
+
+        $seccionPartial = $this->obtenerSeccionPartial($seccion ?? 1, $tipoPersona ?? 'Física');
+
+        return view('inscripcion.formularios', [
+            'seccion' => $seccion ?? 1,
+            'seccionPartial' => $seccionPartial,
+            'totalSecciones' => $totalSecciones ?? 1,
+            'porcentaje' => $porcentaje ?? 0,
+            'tipoPersona' => $tipoPersona ?? 'Física',
+            'seccionesInfo' => $this->obtenerSecciones($tipoPersona ?? 'Física'),
+            'datosPrevios' => $datosPrevios ?? [],
+            'isConfirmationSection' => $isConfirmationSection ?? false,
+            'mostrarCurp' => ($tipoPersona ?? 'Física') == 'Física' && $user->hasRole('solicitante') && ($seccion ?? 1) == 1,
+            'sectores' => $sectores,
+            'isRevisor' => $isRevisor,
+            'direccion' => $direccion ?? null,
+            'estados' => $estados ?? [],
+            'tramite' => $tramite ?? null,
+            'documentos' => $documentos,
+            'documentosSubidos' => $documentosSubidos,
+        ]);
     }
 
-    $documentosSubidos = [];
-    if (!empty($tramite)) {
-        $documentosSubidos = DocumentoSolicitante::where('tramite_id', $tramite->id)
-            ->get()
-            ->keyBy('documento_id');
-    }
 
-    $seccionPartial = $this->obtenerSeccionPartial($seccion ?? 1, $tipoPersona ?? 'Física');
-
-    return view('inscripcion.formularios', [
-        'seccion' => $seccion ?? 1,
-        'seccionPartial' => $seccionPartial,
-        'totalSecciones' => $totalSecciones ?? 1,
-        'porcentaje' => $porcentaje ?? 0,
-        'tipoPersona' => $tipoPersona ?? 'Física',
-        'seccionesInfo' => $this->obtenerSecciones($tipoPersona ?? 'Física'),
-        'datosPrevios' => $datosPrevios ?? [],
-        'isConfirmationSection' => $isConfirmationSection ?? false,
-        'mostrarCurp' => ($tipoPersona ?? 'Física') == 'Física' && $user->hasRole('solicitante') && ($seccion ?? 1) == 1,
-        'sectores' => $sectores,
-        'isRevisor' => $isRevisor,
-        'direccion' => $direccion ?? null,
-        'estados' => $estados ?? [],
-        'tramite' => $tramite ?? null,
-        'documentos' => $documentos,
-        'documentosSubidos' => $documentosSubidos,
-    ]);
-}
-
-    
 
     public function procesarSeccion(Request $request)
     {
@@ -221,13 +226,13 @@ class InscripcionController extends Controller
         $seccion = $tramite->progreso_tramite;
         $tipoPersona = $solicitante->tipo_persona ?? 'No definido';
 
-        
+
         // Validación de documentos para las secciones correspondientes
         if (($tipoPersona == 'Moral' && $seccion == 6) || ($tipoPersona == 'Física' && $seccion == 3)) {
-            $documentosRequeridos = Documento::where(function($q) use ($tipoPersona) {
-                    $q->where('tipo_persona', $tipoPersona)
-                      ->orWhere('tipo_persona', 'Ambas');
-                })
+            $documentosRequeridos = Documento::where(function ($q) use ($tipoPersona) {
+                $q->where('tipo_persona', $tipoPersona)
+                    ->orWhere('tipo_persona', 'Ambas');
+            })
                 ->where('es_visible', true)
                 ->pluck('id')
                 ->toArray();
@@ -255,21 +260,17 @@ class InscripcionController extends Controller
 
             if ($seccion == 1) {
                 $resultado = $this->datosGeneralesController->guardar($request, $tramite);
-            }
-            elseif ($seccion == 2) {
+            } elseif ($seccion == 2) {
                 $resultado = $this->domicilioController->guardar($request, $tramite);
-            }
-            elseif ($seccion == 3) {
+            } elseif ($seccion == 3) {
                 if ($tipoPersona == 'Moral') {
                     $resultado = $this->constitucionController->guardar($request, $tramite);
                 } else if ($tipoPersona == 'Física') {
                     $resultado = $this->accionistasController->guardar($request, $tramite);
                 }
-            }
-            elseif ($seccion == 4 && $tipoPersona == 'Moral') {
+            } elseif ($seccion == 4 && $tipoPersona == 'Moral') {
                 $resultado = $this->accionistasController->guardar($request, $tramite);
-            }
-            elseif ($seccion == 5 && $tipoPersona == 'Moral') {
+            } elseif ($seccion == 5 && $tipoPersona == 'Moral') {
                 $resultado = $this->apoderadoLegalController->guardar($request, $tramite);
             }
 
@@ -284,7 +285,6 @@ class InscripcionController extends Controller
             }
 
             return redirect()->route('inscripcion.formulario');
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error processing section ' . $seccion . ': ' . $e->getMessage(), [
