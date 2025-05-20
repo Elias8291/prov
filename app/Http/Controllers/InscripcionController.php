@@ -221,12 +221,7 @@ class InscripcionController extends Controller
         $seccion = $tramite->progreso_tramite;
         $tipoPersona = $solicitante->tipo_persona ?? 'No definido';
 
-        if ($request->input('action') === 'previous') {
-    if ($tramite && $tramite->progreso_tramite > 1) {
-        $tramite->decrement('progreso_tramite');
-        return redirect()->route('inscripcion.formulario');
-    }
-}
+        
         // Validación de documentos para las secciones correspondientes
         if (($tipoPersona == 'Moral' && $seccion == 6) || ($tipoPersona == 'Física' && $seccion == 3)) {
             $documentosRequeridos = Documento::where(function($q) use ($tipoPersona) {
@@ -249,8 +244,7 @@ class InscripcionController extends Controller
             $tramite->progreso_tramite = ($tipoPersona == 'Moral') ? 7 : 4;
             $tramite->save();
 
-            return redirect()->route('inscripcion.formulario')
-                ->with('success', 'Documentos completos. Continúe con la confirmación.');
+            return redirect()->route('inscripcion.formulario');
         }
 
         // Procesamiento para el resto de secciones

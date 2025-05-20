@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Crypt; // Add Crypt facade
 use App\Models\Documento;
 use App\Models\DocumentoSolicitante;
 use App\Models\Tramite;
@@ -39,6 +40,9 @@ class DocumentosController extends Controller
         $nombreArchivo = uniqid('doc_'.$documento->id.'_').'.pdf';
         $ruta = $archivo->storeAs('documentos_solicitante/'.$tramite->id, $nombreArchivo, 'public');
 
+        // Encrypt the file path
+        $rutaEncriptada = Crypt::encryptString($ruta);
+
         // Crear o actualizar registro en documento_solicitante
         $docSolicitante = DocumentoSolicitante::updateOrCreate(
             [
@@ -51,13 +55,13 @@ class DocumentosController extends Controller
                 'version_documento' => DocumentoSolicitante::where('tramite_id', $tramite->id)
                     ->where('documento_id', $documento->id)
                     ->max('version_documento') + 1,
-                'ruta_archivo' => $ruta
+                'ruta_archivo' => $rutaEncriptada // Store encrypted path
             ]
         );
 
         return response()->json([
             'success' => true,
-            'ruta' => Storage::disk('public')->url($ruta),
+            'ruta' => Storage::disk('public')->url($ruta), // Return unencrypted URL for client use
             'docSolicitanteId' => $docSolicitante->id,
             'mensaje' => 'Documento subido correctamente',
         ]);

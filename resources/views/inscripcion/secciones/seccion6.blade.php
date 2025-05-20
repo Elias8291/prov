@@ -1,5 +1,4 @@
 <form id="formulario6" method="POST" action="{{ route('inscripcion.procesar') }}">
-
     @csrf
     <div id="section-6" class="form-section">
         <div class="form-container">
@@ -40,6 +39,15 @@
                                         default => 'fa-file-alt',
                                     };
                                     $docSubido = $documentosSubidos[$documento['id']] ?? null;
+                                    $fileUrl = '#';
+                                    if ($docSubido) {
+                                        try {
+                                            $decryptedPath = \Illuminate\Support\Facades\Crypt::decryptString($docSubido->ruta_archivo);
+                                            $fileUrl = Storage::disk('public')->url($decryptedPath);
+                                        } catch (\Exception $e) {
+                                            \Illuminate\Support\Facades\Log::error('Failed to decrypt ruta_archivo for documento_solicitante ID ' . $docSubido->id . ': ' . $e->getMessage());
+                                        }
+                                    }
                                 @endphp
 
                                 <div class="file-item formulario__grupo {{ $docSubido ? 'file-uploaded' : '' }}" id="grupo__{{ $fieldName }}">
@@ -72,7 +80,9 @@
                                     <div class="file-preview" style="{{ $docSubido ? '' : 'display:none' }}">
                                         @if($docSubido)
                                             <button type="button" class="preview-btn" title="Ver PDF"
-                                                    onclick="window.open('{{ Storage::disk('public')->url($docSubido->ruta_archivo) }}', '_blank')">
+                                                    data-pdf-url="{{ $fileUrl }}" 
+                                                    data-pdf-title="{{ $documento['nombre'] }}"
+                                                    onclick="openPDFModal(this)">
                                                 <i class="fas fa-eye"></i>
                                             </button>
                                         @else
@@ -122,6 +132,15 @@
                                         default => 'fa-file-alt',
                                     };
                                     $docSubido = $documentosSubidos[$documento['id']] ?? null;
+                                    $fileUrl = '#';
+                                    if ($docSubido) {
+                                        try {
+                                            $decryptedPath = \Illuminate\Support\Facades\Crypt::decryptString($docSubido->ruta_archivo);
+                                            $fileUrl = Storage::disk('public')->url($decryptedPath);
+                                        } catch (\Exception $e) {
+                                            \Illuminate\Support\Facades\Log::error('Failed to decrypt ruta_archivo for documento_solicitante ID ' . $docSubido->id . ': ' . $e->getMessage());
+                                        }
+                                    }
                                 @endphp
 
                                 <div class="file-item formulario__grupo {{ $docSubido ? 'file-uploaded' : '' }}" id="grupo__{{ $fieldName }}">
@@ -154,7 +173,9 @@
                                     <div class="file-preview" style="{{ $docSubido ? '' : 'display:none' }}">
                                         @if($docSubido)
                                             <button type="button" class="preview-btn" title="Ver PDF"
-                                                    onclick="window.open('{{ Storage::disk('public')->url($docSubido->ruta_archivo) }}', '_blank')">
+                                                    data-pdf-url="{{ $fileUrl }}" 
+                                                    data-pdf-title="{{ $documento['nombre'] }}"
+                                                    onclick="openPDFModal(this)">
                                                 <i class="fas fa-eye"></i>
                                             </button>
                                         @else
@@ -175,6 +196,20 @@
         <button type="submit" class="btn btn-primary" id="submitForm">Siguiente</button>
     </div>
 </form>
+
+<div class="pdf-modal" id="pdfModal">
+    <div class="pdf-modal-content">
+        <div class="pdf-modal-header">
+            <h2 id="pdfModalTitle">Documento de Gobierno de Oaxaca</h2>
+            <button class="pdf-modal-close" onclick="closePDFModal()">&times;</button>
+        </div>
+        <div class="pdf-modal-body">
+            <iframe id="pdfViewer" width="100%" height="100%" frameborder="0"></iframe>
+        </div>
+        <div class="bottom-line"></div>
+    </div>
+</div>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -256,18 +291,15 @@ document.addEventListener('DOMContentLoaded', () => {
                             fileItem.classList.remove('file-uploaded-animation');
                         }, 1000);
 
-                        // Store file and configure preview
-                        const fileURL = URL.createObjectURL(file);
-                        previewBtn.addEventListener('click', () => {
-                            window.open(data.ruta ?? fileURL, '_blank');
-                        });
+                        // Configure preview button for the modal
+                        const fileURL = data.ruta ?? URL.createObjectURL(file);
+                        const documentName = fileItem.querySelector('.file-info h6').textContent;
+                        
+                        previewBtn.setAttribute('data-pdf-url', fileURL);
+                        previewBtn.setAttribute('data-pdf-title', documentName);
+                        previewBtn.addEventListener('click', () => openPDFModal(previewBtn));
 
-                        // Clean up URL when file changes
-                        input.addEventListener('change', () => {
-                            URL.revokeObjectURL(fileURL);
-                        }, { once: true });
-
-                        // Puedes guardar el ID del documento_solicitante en un data-* si lo necesitas:
+                        // Store the documento_solicitante ID
                         fileItem.setAttribute('data-docsolicitante-id', data.docSolicitanteId);
 
                     } else {
@@ -294,4 +326,62 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+// PDF Modal functions
+function openPDFModal(button) {
+    const pdfUrl = button.getAttribute('data-pdf-url');
+    const pdfTitle = button.getAttribute('data-pdf-title');
+    const modal = document.getElementById('pdfModal');
+    const modalTitle = document.getElementById('pdfModalTitle');
+    const pdfViewer = document.getElementById('pdfViewer');
+    
+    // Set the modal title and PDF source
+    modalTitle.textContent = pdfTitle || 'Visualización de documento';
+    pdfViewer.src = pdfUrl;
+    
+    // Show the modal
+    modal.style.display = 'block';
+    
+    // Disable scrolling on the body
+    document.body.style.overflow = 'hidden';
+    
+    // Add event listener to close modal when clicking outside
+    window.addEventListener('click', outsideClickHandler);
+    
+    // Add keyboard event listener for ESC key
+    window.addEventListener('keydown', escKeyHandler);
+}
+
+function closePDFModal() {
+    const modal = document.getElementById('pdfModal');
+    const pdfViewer = document.getElementById('pdfViewer');
+    
+    // Hide the modal
+    modal.style.display = 'none';
+    
+    // Clear the iframe source to prevent memory issues
+    pdfViewer.src = '';
+    
+    // Re-enable scrolling on the body
+    document.body.style.overflow = '';
+    
+    // Remove event listeners
+    window.removeEventListener('click', outsideClickHandler);
+    window.removeEventListener('keydown', escKeyHandler);
+}
+
+function outsideClickHandler(event) {
+    const modal = document.getElementById('pdfModal');
+    const modalContent = document.querySelector('.pdf-modal-content');
+    
+    if (event.target === modal && !modalContent.contains(event.target)) {
+        closePDFModal();
+    }
+}
+
+function escKeyHandler(event) {
+    if (event.key === 'Escape') {
+        closePDFModal();
+    }
+}
 </script>
