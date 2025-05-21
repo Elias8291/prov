@@ -1,14 +1,13 @@
 import { createModal, createSpinner, showError } from './utils.js';
 import { scrapeSATData, showSATDataModal } from './sat-scraper.js';
 
-// Configure PDF.js to suppress warnings
+// Configure PDF.js
 window.pdfjsLib.GlobalWorkerOptions.workerSrc =
     'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
-// Disable console warning for PDF.js
+// Suppress PDF.js warnings
 const originalConsoleWarn = console.warn;
-console.warn = function(msg) {
-    // Filter out the specific PDF.js warning
+console.warn = function (msg) {
     if (msg && typeof msg === 'string' && msg.includes('Indexing all PDF objects')) {
         return;
     }
@@ -36,7 +35,6 @@ async function extractQRCodeFromPDF(file) {
             const qrCode = jsQR(canvas.getContext('2d').getImageData(0, 0, width, height).data, width, height);
             if (qrCode) {
                 data.qrUrl = qrCode.data;
-                // Removed console log that was showing QR URL
 
                 const satUrlPattern = /^https:\/\/siat\.sat\.gob\.mx\/app\/qr\/faces\/pages\/mobile\/validadorqr\.jsf\?.*D1=\d+.*&D2=\d+.*&D3=[^&]+/;
                 if (!satUrlPattern.test(data.qrUrl)) {
@@ -62,10 +60,10 @@ async function extractQRCodeFromPDF(file) {
 
         return data;
     } catch (error) {
-        throw new Error(`El Archivo no corresponde a una constancia fiscal`);
+        throw new Error(`No se pudo procesar el archivo PDF: ${error.message}`);
     }
 }
-// Función para enviar y asegurar los datos en el servidor
+
 async function secureExtractedData(pdfData, satData) {
     try {
         const secureData = {
@@ -83,18 +81,16 @@ async function secureExtractedData(pdfData, satData) {
                 .filter(Boolean)
                 .join(' ') || '',
         };
-        
-        console.log("Enviando datos seguros al servidor:", JSON.stringify(secureData));
-        
+
         const response = await fetch('/secure-registration-data', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
             },
-            body: JSON.stringify(secureData)
+            body: JSON.stringify(secureData),
         });
-        
+
         if (!response.ok) {
             if (response.status === 422) {
                 const errorData = await response.json();
@@ -103,73 +99,58 @@ async function secureExtractedData(pdfData, satData) {
                 throw new Error(`Error del servidor (${response.status}): ${await response.text()}`);
             }
         }
-        
+
         const result = await response.json();
         if (!result.success) {
             throw new Error(result.message || 'Error desconocido al asegurar datos');
         }
-        
-        console.log("Token recibido:", result.token);
+
         return result.token;
     } catch (error) {
-        console.error('Error al asegurar datos:', error);
-        throw error;
+        throw new Error(`Error al asegurar datos: ${error.message}`);
     }
 }
 
-function enhanceImage(imageData) {
-    const { data, width, height } = imageData;
-    const enhancedData = new Uint8ClampedArray(data);
-
-    for (let i = 0; i < data.length; i += 4) {
-        const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-        const contrast = avg > 128 ? 255 : 0;
-        enhancedData[i] = enhancedData[i + 1] = enhancedData[i + 2] = contrast;
-        enhancedData[i + 3] = 255;
-    }
-
-    return new ImageData(enhancedData, width, height);
-}
-
-// Actualiza la interfaz y asegura datos en el servidor
 function updatePDFDataPreview(pdfData, satData) {
     const isExpired = pdfData.estatus === 'Vencido';
-    
-    // Actualizar estado del documento
+
     const documentStatus = document.getElementById('document-status');
     const warningBadge = document.getElementById('warning-badge');
     const pdfDataCard = document.getElementById('pdf-data-card');
-    
+
     if (documentStatus) documentStatus.textContent = `DOCUMENTO ${isExpired ? 'VENCIDO' : 'VÁLIDO'}`;
     if (warningBadge) warningBadge.style.display = isExpired ? 'inline-flex' : 'none';
     if (pdfDataCard) pdfDataCard.classList.toggle('expired', isExpired);
 
-    // Pre-llenar el campo de correo si existe
     const emailInput = document.getElementById('email-input');
     if (emailInput && satData.email) {
         emailInput.value = satData.email.toLowerCase();
     }
 
-    // Configurar botón de datos SAT
     const viewSatDataBtn = document.getElementById('viewSatDataBtn');
     if (viewSatDataBtn) {
-        viewSatDataBtn.disabled = false;
-        viewSatDataBtn.addEventListener('click', async () => {
-            const loading = document.getElementById('sat-data-loading');
-            if (loading) loading.style.display = 'block';
-            viewSatDataBtn.disabled = true;
-            try {
-                showSATDataModal(satData, pdfData.qrUrl);
-            } catch (error) {
-                showError(`Error al mostrar datos SAT: ${error.message}`);
-            } finally {
-                if (loading) loading.style.display = 'none';
-                viewSatDataBtn.disabled = false;
-            }
-        });
+        viewSatDataBtn.disabled = !satData || satData.extractedData.length === 0;
+        viewSatDataBtn.addEventListener(
+            'click',
+            async () => {
+                const loading = document.getElementById('sat-data-loading');
+                if (loading) loading.style.display = 'block';
+                viewSatDataBtn.disabled = true;
+                try {
+                    console.log('Intentando mostrar modal con satData:', satData);
+                    showSATDataModal(satData, pdfData.qrUrl);
+                } catch (error) {
+                    console.error('Error al mostrar modal:', error);
+                    showError(`Error al mostrar datos SAT: ${error.message}`);
+                } finally {
+                    if (loading) loading.style.display = 'none';
+                    viewSatDataBtn.disabled = !satData || satData.extractedData.length === 0;
+                }
+            },
+            { once: true }
+        );
     }
 
-    // Validación de correo electrónico
     if (emailInput) {
         emailInput.addEventListener('blur', () => {
             if (emailInput.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.toLowerCase())) {
@@ -177,109 +158,111 @@ function updatePDFDataPreview(pdfData, satData) {
             }
         });
     }
-    
-    // IMPORTANTE: Asegurar datos en el servidor y almacenar token
-    secureExtractedData(pdfData, satData)
-        .then(token => {
-            console.log("Token de seguridad generado correctamente");
-            
-            // Crear o actualizar campo oculto para el token
-            let tokenInput = document.getElementById('secure_data_token');
-            if (!tokenInput) {
-                tokenInput = document.createElement('input');
-                tokenInput.type = 'hidden';
-                tokenInput.id = 'secure_data_token';
-                tokenInput.name = 'secure_data_token';
-                document.getElementById('registerForm').appendChild(tokenInput);
-            }
-            tokenInput.value = token;
-        })
-        .catch(error => showError(`Error al asegurar datos: ${error.message}`));
 }
 
-window.extractQRCodeFromPDF = extractQRCodeFromPDF;
-window.enhanceImage = enhanceImage;
-window.secureExtractedData = secureExtractedData;
-
-// Initialize event listeners
 document.addEventListener('DOMContentLoaded', () => {
-    const step1 = document.getElementById('registerFormStep1');
-    const step2 = document.getElementById('registerFormStep2');
-    const nextBtn = document.getElementById('nextToStep2Btn');
-    const backBtnStep2 = document.getElementById('backFromRegisterStep2Btn');
-    const backBtnStep1 = document.getElementById('backFromRegisterStep1Btn');
     const fileInput = document.getElementById('register-file');
+    const pdfDataContainer = document.querySelector('.pdf-data-container');
     const viewExampleBtn = document.getElementById('viewExampleBtnStep1');
-    
-    fileInput?.addEventListener('change', () => {
-        const fileLabel = document.querySelector('.custom-file-upload span');
-        if (fileLabel) {
-            if (fileInput.files.length > 0) {
-                fileLabel.textContent = fileInput.files[0].name;
-                document.querySelector('.custom-file-upload').classList.add('file-selected');
-            } else {
+    const fileLabel = document.querySelector('.custom-file-upload span');
+    const fileUploadContainer = document.querySelector('.custom-file-upload');
+
+    fileInput?.addEventListener('change', async () => {
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            if (file.type !== 'application/pdf') {
+                showError('El archivo debe ser un PDF válido.');
+                fileInput.value = '';
                 fileLabel.textContent = 'Subir archivo PDF';
-                document.querySelector('.custom-file-upload').classList.remove('file-selected');
+                fileUploadContainer.classList.remove('file-selected');
+                pdfDataContainer.style.display = 'none';
+                return;
             }
-        }
-    });
 
-    nextBtn?.addEventListener('click', async () => {
-        const file = fileInput?.files[0];
-        
-        if (!file) {
-            showError('Debe subir un archivo PDF de la Constancia del SAT para continuar.');
-            return;
-        }
-    
-        if (file.type !== 'application/pdf') {
-            showError('El archivo debe ser un PDF válido.');
-            return;
-        }
-    
-        if (file.size > 5 * 1024 * 1024) {
-            showError('El archivo excede el tamaño máximo de 5MB.');
-            return;
-        }
-    
-        const loading = createModal({ html: createSpinner() });
-        const minimumDelay = 2000; 
-        const startTime = Date.now();
-    
-        try {
-            const pdfData = await extractQRCodeFromPDF(file);
-            const satData = await scrapeSATData(pdfData.qrUrl);
-    
-            const elapsedTime = Date.now() - startTime;
-            const remainingTime = Math.max(0, minimumDelay - elapsedTime);
-    
-            setTimeout(() => {
-                step1.classList.remove('active');
-                step2.classList.add('active');
-                updatePDFDataPreview(pdfData, satData);
-                document.body.removeChild(loading);
-            }, remainingTime);
-        } catch (error) {
-            const elapsedTime = Date.now() - startTime;
-            const remainingTime = Math.max(0, minimumDelay - elapsedTime);
-    
-            setTimeout(() => {
-                showError(error.message);
-                document.body.removeChild(loading);
-            }, remainingTime);
-        }
-    });
-    
-    backBtnStep2?.addEventListener('click', () => {
-        step2.classList.remove('active');
-        step1.classList.add('active');
-    });
+            if (file.size > 5 * 1024 * 1024) {
+                showError('El archivo excede el tamaño máximo de 5MB.');
+                fileInput.value = '';
+                fileLabel.textContent = 'Subir archivo PDF';
+                fileUploadContainer.classList.remove('file-selected');
+                pdfDataContainer.style.display = 'none';
+                return;
+            }
 
-    backBtnStep1?.addEventListener('click', () => {
-        window.history.back();
+            fileLabel.textContent = file.name;
+            const loading = createModal({ html: createSpinner() });
+            const minimumDelay = 2000;
+            const startTime = Date.now();
+
+            try {
+                const pdfData = await extractQRCodeFromPDF(file);
+                const satData = await scrapeSATData(pdfData.qrUrl);
+
+                const token = await secureExtractedData(pdfData, satData);
+                let tokenInput = document.getElementById('secure_data_token');
+                if (!tokenInput) {
+                    tokenInput = document.createElement('input');
+                    tokenInput.type = 'hidden';
+                    tokenInput.id = 'secure_data_token';
+                    tokenInput.name = 'secure_data_token';
+                    document.getElementById('registerForm').appendChild(tokenInput);
+                }
+                tokenInput.value = token;
+
+                const elapsedTime = Date.now() - startTime;
+                const remainingTime = Math.max(0, minimumDelay - elapsedTime);
+
+                setTimeout(() => {
+                    fileUploadContainer.classList.add('file-selected');
+                    updatePDFDataPreview(pdfData, satData);
+                    pdfDataContainer.style.display = 'block';
+                    document.body.removeChild(loading);
+                }, remainingTime);
+            } catch (error) {
+                const elapsedTime = Date.now() - startTime;
+                const remainingTime = Math.max(0, minimumDelay - elapsedTime);
+
+                setTimeout(() => {
+                    showError(error.message);
+                    fileInput.value = '';
+                    fileLabel.textContent = 'Subir archivo PDF';
+                    fileUploadContainer.classList.remove('file-selected');
+                    pdfDataContainer.style.display = 'none';
+                    document.body.removeChild(loading);
+                }, remainingTime);
+            }
+        } else {
+            fileLabel.textContent = 'Subir archivo PDF';
+            fileUploadContainer.classList.remove('file-selected');
+            pdfDataContainer.style.display = 'none';
+        }
     });
 
     viewExampleBtn?.addEventListener('click', () => {
         window.open('/assets/pdf/ejemplo_sat.pdf', '_blank');
     });
+
+    // Password toggle functionality
+    document.querySelectorAll('.password-toggle').forEach((toggle) => {
+        toggle.addEventListener('click', function () {
+            const input = this.parentElement.querySelector('input');
+            const icon = this.querySelector('.password-toggle-icon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerHTML = `
+                    <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M3 3l18 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                `;
+            } else {
+                input.type = 'password';
+                icon.innerHTML = `
+                    <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                `;
+            }
+        });
+    });
 });
+
+window.extractQRCodeFromPDF = extractQRCodeFromPDF;
+window.secureExtractedData = secureExtractedData;

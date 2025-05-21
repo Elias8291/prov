@@ -20,7 +20,6 @@ use Spatie\Permission\Models\Role;
 
 class RegisterController extends Controller
 {
-    // Método para almacenar de forma segura los datos extraídos del PDF
     public function secureData(Request $request)
     {
         try {
@@ -62,7 +61,6 @@ class RegisterController extends Controller
         ]);
 
         try {
-            // Validar los campos necesarios
             $validated = $request->validate([
                 'sat_file' => 'required|file|mimes:pdf|max:5120',
                 'email' => 'required|email|max:255|unique:users,correo',
@@ -78,38 +76,36 @@ class RegisterController extends Controller
                 'password.required' => 'La contraseña es obligatoria.',
                 'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
                 'password.confirmed' => 'Las contraseñas no coinciden.',
-                'secure_data_token.required' => 'Error de seguridad: token no proporcionado.',
+                'secure_data_token.required' => 'Error de seguridad: token no proporcionado. Por favor, suba el archivo nuevamente.',
             ]);
 
-            // Recuperar datos seguros de la sesión
             $secureDataKey = 'secure_registration_' . $request->secure_data_token;
             Log::info('Buscando datos con clave: ' . $secureDataKey);
 
             if (!Session::has($secureDataKey)) {
                 Log::error('Token no encontrado en sesión: ' . $request->secure_data_token);
-                throw new \Exception('Error de seguridad: datos no encontrados o expirados. Por favor, intente nuevamente.');
+                throw new \Exception('Error de seguridad: datos no encontrados o expirados. Por favor, suba el archivo nuevamente.');
             }
 
             $secureData = Session::get($secureDataKey);
             Log::info('Datos recuperados de sesión: ', $secureData);
 
-            // Verificar la unicidad del RFC por separado
             $existingUser = User::where('rfc', $secureData['rfc'])->first();
             if ($existingUser) {
+                if ($request->hasFile('sat_file')) {
+                    Session::put('temp_sat_file_name', $request->file('sat_file')->getClientOriginalName());
+                }
                 throw new \Exception('El RFC ' . $secureData['rfc'] . ' ya está registrado.');
             }
 
-            // Iniciar transacción de base de datos
             DB::beginTransaction();
 
-            // Crear dirección
             $direccion = Direccion::create([
                 'codigo_postal' => $secureData['cp'],
                 'asentamiento_id' => null,
                 'calle' => $secureData['direccion'],
             ]);
 
-            // Crear usuario
             $user = User::create([
                 'nombre' => $secureData['nombre'],
                 'correo' => $request->email,
@@ -120,10 +116,8 @@ class RegisterController extends Controller
                 'updated_at' => now(),
             ]);
 
-            // Asignar rol de solicitante
             $user->assignRole('solicitante');
 
-            // Crear solicitante
             $solicitante = Solicitante::create([
                 'usuario_id' => $user->id,
                 'tipo_persona' => $secureData['tipo_persona'],
@@ -133,7 +127,6 @@ class RegisterController extends Controller
                 'updated_at' => now(),
             ]);
 
-            // Crear trámite
             $tramite = Tramite::create([
                 'solicitante_id' => $solicitante->id,
                 'tipo_tramite' => 'Inscripcion',
@@ -144,7 +137,6 @@ class RegisterController extends Controller
                 'updated_at' => now(),
             ]);
 
-            // Crear detalle del trámite
             $detalleTramite = DetalleTramite::create([
                 'tramite_id' => $tramite->id,
                 'razon_social' => $secureData['nombre'],
@@ -154,23 +146,16 @@ class RegisterController extends Controller
                 'updated_at' => now(),
             ]);
 
-            // Buscar el documento "Constancia de Situación Fiscal"
             $documento = Documento::where('nombre', 'Constancia de Situación Fiscal')->first();
-
-            // Verificar si el documento existe
             if (!$documento) {
                 throw new \Exception('El documento "Constancia de Situación Fiscal" no está registrado en la base de datos.');
             }
 
-            // Guardar el archivo
             $archivo = $request->file('sat_file');
             $nombreArchivo = uniqid('doc_' . $documento->id . '_') . '.pdf';
             $ruta = $archivo->storeAs('documentos_solicitante/' . $tramite->id, $nombreArchivo, 'public');
-
-            // Encriptar la ruta del archivo
             $rutaEncriptada = Crypt::encryptString($ruta);
 
-            // Crear documento_solicitante
             DocumentoSolicitante::create([
                 'tramite_id' => $tramite->id,
                 'documento_id' => $documento->id,
@@ -182,48 +167,67 @@ class RegisterController extends Controller
                 'updated_at' => now(),
             ]);
 
-            // Eliminar datos seguros de la sesión
             Session::forget($secureDataKey);
+            Session::forget('temp_sat_file_name');
             Log::info('Datos de sesión eliminados: ' . $secureDataKey);
 
-            // Confirmar transacción
             DB::commit();
             Log::info('Registro completado exitosamente');
 
-            // Redirige a welcome con éxito y muestra el modal
             return redirect()->route('welcome')
                 ->with('message', 'Registro exitoso. Por favor inicia sesión desde la página principal.')
                 ->with('show_success_modal', true);
-        }  catch (\Illuminate\Validation\ValidationException $e) {
-        DB::rollBack();
-        Log::error('Error de validación: ' . json_encode($e->errors()));
-        
-        // Obtener el primer mensaje de error
-        $errorMessage = '';
-        foreach ($e->errors() as $field => $messages) {
-            $errorMessage = $messages[0];
-            break;
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            Log::error('Error de validación: ' . json_encode($e->errors()));
+
+            if ($request->hasFile('sat_file')) {
+                Session::put('temp_sat_file_name', $request->file('sat_file')->getClientOriginalName());
+            }
+
+            $errorMessage = '';
+            foreach ($e->errors() as $field => $messages) {
+                $errorMessage = $messages[0];
+                break;
+            }
+
+            return redirect()->route('welcome')
+                ->with('error', $errorMessage)
+                ->with('show_error_modal', true)
+                ->with('show_register_form', true)
+                ->with('show_register_step2', true)
+                ->with('pdf_data_error', true)
+                ->withInput()
+                ->withErrors($e->errors());
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error durante el registro: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            if (strpos($e->getMessage(), 'El RFC') !== false) {
+                if ($request->hasFile('sat_file')) {
+                    Session::put('temp_sat_file_name', $request->file('sat_file')->getClientOriginalName());
+                }
+                return redirect()->route('welcome')
+                    ->with('error', $e->getMessage())
+                    ->with('show_error_modal', true)
+                    ->with('show_register_form', true)
+                    ->with('show_register_step1', true)
+                    ->withInput();
+            }
+
+            if ($request->hasFile('sat_file')) {
+                Session::put('temp_sat_file_name', $request->file('sat_file')->getClientOriginalName());
+            }
+
+            return redirect()->route('welcome')
+                ->with('error', $e->getMessage())
+                ->with('show_error_modal', true)
+                ->with('show_register_form', true)
+                ->with('show_register_step2', true)
+                ->with('pdf_data_error', true)
+                ->withInput();
         }
-        
-        return redirect()->route('welcome')
-            ->with('error', $errorMessage)
-            ->with('show_error_modal', true)
-            ->with('show_register_form', true)
-            ->with('pdf_data_error', true)
-            ->withInput();
-            
-    } catch (\Exception $e) {
-        DB::rollBack();
-        Log::error('Error durante el registro: ' . $e->getMessage(), [
-            'trace' => $e->getTraceAsString()
-        ]);
-        
-        return redirect()->route('welcome')
-            ->with('error', $e->getMessage())
-            ->with('show_error_modal', true)
-            ->with('show_register_form', true)
-            ->with('pdf_data_error', true)
-            ->withInput();
-    }
     }
 }
