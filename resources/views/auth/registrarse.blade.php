@@ -1,19 +1,35 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<div class="form-page register-form" id="registerFormStep1">
-    <button class="back-btn" id="backFromRegisterStep1Btn">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round" />
-        </svg>
-        Atrás
-    </button>
 
-    <img src="{{ asset('assets/imagenes/logoAdminsitracion.png') }}" alt="Logo" class="logo-img">
-    <h1>Regístrate</h1>
-    <p>Registro en el <span class="system-name">Padrón de Proveedores de Oaxaca</span></p>
+{{-- Muestra errores y mensajes --}}
+@if (session('message'))
+    <div class="alert alert-success">{{ session('message') }}</div>
+@endif
+@if (session('error'))
+    <div class="alert alert-danger">{{ session('error') }}</div>
+@endif
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+        @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+        @endforeach
+        </ul>
+    </div>
+@endif
 
-    <form method="POST" action="" enctype="multipart/form-data" id="registerForm">
-        @csrf
+<form method="POST" action="{{ route('register') }}" enctype="multipart/form-data" id="registerForm">
+    @csrf
+    <div class="form-page register-form" id="registerFormStep1">
+        <button class="back-btn" type="button" id="backFromRegisterStep1Btn" style="display:none;">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" />
+            </svg>
+            Atrás
+        </button>
+        <img src="{{ asset('assets/imagenes/logoAdminsitracion.png') }}" alt="Logo" class="logo-img">
+        <h1>Regístrate</h1>
+        <p>Registro en el <span class="system-name">Padrón de Proveedores de Oaxaca</span></p>
         <div class="input-group">
             <div class="file-input-header">
                 <label for="register-file">Constancia del SAT (PDF)*</label>
@@ -51,26 +67,22 @@
             </label>
             <input type="file" id="register-file" name="sat_file" accept="application/pdf" required>
         </div>
-
         <button type="button" class="btn" id="nextToStep2Btn">Siguiente</button>
-    </form>
-</div>
+    </div>
 
-<div class="form-page register-form" id="registerFormStep2">
-    <button class="back-btn" id="backFromRegisterStep2Btn">
+  <div class="form-page register-form" id="registerFormStep2" style="display:none;">
+    <button class="back-btn" type="button" id="backFromRegisterStep2Btn">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                 stroke-linejoin="round" />
         </svg>
         Atrás
     </button>
-
     <img src="{{ asset('assets/imagenes/logoAdminsitracion.png') }}" alt="Logo" class="logo-img">
     <h1>Datos del PDF</h1>
-
     <div id="pdf-data-preview">
         <div class="success-card" id="pdf-data-card">
-            <!-- Sección de encabezado -->
+            
             <div class="success-header" style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -94,26 +106,23 @@
                     </div>
                 </div>
                 <div class="sat-actions">
-                    <button class="small-btn" id="viewSatDataBtn" disabled>MIS DATOS SAT</button>
+                    <button class="small-btn" id="viewSatDataBtn" type="button" disabled>MIS DATOS SAT</button>
                 </div>
             </div>
-
-            <!-- Información visual para el usuario -->
             <div class="info-message">
                 <p>Para completar el registro, ingrese su correo electrónico y establezca una contraseña.</p>
             </div>
-
-            <!-- Sección de correo -->
             <div class="email-section">
-                <p class="name-display"><strong>Correo Electronico:</strong></p>
-                <input type="email" id="email-input" class="email-input" placeholder="INGRESE CORREO">
+                <p class="name-display"><strong>Correo Electrónico:</strong></p>
+                <input type="email" name="email" id="email-input" class="email-input" placeholder="INGRESE CORREO" value="{{ old('email') }}" required>
+                @error('email')
+                    <label class="error-message" style="color: #F44336; font-size: 0.9rem; margin-top: 5px; display: block;">{{ $message }}</label>
+                @enderror
             </div>
-
             <div class="password-section">
                 <p class="name-display"><strong>Contraseña:</strong></p>
                 <div class="password-input-container" style="position: relative;">
-                    <input type="password" id="password-input" class="email-input" placeholder="INGRESE CONTRASEÑA"
-                        required>
+                    <input type="password" name="password" id="password-input" class="email-input" placeholder="INGRESE CONTRASEÑA" required>
                     <button type="button" class="password-toggle"
                         style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -125,12 +134,14 @@
                         </svg>
                     </button>
                 </div>
+                @error('password')
+                    <label class="error-message" style="color: #F44336; font-size: 0.9rem; margin-top: 5px; display: block;">{{ $message }}</label>
+                @enderror
             </div>
-
             <div class="password-confirm-section">
                 <p class="name-display"><strong>Confirmar Contraseña:</strong></p>
                 <div class="password-input-container" style="position: relative;">
-                    <input type="password" id="password-confirm-input" class="email-input"
+                    <input type="password" name="password_confirmation" id="password-confirm-input" class="email-input"
                         placeholder="CONFIRME CONTRASEÑA" required>
                     <button type="button" class="password-toggle"
                         style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer;">
@@ -143,206 +154,55 @@
                         </svg>
                     </button>
                 </div>
+                @error('password_confirmation')
+                    <label class="error-message" style="color: #F44336; font-size: 0.9rem; margin-top: 5px; display: block;">{{ $message }}</label>
+                @enderror
             </div>
-
-            <!-- Sección de carga -->
-            <div id="sat-data-loading" style="display: none;">
-                <div class="spinner"></div>
-            </div>
+            <input type="hidden" name="secure_data_token" id="secure_data_token" value="{{ old('secure_data_token') }}">
         </div>
     </div>
-
-    <button type="button" class="btn" id="registerBtn">Registrarse</button>
+    <button type="submit" class="btn" id="registerBtn">Registrarse</button>
 </div>
+</form>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const successModal = document.getElementById('successModal');
-        const errorModal = document.getElementById('errorModal');
-        const successMessage = document.getElementById('successMessage');
-        const errorMessage = document.getElementById('errorMessage');
-        const closeButtons = document.querySelectorAll('.close-modal');
-
-        const passwordToggles = document.querySelectorAll('.password-toggle');
-
-        passwordToggles.forEach(toggle => {
-            toggle.addEventListener('click', function() {
-                const input = this.parentElement.querySelector('input');
-                const icon = this.querySelector('.password-toggle-icon');
-
-                // Toggle between password and text input type
-                if (input.type === 'password') {
-                    input.type = 'text';
-                    // Change to "hide password" icon (eye with slash)
-                    icon.innerHTML = `
-                        <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M3 3l18 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    `;
-                } else {
-                    input.type = 'password';
-                    // Change back to "show password" icon (eye)
-                    icon.innerHTML = `
-                        <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    `;
-                }
-            });
-        });
-        // Cerrar modal al hacer clic en X
-        closeButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                successModal.style.display = 'none';
-                errorModal.style.display = 'none';
-            });
-        });
-
-        // Cerrar modal al hacer clic fuera de él
-        window.addEventListener('click', function(event) {
-            if (event.target === successModal) {
-                successModal.style.display = 'none';
-            }
-            if (event.target === errorModal) {
-                errorModal.style.display = 'none';
-            }
-        });
-
-        // Manejar clic en botón de éxito
-        document.getElementById('successModalBtn').addEventListener('click', function() {
-            successModal.style.display = 'none';
-            if (window.redirectUrl) {
-                window.location.href = window.redirectUrl;
-            }
-        });
-
-        // Manejar clic en botón de error
-        document.getElementById('errorModalBtn').addEventListener('click', function() {
-            errorModal.style.display = 'none';
-        });
-
-       document.getElementById('registerBtn').addEventListener('click', function() {
-    // Deshabilitar botón para prevenir múltiples envíos
-    this.disabled = true;
-    this.textContent = 'Procesando...';
-    const btnElement = this;
-
-    // Recopilar datos del formulario
-    const satFileInput = document.getElementById('register-file');
-    const satFile = satFileInput.files[0];
-    const email = document.getElementById('email-input').value.trim();
-    const password = document.getElementById('password-input').value;
-    const passwordConfirm = document.getElementById('password-confirm-input').value;
-    const secureToken = document.getElementById('secure_data_token')?.value;
-
-    // Validaciones básicas
-    if (!password) {
-        errorMessage.textContent = 'Por favor, ingrese una contraseña.';
-        errorModal.style.display = 'block';
-        btnElement.disabled = false;
-        btnElement.textContent = 'Registrarse';
-        return;
-    }
-
-    if (password !== passwordConfirm) {
-        errorMessage.textContent = 'Las contraseñas no coinciden.';
-        errorModal.style.display = 'block';
-        btnElement.disabled = false;
-        btnElement.textContent = 'Registrarse';
-        return;
-    }
-
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        errorMessage.textContent = 'Por favor, ingrese un correo electrónico válido.';
-        errorModal.style.display = 'block';
-        btnElement.disabled = false;
-        btnElement.textContent = 'Registrarse';
-        return;
-    }
-
-    if (!secureToken) {
-        errorMessage.textContent = 'Error de seguridad: Token de datos no encontrado. Por favor, reinicie el proceso de registro.';
-        errorModal.style.display = 'block';
-        btnElement.disabled = false;
-        btnElement.textContent = 'Registrarse';
-        return;
-    }
-
-    // Crear objeto FormData
-    const formData = new FormData();
-    formData.append('sat_file', satFile);
-    formData.append('email', email);
-    formData.append('password', password);
-    formData.append('secure_data_token', secureToken);
-    formData.append('_token', document.querySelector('input[name="_token"]').value);
-
-    // Enviar solicitud AJAX con mejor manejo de errores
-    fetch('/register', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(data => {
-                // Manejar los distintos tipos de errores
-                if (response.status === 422) {
-                    // Errores de validación
-                    let errorMsg = 'Error de validación: ';
-                    
-                    if (data.errors) {
-                        // Extraer mensajes de error de cada campo
-                        const errorMessages = [];
-                        for (const field in data.errors) {
-                            if (data.errors.hasOwnProperty(field)) {
-                                errorMessages.push(data.errors[field][0]);
-                            }
-                        }
-                        errorMsg = errorMessages.join(', ');
-                    } else if (data.message) {
-                        errorMsg = data.message;
-                    }
-                    
-                    throw { displayMessage: errorMsg };
-                } else if (response.status === 419) {
-                    throw { displayMessage: 'Error de CSRF: Por favor, recarga la página e intenta de nuevo.' };
-                } else {
-                    throw { displayMessage: data.message || `Error al procesar el registro (${response.status}).` };
-                }
-            });
+document.addEventListener('DOMContentLoaded', function() {
+    // Wizard (cambio de pasos)
+    const step1 = document.getElementById('registerFormStep1');
+    const step2 = document.getElementById('registerFormStep2');
+    document.getElementById('nextToStep2Btn').addEventListener('click', function() {
+        if (!document.getElementById('register-file').files.length) {
+            alert('Por favor, sube tu constancia del SAT.');
+            return;
         }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            let msg = data.message || 'Registro exitoso. Por favor inicia sesión desde la página principal.';
+        step1.style.display = 'none';
+        step2.style.display = 'block';
+    });
+    document.getElementById('backFromRegisterStep2Btn').addEventListener('click', function() {
+        step2.style.display = 'none';
+        step1.style.display = 'block';
+    });
 
-            // Eliminar etiquetas HTML del mensaje
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = msg;
-            msg = tempDiv.textContent || tempDiv.innerText;
-
-            // Mostrar modal de éxito
-            successMessage.textContent = msg;
-            successModal.style.display = 'block';
-
-            // Almacenar URL de redirección
-            if (data.redirect) {
-                window.redirectUrl = data.redirect;
+    // Mostrar/ocultar contraseña
+    document.querySelectorAll('.password-toggle').forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const input = this.parentElement.querySelector('input');
+            const icon = this.querySelector('.password-toggle-icon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerHTML = `
+                    <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M3 3l18 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                `;
+            } else {
+                input.type = 'password';
+                icon.innerHTML = `
+                    <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                `;
             }
-        } else {
-            // Mostrar modal de error
-            errorMessage.textContent = data.message || 'No se pudo completar el registro.';
-            errorModal.style.display = 'block';
-            btnElement.disabled = false;
-            btnElement.textContent = 'Registrarse';
-        }
-    })
-    .catch(error => {
-        // Mostrar mensaje en modal sin exponer detalles técnicos en la consola
-        errorMessage.textContent = error.displayMessage || 'Ocurrió un error al enviar el formulario. Por favor, intenta de nuevo.';
-        errorModal.style.display = 'block';
-        btnElement.disabled = false;
-        btnElement.textContent = 'Registrarse';
+        });
     });
 });
-    });
 </script>

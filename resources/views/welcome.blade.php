@@ -98,3 +98,62 @@
     </div>
 </div>
 @endsection
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show success modal if needed
+    const showSuccessModal = "{{ session('show_success_modal') }}" === "1";
+    if (showSuccessModal) {
+        const modal = document.getElementById('successModal');
+        const message = document.getElementById('successMessage');
+        message.textContent = "{{ session('message') }}";
+        modal.style.display = "block";
+    }
+    
+    // Show error modal if needed
+    const showErrorModal = "{{ session('show_error_modal') }}" === "1";
+    if (showErrorModal) {
+        const modal = document.getElementById('errorModal');
+        const message = document.getElementById('errorMessage');
+        message.textContent = "{{ session('error') }}";
+        modal.style.display = "block";
+    }
+    
+    // Handle redirection to registration form Step 2 after error
+    const showRegisterForm = "{{ session('show_register_form') }}" === "1";
+    if (showRegisterForm) {
+        // Hide welcome form
+        const welcomeForm = document.getElementById('welcomeForm');
+        if (welcomeForm) welcomeForm.classList.remove('active');
+        
+        // Show registration form
+        const registerForm = document.querySelector('.register-form');
+        if (registerForm) registerForm.classList.add('active');
+        
+        // Go directly to step 2
+        const step1 = document.getElementById('registerFormStep1');
+        const step2 = document.getElementById('registerFormStep2');
+        if (step1) step1.style.display = 'none';
+        if (step2) step2.style.display = 'block';
+        
+        // If back button needs to be shown for step 2
+        const backBtn = document.getElementById('backFromRegisterStep1Btn');
+        if (backBtn) backBtn.style.display = 'block';
+    }
+    
+    // Close modals
+    document.querySelectorAll('.close-modal').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            this.closest('.modal').style.display = 'none';
+        });
+    });
+    
+    // Modal action buttons
+    document.getElementById('successModalBtn').addEventListener('click', function() {
+        document.getElementById('successModal').style.display = 'none';
+    });
+    
+    document.getElementById('errorModalBtn').addEventListener('click', function() {
+        document.getElementById('errorModal').style.display = 'none';
+    });
+});
+</script>
