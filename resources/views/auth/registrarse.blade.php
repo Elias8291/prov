@@ -120,12 +120,82 @@
 </form>
 
 <script>
-   document.addEventListener('DOMContentLoaded', () => {
+ document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('register-file');
     const pdfDataContainer = document.querySelector('.pdf-data-container');
     const viewExampleBtn = document.getElementById('viewExampleBtnStep1');
     const fileLabel = document.querySelector('.custom-file-upload span');
     const fileUploadContainer = document.querySelector('.custom-file-upload');
+    
+    // Check if we need to show the PDF data container automatically due to previous errors
+    const showPdfDataOnLoad = {{ session('pdf_data_error') ? 'true' : 'false' }};
+    const tempFileName = "{{ session('temp_sat_file_name') }}";
+    
+    // Helper function to highlight fields with errors
+    const highlightErrorFields = () => {
+        const emailError = document.querySelector('label.error-message[for="email-input"]');
+        const passwordError = document.querySelector('label.error-message[for="password-input"]');
+        const passwordConfirmError = document.querySelector('label.error-message[for="password-confirm-input"]');
+        
+        if (emailError) {
+            const emailInput = document.getElementById('email-input');
+            if (emailInput) {
+                emailInput.classList.add('input-error');
+                emailInput.addEventListener('focus', () => {
+                    emailInput.classList.remove('input-error');
+                }, { once: true });
+            }
+        }
+        
+        if (passwordError) {
+            const passwordInput = document.getElementById('password-input');
+            if (passwordInput) {
+                passwordInput.classList.add('input-error');
+                passwordInput.addEventListener('focus', () => {
+                    passwordInput.classList.remove('input-error');
+                }, { once: true });
+            }
+        }
+        
+        if (passwordConfirmError) {
+            const passwordConfirmInput = document.getElementById('password-confirm-input');
+            if (passwordConfirmInput) {
+                passwordConfirmInput.classList.add('input-error');
+                passwordConfirmInput.addEventListener('focus', () => {
+                    passwordConfirmInput.classList.remove('input-error');
+                }, { once: true });
+            }
+        }
+    };
+    
+    if (showPdfDataOnLoad) {
+        // When there was an error, automatically show the PDF data section
+        pdfDataContainer.style.display = 'block';
+        
+        // If we have a filename from the session, update the label
+        if (tempFileName) {
+            fileLabel.textContent = tempFileName;
+            fileUploadContainer.classList.add('file-selected');
+        }
+        
+        // Enable the view data button if appropriate
+        const viewSatDataBtn = document.getElementById('viewSatDataBtn');
+        if (viewSatDataBtn) {
+            viewSatDataBtn.disabled = false;
+            viewSatDataBtn.addEventListener('click', () => {
+                showError('Los datos no están disponibles. Por favor, vuelva a subir el archivo si desea ver los detalles.');
+            });
+        }
+        
+        // Highlight fields with errors
+        highlightErrorFields();
+        
+        // Focus on the first field with error
+        const errorFields = document.querySelectorAll('input.input-error');
+        if (errorFields.length > 0) {
+            errorFields[0].focus();
+        }
+    }
 
     fileInput?.addEventListener('change', async () => {
         if (fileInput.files.length > 0) {
@@ -172,7 +242,7 @@
                 const remainingTime = Math.max(0, minimumDelay - elapsedTime);
 
                 setTimeout(() => {
-                    fileUploadContainer.classList.add('file-selected'); // Apply .file-selected after success
+                    fileUploadContainer.classList.add('file-selected'); 
                     updatePDFDataPreview(pdfData, satData);
                     pdfDataContainer.style.display = 'block';
                     document.body.removeChild(loading);
@@ -197,11 +267,85 @@
         }
     });
 
+    // Password visibility toggles
+    document.querySelectorAll('.password-toggle').forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const input = this.closest('.password-input-container').querySelector('input');
+            if (input.type === 'password') {
+                input.type = 'text';
+                this.querySelector('.password-toggle-icon').innerHTML = `
+                    <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M1 1L23 23" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                `;
+            } else {
+                input.type = 'password';
+                this.querySelector('.password-toggle-icon').innerHTML = `
+                    <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                `;
+            }
+        });
+    });
+
     viewExampleBtn?.addEventListener('click', () => {
         window.open('/assets/pdf/ejemplo_sat.pdf', '_blank');
     });
-
-    // Password toggle functionality remains unchanged
+    
+    // Add custom validation for email and password fields
+    const emailInput = document.getElementById('email-input');
+    if (emailInput) {
+        emailInput.addEventListener('blur', () => {
+            if (emailInput.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.toLowerCase())) {
+                const errorLabel = document.querySelector('.email-section .error-message');
+                if (!errorLabel) {
+                    const newErrorLabel = document.createElement('label');
+                    newErrorLabel.className = 'error-message';
+                    newErrorLabel.setAttribute('for', 'email-input');
+                    newErrorLabel.style.color = '#F44336';
+                    newErrorLabel.style.fontSize = '0.9rem';
+                    newErrorLabel.style.marginTop = '5px';
+                    newErrorLabel.style.display = 'block';
+                    newErrorLabel.textContent = 'Por favor ingresa una dirección de correo válida.';
+                    emailInput.parentNode.appendChild(newErrorLabel);
+                }
+                emailInput.classList.add('input-error');
+            } else {
+                const errorLabel = document.querySelector('.email-section .error-message');
+                if (errorLabel && errorLabel.textContent === 'Por favor ingresa una dirección de correo válida.') {
+                    errorLabel.remove();
+                }
+                emailInput.classList.remove('input-error');
+            }
+        });
+    }
+    
+    const passwordInput = document.getElementById('password-input');
+    const passwordConfirmInput = document.getElementById('password-confirm-input');
+    if (passwordInput && passwordConfirmInput) {
+        passwordConfirmInput.addEventListener('blur', () => {
+            if (passwordConfirmInput.value && passwordInput.value !== passwordConfirmInput.value) {
+                const errorLabel = document.querySelector('.password-confirm-section .error-message');
+                if (!errorLabel) {
+                    const newErrorLabel = document.createElement('label');
+                    newErrorLabel.className = 'error-message';
+                    newErrorLabel.setAttribute('for', 'password-confirm-input');
+                    newErrorLabel.style.color = '#F44336';
+                    newErrorLabel.style.fontSize = '0.9rem';
+                    newErrorLabel.style.marginTop = '5px';
+                    newErrorLabel.style.display = 'block';
+                    newErrorLabel.textContent = 'Las contraseñas no coinciden.';
+                    passwordConfirmInput.parentNode.parentNode.appendChild(newErrorLabel);
+                }
+                passwordConfirmInput.classList.add('input-error');
+            } else {
+                const errorLabel = document.querySelector('.password-confirm-section .error-message');
+                if (errorLabel && errorLabel.textContent === 'Las contraseñas no coinciden.') {
+                    errorLabel.remove();
+                }
+                passwordConfirmInput.classList.remove('input-error');
+            }
+        });
+    }
 });
 
 // Modified updatePDFDataPreview
@@ -240,14 +384,6 @@ function updatePDFDataPreview(pdfData, satData) {
                 viewSatDataBtn.disabled = !satData || satData.extractedData.length === 0;
             }
         }, { once: true }); // Prevent multiple listeners
-    }
-
-    if (emailInput) {
-        emailInput.addEventListener('blur', () => {
-            if (emailInput.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.toLowerCase())) {
-                showError('Por favor ingresa una dirección de correo válida.');
-            }
-        });
     }
 }
 </script>

@@ -205,10 +205,16 @@ class RegisterController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
+            // Keep track of the token if it was provided
+            if ($request->has('secure_data_token')) {
+                Session::flash('secure_data_token', $request->secure_data_token);
+            }
+
+            if ($request->hasFile('sat_file')) {
+                Session::put('temp_sat_file_name', $request->file('sat_file')->getClientOriginalName());
+            }
+
             if (strpos($e->getMessage(), 'El RFC') !== false) {
-                if ($request->hasFile('sat_file')) {
-                    Session::put('temp_sat_file_name', $request->file('sat_file')->getClientOriginalName());
-                }
                 return redirect()->route('welcome')
                     ->with('error', $e->getMessage())
                     ->with('show_error_modal', true)
@@ -217,16 +223,12 @@ class RegisterController extends Controller
                     ->withInput();
             }
 
-            if ($request->hasFile('sat_file')) {
-                Session::put('temp_sat_file_name', $request->file('sat_file')->getClientOriginalName());
-            }
-
             return redirect()->route('welcome')
                 ->with('error', $e->getMessage())
                 ->with('show_error_modal', true)
                 ->with('show_register_form', true)
                 ->with('show_register_step2', true)
-                ->with('pdf_data_error', true)
+                ->with('pdf_data_error', true) // This will trigger showing the PDF data container
                 ->withInput();
         }
     }
