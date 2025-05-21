@@ -22,6 +22,7 @@ class RegisterController extends Controller
 {
     public function secureData(Request $request)
     {
+        // Existing secureData method remains unchanged
         try {
             Log::info('Recibida solicitud para asegurar datos');
 
@@ -108,7 +109,7 @@ class RegisterController extends Controller
 
             $user = User::create([
                 'nombre' => $secureData['nombre'],
-                'correo' => $request->email,
+                'correინა' => $request->email,
                 'rfc' => $secureData['rfc'],
                 'password' => Hash::make($request->password),
                 'estado' => 'activo',
@@ -195,7 +196,7 @@ class RegisterController extends Controller
                 ->with('error', $errorMessage)
                 ->with('show_error_modal', true)
                 ->with('show_register_form', true)
-                ->with('show_register_step2', true)
+                ->with('show_register_step1', true) // Set this to ensure step 1 is shown
                 ->with('pdf_data_error', true)
                 ->withInput()
                 ->withErrors($e->errors());
@@ -205,7 +206,6 @@ class RegisterController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            // Keep track of the token if it was provided
             if ($request->has('secure_data_token')) {
                 Session::flash('secure_data_token', $request->secure_data_token);
             }
@@ -214,21 +214,11 @@ class RegisterController extends Controller
                 Session::put('temp_sat_file_name', $request->file('sat_file')->getClientOriginalName());
             }
 
-            if (strpos($e->getMessage(), 'El RFC') !== false) {
-                return redirect()->route('welcome')
-                    ->with('error', $e->getMessage())
-                    ->with('show_error_modal', true)
-                    ->with('show_register_form', true)
-                    ->with('show_register_step1', true)
-                    ->withInput();
-            }
-
             return redirect()->route('welcome')
                 ->with('error', $e->getMessage())
                 ->with('show_error_modal', true)
                 ->with('show_register_form', true)
-                ->with('show_register_step2', true)
-                ->with('pdf_data_error', true) // This will trigger showing the PDF data container
+                ->with('show_register_step1', true) // Set this to ensure step 1 is shown
                 ->withInput();
         }
     }

@@ -99,4 +99,106 @@
 </div>
 @endsection
 <script>
+    document.addEventListener('DOMContentLoaded', () => {
+    // Check if we have a registration error in the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasRegisterError = urlParams.get('register_error') === 'true';
+    
+    if (hasRegisterError) {
+        // Ensure the registration form is visible
+        const registerForm = document.getElementById('registerForm');
+        if (registerForm) {
+            registerForm.style.display = 'block';
+            
+            // Check which step should be shown
+            const showStep2 = {{ session('show_register_step2') ? 'true' : 'false' }};
+            const showStep1 = {{ session('show_register_step1') ? 'true' : 'false' }};
+            
+            if (showStep2) {
+                // Show step 2 (email/password section)
+                const pdfDataContainer = document.querySelector('.pdf-data-container');
+                if (pdfDataContainer) {
+                    pdfDataContainer.style.display = 'block';
+                    
+                    // Scroll to the section
+                    pdfDataContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    
+                    // Focus on the first field with error, or the email field
+                    setTimeout(() => {
+                        const errorFields = document.querySelectorAll('input.input-error');
+                        if (errorFields.length > 0) {
+                            errorFields[0].focus();
+                        } else {
+                            const emailInput = document.getElementById('email-input');
+                            if (emailInput) {
+                                emailInput.focus();
+                            }
+                        }
+                    }, 500);
+                }
+            } else if (showStep1) {
+                // Show step 1 (file upload section)
+                const fileInput = document.getElementById('register-file');
+                if (fileInput) {
+                    // Scroll to the file input
+                    fileInput.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+            
+            // Show error message if present
+            const errorMessage = "{{ session('error') }}";
+            if (errorMessage) {
+                // Check if error modal should be shown
+                const showErrorModal = {{ session('show_error_modal') ? 'true' : 'false' }};
+                if (showErrorModal) {
+                    // If you have a custom error modal function, call it here
+                    if (typeof showError === 'function') {
+                        showError(errorMessage);
+                    } else {
+                        // Fallback to alert if no custom function exists
+                        alert(errorMessage);
+                    }
+                }
+            }
+        }
+    }
+    
+    // Add this code to your existing JavaScript to highlight fields with errors
+    const highlightErrorFields = () => {
+        @if($errors->has('email'))
+            const emailInput = document.getElementById('email-input');
+            if (emailInput) {
+                emailInput.classList.add('input-error');
+                emailInput.addEventListener('focus', () => {
+                    emailInput.classList.remove('input-error');
+                }, { once: true });
+            }
+        @endif
+        
+        @if($errors->has('password'))
+            const passwordInput = document.getElementById('password-input');
+            if (passwordInput) {
+                passwordInput.classList.add('input-error');
+                passwordInput.addEventListener('focus', () => {
+                    passwordInput.classList.remove('input-error');
+                }, { once: true });
+            }
+        @endif
+        
+        @if($errors->has('password_confirmation'))
+            const passwordConfirmInput = document.getElementById('password-confirm-input');
+            if (passwordConfirmInput) {
+                passwordConfirmInput.classList.add('input-error');
+                passwordConfirmInput.addEventListener('focus', () => {
+                    passwordConfirmInput.classList.remove('input-error');
+                }, { once: true });
+            }
+        @endif
+    };
+    
+    // Call the function to highlight errors if needed
+    if (hasRegisterError) {
+        highlightErrorFields();
+    }
+});
 </script>
