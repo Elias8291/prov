@@ -1,3 +1,4 @@
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <div class="form-page register-form" id="registerFormStep1">
     <button class="back-btn" id="backFromRegisterStep1Btn">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -97,16 +98,9 @@
                 </div>
             </div>
 
-            <!-- Datos personales (ocultos) -->
-            <div class="name-display" style="display: none;">
-                <p><strong id="label-nombre"></strong> <span id="nombre"></span></p>
-                <p><strong>TIPO DE PERSONA:</strong> <span id="tipo-persona"></span></p>
-                <p><strong>RFC:</strong> <span id="rfc"></span></p>
-                <p id="curp-section" style="display: none;"><strong>CURP:</strong> <span id="curp"></span></p>
-                <p><strong>CÓDIGO POSTAL:</strong> <span id="cp"></span></p>
-                <div class="address-section">
-                    <p><strong>DIRECCIÓN:</strong> <span id="direccion"></span></p>
-                </div>
+            <!-- Información visual para el usuario -->
+            <div class="info-message">
+                <p>Para completar el registro, ingrese su correo electrónico y establezca una contraseña.</p>
             </div>
 
             <!-- Sección de correo -->
@@ -133,9 +127,8 @@
                 </div>
             </div>
 
-            <!-- Updated confirm password section with toggle icon -->
             <div class="password-confirm-section">
-                <p class="name-display"><strong>Contraseña:</strong></p>
+                <p class="name-display"><strong>Confirmar Contraseña:</strong></p>
                 <div class="password-input-container" style="position: relative;">
                     <input type="password" id="password-confirm-input" class="email-input"
                         placeholder="CONFIRME CONTRASEÑA" required>
@@ -151,7 +144,6 @@
                     </button>
                 </div>
             </div>
-
 
             <!-- Sección de carga -->
             <div id="sat-data-loading" style="display: none;">
@@ -228,174 +220,129 @@
             errorModal.style.display = 'none';
         });
 
-        // Manejar clic en botón de registro
-        document.getElementById('registerBtn').addEventListener('click', function() {
-            // Deshabilitar botón para prevenir múltiples envíos
-            this.disabled = true;
-            this.textContent = 'Procesando...';
+       document.getElementById('registerBtn').addEventListener('click', function() {
+    // Deshabilitar botón para prevenir múltiples envíos
+    this.disabled = true;
+    this.textContent = 'Procesando...';
+    const btnElement = this;
 
-            // Recopilar datos del formulario
-            const satFileInput = document.getElementById('register-file');
-            const satFile = satFileInput.files[0];
-            const email = document.getElementById('email-input').value.trim();
-            const password = document.getElementById('password-input').value;
-            const passwordConfirm = document.getElementById('password-confirm-input').value;
+    // Recopilar datos del formulario
+    const satFileInput = document.getElementById('register-file');
+    const satFile = satFileInput.files[0];
+    const email = document.getElementById('email-input').value.trim();
+    const password = document.getElementById('password-input').value;
+    const passwordConfirm = document.getElementById('password-confirm-input').value;
+    const secureToken = document.getElementById('secure_data_token')?.value;
 
-            // Validación de contraseñas
-            if (!password) {
-                errorMessage.textContent = 'Por favor, ingrese una contraseña.';
-                errorModal.style.display = 'block';
-                this.disabled = false;
-                this.textContent = 'Registrarse';
-                return;
-            }
+    // Validaciones básicas
+    if (!password) {
+        errorMessage.textContent = 'Por favor, ingrese una contraseña.';
+        errorModal.style.display = 'block';
+        btnElement.disabled = false;
+        btnElement.textContent = 'Registrarse';
+        return;
+    }
 
-            if (password !== passwordConfirm) {
-                errorMessage.textContent = 'Las contraseñas no coinciden.';
-                errorModal.style.display = 'block';
-                this.disabled = false;
-                this.textContent = 'Registrarse';
-                return;
-            }
+    if (password !== passwordConfirm) {
+        errorMessage.textContent = 'Las contraseñas no coinciden.';
+        errorModal.style.display = 'block';
+        btnElement.disabled = false;
+        btnElement.textContent = 'Registrarse';
+        return;
+    }
 
-            const pdfData = {
-                nombre: document.getElementById('nombre').textContent.trim(),
-                tipoPersona: document.getElementById('tipo-persona').textContent.trim(),
-                rfc: document.getElementById('rfc').textContent.trim(),
-                curp: document.getElementById('curp').textContent.trim() || null,
-                cp: document.getElementById('cp').textContent.trim(),
-                direccion: document.getElementById('direccion').textContent.trim(),
-                email: email,
-                password: password
-            };
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errorMessage.textContent = 'Por favor, ingrese un correo electrónico válido.';
+        errorModal.style.display = 'block';
+        btnElement.disabled = false;
+        btnElement.textContent = 'Registrarse';
+        return;
+    }
 
-            // Normalizar tipo de persona
-            let normalizedTipoPersona;
-            const tipoPersonaLower = pdfData.tipoPersona.toLowerCase().replace(/\s+/g, '');
-            if (['física', 'fisica', 'personafísica', 'personafisica'].includes(tipoPersonaLower)) {
-                normalizedTipoPersona = 'Física';
-            } else if (['moral', 'personamoral'].includes(tipoPersonaLower)) {
-                normalizedTipoPersona = 'Moral';
-            } else {
-                errorMessage.textContent =
-                    'El tipo de persona extraído del PDF no es válido. Debe ser "Física" o "Moral".';
-                errorModal.style.display = 'block';
-                this.disabled = false;
-                this.textContent = 'Registrarse';
-                return;
-            }
+    if (!secureToken) {
+        errorMessage.textContent = 'Error de seguridad: Token de datos no encontrado. Por favor, reinicie el proceso de registro.';
+        errorModal.style.display = 'block';
+        btnElement.disabled = false;
+        btnElement.textContent = 'Registrarse';
+        return;
+    }
 
-            // Validación del lado del cliente
-            if (!satFile) {
-                errorMessage.textContent = 'Por favor, sube la constancia del SAT.';
-                errorModal.style.display = 'block';
-                this.disabled = false;
-                this.textContent = 'Registrarse';
-                return;
-            }
-            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                errorMessage.textContent = 'Por favor, ingrese un correo electrónico válido.';
-                errorModal.style.display = 'block';
-                this.disabled = false;
-                this.textContent = 'Registrarse';
-                return;
-            }
-            if (!pdfData.nombre || !normalizedTipoPersona || !pdfData.rfc || !pdfData.cp || !pdfData
-                .direccion) {
-                errorMessage.textContent =
-                    'Faltan datos extraídos del PDF. Por favor, verifica el archivo subido.';
-                errorModal.style.display = 'block';
-                this.disabled = false;
-                this.textContent = 'Registrarse';
-                return;
-            }
+    // Crear objeto FormData
+    const formData = new FormData();
+    formData.append('sat_file', satFile);
+    formData.append('email', email);
+    formData.append('password', password);
+    formData.append('secure_data_token', secureToken);
+    formData.append('_token', document.querySelector('input[name="_token"]').value);
 
-            // Crear objeto FormData
-            const formData = new FormData();
-            formData.append('sat_file', satFile);
-            formData.append('nombre', pdfData.nombre);
-            formData.append('tipo_persona', normalizedTipoPersona);
-            formData.append('rfc', pdfData.rfc);
-            formData.append('password', password);
-            if (pdfData.curp) {
-                formData.append('curp', pdfData.curp);
-            }
-            formData.append('cp', pdfData.cp);
-            formData.append('direccion', pdfData.direccion);
-            formData.append('email', pdfData.email);
-            formData.append('_token', document.querySelector('input[name="_token"]').value);
-
-            // Enviar solicitud AJAX
-            fetch('/register', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        if (response.status === 422) {
-                            return response.json().then(data => {
-                                const errors = Object.values(data.errors).flat().join(', ');
-                                throw new Error(`Errores de validación: ${errors}`);
-                            });
-                        } else if (response.status === 419) {
-                            throw new Error(
-                                'Error de CSRF: Por favor, recarga la página e intenta de nuevo.'
-                                );
-                        } else if (response.status === 500) {
-                            throw new Error(
-                                'Error del servidor: Por favor, intenta de nuevo más tarde.');
-                        } else if (response.status === 404) {
-                            throw new Error(
-                                'Ruta no encontrada: Verifica la configuración del servidor.');
+    // Enviar solicitud AJAX con mejor manejo de errores
+    fetch('/register', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(data => {
+                // Manejar los distintos tipos de errores
+                if (response.status === 422) {
+                    // Errores de validación
+                    let errorMsg = 'Error de validación: ';
+                    
+                    if (data.errors) {
+                        // Extraer mensajes de error de cada campo
+                        const errorMessages = [];
+                        for (const field in data.errors) {
+                            if (data.errors.hasOwnProperty(field)) {
+                                errorMessages.push(data.errors[field][0]);
+                            }
                         }
-                        throw new Error(`Error HTTP: ${response.status}`);
+                        errorMsg = errorMessages.join(', ');
+                    } else if (data.message) {
+                        errorMsg = data.message;
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        let msg = data.message ||
-                            'Registro exitoso. Por favor inicia sesión desde la página principal.';
+                    
+                    throw { displayMessage: errorMsg };
+                } else if (response.status === 419) {
+                    throw { displayMessage: 'Error de CSRF: Por favor, recarga la página e intenta de nuevo.' };
+                } else {
+                    throw { displayMessage: data.message || `Error al procesar el registro (${response.status}).` };
+                }
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            let msg = data.message || 'Registro exitoso. Por favor inicia sesión desde la página principal.';
 
-                        // Eliminar etiquetas HTML del mensaje
-                        const tempDiv = document.createElement('div');
-                        tempDiv.innerHTML = msg;
-                        msg = tempDiv.textContent || tempDiv.innerText;
+            // Eliminar etiquetas HTML del mensaje
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = msg;
+            msg = tempDiv.textContent || tempDiv.innerText;
 
-                        // Añadir información del RFC al mensaje
-                        msg = msg + '\n\nEl RFC ' + pdfData.rfc + ' ha quedado registrado.';
+            // Mostrar modal de éxito
+            successMessage.textContent = msg;
+            successModal.style.display = 'block';
 
-                        // Mostrar modal de éxito
-                        successMessage.textContent = msg;
-                        successModal.style.display = 'block';
-
-                        // Almacenar URL de redirección
-                        if (data.redirect) {
-                            window.redirectUrl = data.redirect;
-                        } else {
-                            errorMessage.textContent =
-                                'No se proporcionó una URL de redirección. Contacte al administrador.';
-                            errorModal.style.display = 'block';
-                            this.disabled = false;
-                            this.textContent = 'Registrarse';
-                        }
-                    } else {
-                        // Mostrar modal de error
-                        errorMessage.textContent = data.message ||
-                            'No se pudo completar el registro.';
-                        errorModal.style.display = 'block';
-                        this.disabled = false;
-                        this.textContent = 'Registrarse';
-                    }
-                })
-                .catch(error => {
-                    // Mostrar modal de error
-                    errorMessage.textContent = error.message ||
-                        'Ocurrió un error al enviar el formulario. Por favor, intenta de nuevo.';
-                    errorModal.style.display = 'block';
-                    this.disabled = false;
-                    this.textContent = 'Registrarse';
-                });
-        });
+            // Almacenar URL de redirección
+            if (data.redirect) {
+                window.redirectUrl = data.redirect;
+            }
+        } else {
+            // Mostrar modal de error
+            errorMessage.textContent = data.message || 'No se pudo completar el registro.';
+            errorModal.style.display = 'block';
+            btnElement.disabled = false;
+            btnElement.textContent = 'Registrarse';
+        }
+    })
+    .catch(error => {
+        // Mostrar mensaje en modal sin exponer detalles técnicos en la consola
+        errorMessage.textContent = error.displayMessage || 'Ocurrió un error al enviar el formulario. Por favor, intenta de nuevo.';
+        errorModal.style.display = 'block';
+        btnElement.disabled = false;
+        btnElement.textContent = 'Registrarse';
+    });
+});
     });
 </script>

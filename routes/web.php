@@ -36,6 +36,10 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
+// Registration routes
+Route::get('/register', [App\Http\Controllers\RegisterController::class, 'showRegistrationForm'])->name('register.form');
+Route::post('/register', [App\Http\Controllers\RegisterController::class, 'register'])->name('register');
+Route::post('/secure-registration-data', [App\Http\Controllers\RegisterController::class, 'secureData'])->name('secure.registration.data');
 // Rutas para invitados (no autenticados)
 Route::middleware(['guest'])->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');

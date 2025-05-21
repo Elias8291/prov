@@ -55,13 +55,29 @@
     </form>
 </div>
 
-<scrip>
+<script>
+    // Existing code
     @if (session('show_login'))
-    <script>
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.form-page').forEach(f => f.classList.remove('active'));
             document.getElementById('loginForm').classList.add('active');
         });
-    </script>
-@endif
-</scrip>
+    @endif
+
+    // Password toggle functionality
+    document.addEventListener('DOMContentLoaded', () => {
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('login-password');
+        
+        if (togglePassword && passwordInput) {
+            togglePassword.addEventListener('click', function() {
+                // Toggle the password input type between 'password' and 'text'
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                
+                // Toggle the icon appearance (optional)
+                this.classList.toggle('show-password');
+            });
+        }
+    });
+</script>

@@ -1,8 +1,19 @@
 import { createModal, createSpinner, showError } from './utils.js';
 import { scrapeSATData, showSATDataModal } from './sat-scraper.js';
-// public/assets/js/sat/pdf-processor.js
+
+// Configure PDF.js to suppress warnings
 window.pdfjsLib.GlobalWorkerOptions.workerSrc =
     'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+// Disable console warning for PDF.js
+const originalConsoleWarn = console.warn;
+console.warn = function(msg) {
+    // Filter out the specific PDF.js warning
+    if (msg && typeof msg === 'string' && msg.includes('Indexing all PDF objects')) {
+        return;
+    }
+    originalConsoleWarn.apply(console, arguments);
+};
 
 async function extractQRCodeFromPDF(file) {
     try {
@@ -13,21 +24,19 @@ async function extractQRCodeFromPDF(file) {
             const page = await pdf.getPage(i);
             const text = (await page.getTextContent()).items.map((item) => item.str).join(' ');
 
-            // Extraer RFC
             const rfcMatch = text.match(/([A-Z&Ñ]{3,4}[0-9]{6}[A-Z0-9]{3})/);
             if (rfcMatch) {
                 data.rfc = rfcMatch[0];
                 data.tipo = data.rfc.length === 12 ? 'Moral' : 'Física';
             }
 
-            // Extraer código QR
             const { width, height } = page.getViewport({ scale: 1 });
             const canvas = Object.assign(document.createElement('canvas'), { width, height });
             await page.render({ canvasContext: canvas.getContext('2d'), viewport: page.getViewport({ scale: 1 }) }).promise;
             const qrCode = jsQR(canvas.getContext('2d').getImageData(0, 0, width, height).data, width, height);
             if (qrCode) {
                 data.qrUrl = qrCode.data;
-                console.log('QR Code URL:', data.qrUrl);
+                // Removed console log that was showing QR URL
 
                 const satUrlPattern = /^https:\/\/siat\.sat\.gob\.mx\/app\/qr\/faces\/pages\/mobile\/validadorqr\.jsf\?.*D1=\d+.*&D2=\d+.*&D3=[^&]+/;
                 if (!satUrlPattern.test(data.qrUrl)) {
@@ -53,9 +62,61 @@ async function extractQRCodeFromPDF(file) {
 
         return data;
     } catch (error) {
-        throw new Error(`El Archivo no corresponde a una costancia fiscal`);
+        throw new Error(`El Archivo no corresponde a una constancia fiscal`);
     }
 }
+// Función para enviar y asegurar los datos en el servidor
+async function secureExtractedData(pdfData, satData) {
+    try {
+        const secureData = {
+            nombre: pdfData.tipo === 'Moral' ? satData.razonSocial || pdfData.name : satData.nombreCompleto || pdfData.name,
+            tipo_persona: pdfData.tipo,
+            rfc: pdfData.rfc,
+            curp: satData.curp || null,
+            cp: satData.cp || '',
+            direccion: [
+                satData.nombreVialidad?.toUpperCase(),
+                satData.numeroExterior,
+                satData.numeroInterior ? `INT. ${satData.numeroInterior}` : '',
+                satData.colonia ? `COL. ${satData.colonia.toUpperCase()}` : '',
+            ]
+                .filter(Boolean)
+                .join(' ') || '',
+        };
+        
+        console.log("Enviando datos seguros al servidor:", JSON.stringify(secureData));
+        
+        const response = await fetch('/secure-registration-data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify(secureData)
+        });
+        
+        if (!response.ok) {
+            if (response.status === 422) {
+                const errorData = await response.json();
+                throw new Error(`Error de validación: ${Object.values(errorData.errors || {}).flat().join(', ')}`);
+            } else {
+                throw new Error(`Error del servidor (${response.status}): ${await response.text()}`);
+            }
+        }
+        
+        const result = await response.json();
+        if (!result.success) {
+            throw new Error(result.message || 'Error desconocido al asegurar datos');
+        }
+        
+        console.log("Token recibido:", result.token);
+        return result.token;
+    } catch (error) {
+        console.error('Error al asegurar datos:', error);
+        throw error;
+    }
+}
+
 function enhanceImage(imageData) {
     const { data, width, height } = imageData;
     const enhancedData = new Uint8ClampedArray(data);
@@ -70,60 +131,26 @@ function enhanceImage(imageData) {
     return new ImageData(enhancedData, width, height);
 }
 
-window.extractQRCodeFromPDF = extractQRCodeFromPDF;
-window.enhanceImage = enhanceImage;
-
-// Update UI with PDF and SAT data
+// Actualiza la interfaz y asegura datos en el servidor
 function updatePDFDataPreview(pdfData, satData) {
     const isExpired = pdfData.estatus === 'Vencido';
-    const nombre = pdfData.tipo === 'Moral' ? satData.razonSocial || pdfData.name : satData.nombreCompleto || pdfData.name;
-
-    // Update document status
+    
+    // Actualizar estado del documento
     const documentStatus = document.getElementById('document-status');
     const warningBadge = document.getElementById('warning-badge');
     const pdfDataCard = document.getElementById('pdf-data-card');
+    
     if (documentStatus) documentStatus.textContent = `DOCUMENTO ${isExpired ? 'VENCIDO' : 'VÁLIDO'}`;
     if (warningBadge) warningBadge.style.display = isExpired ? 'inline-flex' : 'none';
     if (pdfDataCard) pdfDataCard.classList.toggle('expired', isExpired);
 
-    // Update fields
-    const fields = {
-        'label-nombre': pdfData.tipo === 'Moral' ? 'RAZÓN SOCIAL:' : 'NOMBRE:',
-        nombre: nombre.toUpperCase() || 'No disponible',
-        'tipo-persona': pdfData.tipo.toUpperCase() || 'No disponible',
-        rfc: pdfData.rfc || 'No disponible',
-        cp: satData.cp || 'No disponible',
-        direccion: [
-            satData.nombreVialidad?.toUpperCase(),
-            satData.numeroExterior,
-            satData.numeroInterior ? `INT. ${satData.numeroInterior}` : '',
-            satData.colonia ? `COL. ${satData.colonia.toUpperCase()}` : '',
-        ]
-            .filter(Boolean)
-            .join(' ') || 'No disponible',
-        'email-input': satData.email?.toUpperCase() || '',
-    };
-
-    Object.entries(fields).forEach(([id, value]) => {
-        const element = document.getElementById(id);
-        if (element) {
-            if (element.tagName === 'INPUT') element.value = value;
-            else element.textContent = value;
-        }
-    });
-
-    // Handle CURP for Persona Física
-    const curpSection = document.getElementById('curp-section');
-    const curpSpan = document.getElementById('curp');
-    if (satData.tipoPersona === 'Física' && satData.curp) {
-        curpSpan.textContent = satData.curp.toUpperCase() || 'No disponible';
-        curpSection.style.display = 'block'; // Show CURP section
-    } else {
-        curpSpan.textContent = ''; // Clear CURP
-        curpSection.style.display = 'none'; // Hide CURP section
+    // Pre-llenar el campo de correo si existe
+    const emailInput = document.getElementById('email-input');
+    if (emailInput && satData.email) {
+        emailInput.value = satData.email.toLowerCase();
     }
 
-    // Enable SAT data button and attach event listener
+    // Configurar botón de datos SAT
     const viewSatDataBtn = document.getElementById('viewSatDataBtn');
     if (viewSatDataBtn) {
         viewSatDataBtn.disabled = false;
@@ -134,7 +161,7 @@ function updatePDFDataPreview(pdfData, satData) {
             try {
                 showSATDataModal(satData, pdfData.qrUrl);
             } catch (error) {
-                showError(`Failed to display SAT data: ${error.message}`);
+                showError(`Error al mostrar datos SAT: ${error.message}`);
             } finally {
                 if (loading) loading.style.display = 'none';
                 viewSatDataBtn.disabled = false;
@@ -142,16 +169,37 @@ function updatePDFDataPreview(pdfData, satData) {
         });
     }
 
-    // Add email validation
-    const emailInput = document.getElementById('email-input');
+    // Validación de correo electrónico
     if (emailInput) {
         emailInput.addEventListener('blur', () => {
             if (emailInput.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.toLowerCase())) {
-                showError('Please enter a valid email address.');
+                showError('Por favor ingresa una dirección de correo válida.');
             }
         });
     }
+    
+    // IMPORTANTE: Asegurar datos en el servidor y almacenar token
+    secureExtractedData(pdfData, satData)
+        .then(token => {
+            console.log("Token de seguridad generado correctamente");
+            
+            // Crear o actualizar campo oculto para el token
+            let tokenInput = document.getElementById('secure_data_token');
+            if (!tokenInput) {
+                tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.id = 'secure_data_token';
+                tokenInput.name = 'secure_data_token';
+                document.getElementById('registerForm').appendChild(tokenInput);
+            }
+            tokenInput.value = token;
+        })
+        .catch(error => showError(`Error al asegurar datos: ${error.message}`));
 }
+
+window.extractQRCodeFromPDF = extractQRCodeFromPDF;
+window.enhanceImage = enhanceImage;
+window.secureExtractedData = secureExtractedData;
 
 // Initialize event listeners
 document.addEventListener('DOMContentLoaded', () => {
@@ -163,13 +211,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('register-file');
     const viewExampleBtn = document.getElementById('viewExampleBtnStep1');
     
-    // Add file input change handler to provide visual feedback when a file is selected
     fileInput?.addEventListener('change', () => {
         const fileLabel = document.querySelector('.custom-file-upload span');
         if (fileLabel) {
             if (fileInput.files.length > 0) {
                 fileLabel.textContent = fileInput.files[0].name;
-                // Optional: Add a visual indicator that file is selected
                 document.querySelector('.custom-file-upload').classList.add('file-selected');
             } else {
                 fileLabel.textContent = 'Subir archivo PDF';
@@ -196,10 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
     
-        // Muestra el modal de carga
         const loading = createModal({ html: createSpinner() });
-    
-        // Define un tiempo mínimo para que el modal sea visible (por ejemplo, 2 segundos)
         const minimumDelay = 2000; 
         const startTime = Date.now();
     
