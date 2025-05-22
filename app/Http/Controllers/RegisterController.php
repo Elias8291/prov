@@ -179,9 +179,9 @@ public function register(Request $request)
         DB::commit();
         Log::info('Registro completado exitosamente');
 
-        return redirect('/')
-            ->with('show_login', true)
-            ->with('message', 'Registro exitoso. Por favor inicia sesión.');
+       return redirect('/')
+    ->with('show_login', true)
+    ->with('message', 'Registro exitoso. Por favor inicia sesión.');
 
     } catch (\Illuminate\Validation\ValidationException $e) {
         DB::rollBack();

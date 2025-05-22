@@ -2022,443 +2022,462 @@ input:checked+.toggle-slider:before {
 
 
 
-/* Estilos específicos para el formulario de registro */
-.register-form {
-    max-width: 520px;
-    margin: 2rem auto;
-    padding: 2.5rem;
-    background: linear-gradient(135deg, var(--white) 0%, #fefefe 100%);
-    border-radius: 16px;
-    box-shadow: 
-        0 10px 25px rgba(157, 36, 73, 0.08),
-        0 4px 12px rgba(0, 0, 0, 0.04),
-        0 0 0 1px rgba(157, 36, 73, 0.06);
-    border: 1px solid rgba(157, 36, 73, 0.1);
+/* Importar fuente elegante */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Variables CSS para elementos específicos */
+:root {
+    --primary-blue: #2563eb;
+    --primary-blue-dark: #1d4ed8;
+    --success-green: #059669;
+    --success-green-light: #10b981;
+    --neutral-50: #f8fafc;
+    --neutral-100: #f1f5f9;
+    --neutral-200: #e2e8f0;
+    --neutral-300: #cbd5e0;
+    --neutral-400: #94a3b8;
+    --neutral-500: #64748b;
+    --neutral-600: #475569;
+    --neutral-700: #334155;
+    --neutral-800: #1e293b;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --border-radius: 10px;
+}
+
+/* Contenedor principal */
+.input-group {
+    margin-bottom: 28px;
+    transition: var(--transition);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Header del archivo */
+.file-input-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--neutral-200);
+}
+
+.file-input-header label {
+    font-weight: 600;
+    color: var(--neutral-700);
+    font-size: 15px;
+    letter-spacing: -0.025em;
+}
+
+/* Botón "Ver ejemplo" - SOLO ESTE TIENE COLOR */
+.small-btn.outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
+    border: none;
+    color: white;
+    border-radius: var(--border-radius);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+    box-shadow: var(--shadow-md);
+    letter-spacing: -0.025em;
     position: relative;
     overflow: hidden;
 }
 
-.register-form::before {
+.small-btn.outline::before {
     content: '';
     position: absolute;
     top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
 }
 
-/* Logo del formulario */
-.register-form .logo-img {
-    width: 120px;
-    height: auto;
-    margin: 0 auto 1.5rem;
-    display: block;
-    filter: drop-shadow(0 2px 4px rgba(157, 36, 73, 0.1));
+.small-btn.outline:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
 }
 
-/* Títulos */
-.register-form h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    text-align: center;
-    margin-bottom: 0.5rem;
-    position: relative;
+.small-btn.outline:hover::before {
+    left: 100%;
 }
 
-.register-form p {
-    text-align: center;
-    color: var(--text-light);
-    margin-bottom: 2rem;
-    font-size: 0.95rem;
-    line-height: 1.5;
-}
-
-.register-form .system-name {
-    font-weight: 600;
-    color: var(--primary-color);
-}
-
-/* Grupo de inputs */
-.register-form .input-group {
-    margin-bottom: 1.5rem;
-}
-
-/* Header del archivo con botón de ejemplo */
-.register-form .file-input-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0.75rem;
-}
-
-.register-form .file-input-header label {
-    font-weight: 600;
-    color: var(--text-dark);
-    font-size: 0.95rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.register-form .file-input-header label::before {
-    content: "📄";
-    font-size: 1.1rem;
-}
-
-/* Botón ver ejemplo */
-.register-form .small-btn.outline {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.4rem 0.8rem;
-    font-size: 0.8rem;
-    border: 1.5px solid var(--primary-color);
-    color: var(--primary-color);
-    background: transparent;
-    border-radius: 8px;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    font-weight: 500;
-}
-
-.register-form .small-btn.outline:hover {
-    background: var(--primary-color);
-    color: var(--white);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(157, 36, 73, 0.2);
-}
-
-.register-form .small-btn.outline svg {
+.small-btn.outline svg {
     width: 14px;
     height: 14px;
 }
 
-/* Upload de archivo personalizado */
-.register-form .custom-file-upload {
+/* Área de subida principal */
+.custom-file-upload {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 2rem 1.5rem;
-    border: 2px dashed var(--gray);
-    border-radius: 12px;
+    padding: 40px 28px;
+    border: 2px dashed var(--neutral-300);
+    border-radius: var(--border-radius);
+    background: linear-gradient(135deg, var(--neutral-50) 0%, white 100%);
     cursor: pointer;
-    transition: all 0.3s ease;
-    background: var(--gray-light);
+    transition: var(--transition);
     position: relative;
     overflow: hidden;
+    min-height: 130px;
 }
 
-/* Estado compacto cuando el archivo está seleccionado */
-.register-form .custom-file-upload.file-selected {
-    padding: 1rem 1.5rem;
-    flex-direction: row;
-    justify-content: flex-start;
-    gap: 0.75rem;
-    border: 1px solid #10b981;
-    background: #f0fdf4;
-    border-style: solid;
-}
-
-.register-form .custom-file-upload::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(157, 36, 73, 0.1), transparent);
-    transition: left 0.5s ease;
-}
-
-.register-form .custom-file-upload:hover::before {
-    left: 100%;
-}
-
-.register-form .custom-file-upload:hover {
-    border-color: var(--primary-color);
-    background: var(--primary-bg);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(157, 36, 73, 0.1);
-}
-
-.register-form .custom-file-upload svg {
-    width: 2.5rem;
-    height: 2.5rem;
-    margin-bottom: 0.75rem;
-    color: var(--primary-color);
-    stroke-width: 1.5;
-}
-
-.register-form .custom-file-upload span {
-    font-weight: 600;
-    color: var(--text-dark);
-    margin-bottom: 0.5rem;
-    font-size: 1rem;
-}
-
-.register-form .custom-file-upload small {
-    color: var(--text-light);
-    font-size: 0.85rem;
-}
-
-/* Íconos y texto en estado compacto */
-.register-form .custom-file-upload.file-selected svg {
-    width: 1.5rem;
-    height: 1.5rem;
-    margin-bottom: 0;
-    color: #10b981;
-    flex-shrink: 0;
-}
-
-.register-form .custom-file-upload.file-selected span {
-    color: #065f46;
-    font-size: 0.9rem;
-    margin-bottom: 0;
-    text-align: left;
-    flex: 1;
-}
-
-.register-form .custom-file-upload.file-selected small {
-    display: none;
-}
-
-.register-form input[type="file"] {
-    display: none;
-}
-
-/* Contenedor de datos PDF */
-.register-form .pdf-data-container {
-    margin-top: 1.5rem;
-}
-
-/* Tarjeta de éxito */
-.register-form .success-card {
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    position: relative;
-}
-
-.register-form .success-card::before {
+/* Patrón de fondo elegante */
+.custom-file-upload::after {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #10b981, #34d399);
-    border-radius: 12px 12px 0 0;
+    bottom: 0;
+    background-image: radial-gradient(circle at 20% 20%, var(--neutral-100) 1px, transparent 1px);
+    background-size: 20px 20px;
+    opacity: 0.4;
+    pointer-events: none;
 }
 
-/* Botón ver datos SAT */
-.register-form #viewSatDataBtn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1rem;
-    background: var(--primary-color);
-    color: var(--white);
-    border: none;
-    border-radius: 8px;
-    font-size: 0.9rem;
+/* Texto animado */
+.custom-file-upload:before {
+    content: "📄 Haz clic aquí para seleccionar tu documento PDF";
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: var(--neutral-500);
     font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-bottom: 1.25rem;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    animation: gentlePulse 2.5s infinite;
+    pointer-events: none;
+    z-index: 2;
 }
 
-.register-form #viewSatDataBtn:hover:not(:disabled) {
-    background: var(--primary-dark);
+@keyframes gentlePulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+}
+
+/* Hover estado */
+.custom-file-upload:hover {
+    border-color: var(--neutral-400);
+    background: linear-gradient(135deg, white 0%, var(--neutral-50) 100%);
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(157, 36, 73, 0.2);
+    box-shadow: var(--shadow-lg);
 }
 
-.register-form #viewSatDataBtn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+.custom-file-upload:hover:before {
+    color: var(--neutral-600);
+    animation: none;
+    opacity: 1;
 }
 
-/* Secciones de inputs */
-.register-form .email-section,
-.register-form .password-section,
-.register-form .password-confirm-section {
-    margin-bottom: 1.25rem;
+/* Estado con archivo - MÁS PEQUEÑO */
+.custom-file-upload.file-selected {
+    border-color: var(--success-green);
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+    padding: 16px 20px;
+    min-height: 70px;
+    box-shadow: var(--shadow-md);
 }
 
-.register-form .name-display {
+.custom-file-upload.file-selected:before {
+    display: none;
+}
+
+.custom-file-upload.file-selected:hover {
+    transform: none;
+    box-shadow: var(--shadow-md);
+}
+
+/* Iconos */
+.custom-file-upload svg {
+    width: 48px;
+    height: 48px;
+    color: var(--neutral-400);
+    margin-bottom: 14px;
+    transition: var(--transition);
+}
+
+.custom-file-upload:hover svg {
+    transform: scale(1.05);
+    color: var(--neutral-500);
+}
+
+.custom-file-upload.file-selected svg {
+    width: 24px;
+    height: 24px;
+    color: var(--success-green);
+    margin-bottom: 8px;
+    transform: none;
+}
+
+/* Texto del archivo */
+.custom-file-upload span {
+    font-size: 15px;
     font-weight: 600;
-    color: var(--text-dark);
-    margin-bottom: 0.5rem;
-    font-size: 0.95rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    color: var(--neutral-700);
+    text-align: center;
+    margin-bottom: 8px;
+    transition: var(--transition);
+    letter-spacing: -0.025em;
 }
 
-.register-form .email-section .name-display::before {
-    content: "✉️";
-    font-size: 1rem;
+.custom-file-upload.file-selected span {
+    font-size: 13px;
+    color: var(--success-green);
+    font-weight: 500;
 }
 
-.register-form .password-section .name-display::before,
-.register-form .password-confirm-section .name-display::before {
-    content: "🔐";
-    font-size: 1rem;
-}
-
-/* Inputs principales */
-.register-form .email-input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 2px solid var(--gray);
-    border-radius: 8px;
-    font-size: 0.95rem;
-    transition: all 0.3s ease;
-    background: var(--white);
-    color: var(--text-dark);
-}
-
-.register-form .email-input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(157, 36, 73, 0.1);
-    background: var(--primary-bg);
-}
-
-.register-form .email-input::placeholder {
-    color: var(--text-light);
+.custom-file-upload small {
+    font-size: 11px;
+    color: var(--neutral-400);
+    margin-top: 4px;
     font-weight: 400;
 }
 
-/* Contenedor de contraseña con botón toggle */
-.register-form .password-input-container {
-    position: relative;
+/* Input oculto */
+input[type="file"] {
+    display: none;
 }
 
-.register-form .password-input-container .email-input {
-    padding-right: 3rem;
+/* Contenedor de datos con animación */
+.pdf-data-container {
+    margin-top: 20px;
+    animation: slideInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.register-form .password-toggle {
-    position: absolute;
-    right: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
+@keyframes slideInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Cuando aparecen los datos, hacer el upload AÚN MÁS PEQUEÑO */
+.pdf-data-container[style*="block"] ~ .input-group .custom-file-upload,
+.input-group:has(+ .pdf-data-container[style*="block"]) .custom-file-upload {
+    padding: 12px 16px;
+    min-height: 50px;
+    margin-bottom: 16px;
+}
+
+.pdf-data-container[style*="block"] ~ .input-group .custom-file-upload svg,
+.input-group:has(+ .pdf-data-container[style*="block"]) .custom-file-upload svg {
+    width: 20px;
+    height: 20px;
+    margin-bottom: 6px;
+}
+
+.pdf-data-container[style*="block"] ~ .input-group .custom-file-upload span,
+.input-group:has(+ .pdf-data-container[style*="block"]) .custom-file-upload span {
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+
+/* Card de datos - SIN COLORES ESPECIALES */
+.success-card {
+    background: white;
+    border: 1px solid var(--neutral-200);
+    border-radius: var(--border-radius);
+    padding: 28px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-lg);
+}
+
+/* Botón "Ver Datos del SAT" - SOLO ESTE TIENE COLOR */
+#viewSatDataBtn {
+    background: linear-gradient(135deg, var(--success-green) 0%, var(--success-green-light) 100%);
+    color: white;
     border: none;
-    cursor: pointer;
-    padding: 0.25rem;
-    color: var(--text-light);
-    transition: color 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.register-form .password-toggle:hover {
-    color: var(--primary-color);
-}
-
-.register-form .password-toggle::before {
-    content: "👁️";
-    font-size: 1.1rem;
-}
-
-/* Mensajes de error */
-.register-form .error-message {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    color: #dc2626 !important;
-    font-size: 0.85rem !important;
-    margin-top: 0.4rem !important;
-    font-weight: 500;
-}
-
-.register-form .error-message::before {
-    content: "⚠️";
-    font-size: 0.9rem;
-}
-
-/* Botón principal de registro */
-.register-form .btn {
-    width: 100%;
-    padding: 0.9rem 1.5rem;
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-    color: var(--white);
-    border: none;
-    border-radius: 10px;
-    font-size: 1rem;
+    padding: 12px 24px;
+    border-radius: var(--border-radius);
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition);
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
+    gap: 8px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-md);
+    font-size: 13px;
+    letter-spacing: -0.025em;
     position: relative;
     overflow: hidden;
 }
 
-.register-form .btn::before {
+#viewSatDataBtn::before {
     content: '';
     position: absolute;
     top: 0;
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s ease;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
 }
 
-.register-form .btn:hover::before {
+#viewSatDataBtn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(5, 150, 105, 0.3);
+}
+
+#viewSatDataBtn:hover:not(:disabled)::before {
     left: 100%;
 }
 
-.register-form .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(157, 36, 73, 0.3);
+#viewSatDataBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: var(--shadow-sm);
 }
 
-.register-form .btn:active {
-    transform: translateY(0);
+/* Secciones de formulario - SIN COLORES */
+.email-section,
+.password-section,
+.password-confirm-section {
+    margin-bottom: 20px;
 }
 
-.register-form .btn::after {
-    content: "👤";
-    font-size: 1.1rem;
-    margin-left: 0.25rem;
+.name-display {
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: var(--neutral-700);
+    font-weight: 500;
+    letter-spacing: -0.025em;
 }
 
-/* Input hidden */
-.register-form input[type="hidden"] {
-    display: none;
+/* Inputs - SIN COLORES ESPECIALES */
+.email-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid var(--neutral-300);
+    border-radius: var(--border-radius);
+    font-size: 14px;
+    transition: var(--transition);
+    background: white;
+    font-family: inherit;
+    letter-spacing: -0.025em;
+    box-shadow: var(--shadow-sm);
+}
+
+.email-input:focus {
+    outline: none;
+    border-color: var(--neutral-400);
+    box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.1), var(--shadow-md);
+}
+
+.email-input::placeholder {
+    color: var(--neutral-400);
+    font-weight: 400;
+}
+
+/* Contenedor de contraseña */
+.password-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 14px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--neutral-400);
+    padding: 6px;
+    border-radius: 4px;
+    transition: var(--transition);
+}
+
+.password-toggle:hover {
+    color: var(--neutral-600);
+    background: var(--neutral-100);
+}
+
+
+/* Mensajes de error */
+.error-message {
+    display: block;
+    color: #dc2626 !important;
+    font-size: 12px !important;
+    margin-top: 6px;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+    padding: 6px 10px;
+    background: #fef2f2;
+    border-radius: 6px;
+    border-left: 3px solid #dc2626;
 }
 
 /* Responsive */
-@media (max-width: 640px) {
-    .register-form {
-        margin: 1rem;
-        padding: 1.5rem;
-        border-radius: 12px;
-    }
-    
-    .register-form h1 {
-        font-size: 1.75rem;
-    }
-    
-    .register-form .file-input-header {
+@media (max-width: 768px) {
+    .file-input-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 0.5rem;
+        gap: 10px;
     }
     
-    .register-form .custom-file-upload {
-        padding: 1.5rem 1rem;
+    .custom-file-upload {
+        padding: 32px 20px;
+        min-height: 110px;
+    }
+    
+    .custom-file-upload:before {
+        font-size: 11px;
+        top: 14px;
+    }
+    
+    .success-card {
+        padding: 20px;
+    }
+    
+    .email-input {
+        padding: 12px 14px;
+    }
+    
+    #registerBtn {
+        padding: 14px 20px;
+    }
+    
+    /* Versión móvil aún más compacta cuando hay datos */
+    .pdf-data-container[style*="block"] ~ .input-group .custom-file-upload,
+    .input-group:has(+ .pdf-data-container[style*="block"]) .custom-file-upload {
+        padding: 10px 14px;
+        min-height: 45px;
+    }
+}
+
+@media (max-width: 480px) {
+    .input-group {
+        margin-bottom: 20px;
+    }
+    
+    .custom-file-upload {
+        padding: 28px 16px;
+        min-height: 100px;
+    }
+    
+    .success-card {
+        padding: 16px;
     }
 }
