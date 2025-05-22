@@ -1,10 +1,10 @@
+// utils.js
 export function createModal({ className = 'modal-overlay', html, onSetup, onClose }) {
     const modal = document.createElement('div');
     modal.className = className;
     modal.innerHTML = html;
     document.body.appendChild(modal);
 
-    // Add visible class for animation
     setTimeout(() => {
         modal.classList.add('visible');
     }, 10);
@@ -18,7 +18,6 @@ export function createModal({ className = 'modal-overlay', html, onSetup, onClos
         }, 400);
     };
 
-    // Attach close event listeners
     modal.querySelector('.close-modal')?.addEventListener('click', closeModal);
     modal.querySelector('#closeModalBtn')?.addEventListener('click', closeModal);
     modal.addEventListener('click', (e) => {
@@ -53,3 +52,8 @@ export function showError(message) {
     });
     return modal;
 }
+
+// Expose functions globally
+window.createModal = createModal;
+window.createSpinner = createSpinner;
+window.showError = showError;

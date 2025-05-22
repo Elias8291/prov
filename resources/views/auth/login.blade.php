@@ -56,14 +56,16 @@
 </div>
 
 <script>
-    // Existing code
+   
+document.addEventListener('DOMContentLoaded', function() {
     @if (session('show_login'))
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.form-page').forEach(f => f.classList.remove('active'));
-            document.getElementById('loginForm').classList.add('active');
-        });
+        document.querySelectorAll('.form-page').forEach(f => f.classList.remove('active'));
+        document.getElementById('loginForm').classList.add('active');
+    @elseif (session('show_register'))
+        document.querySelectorAll('.form-page').forEach(f => f.classList.remove('active'));
+        document.getElementById('registerFormStep1').classList.add('active');
     @endif
-
+});
     // Password toggle functionality
     document.addEventListener('DOMContentLoaded', () => {
         const togglePassword = document.getElementById('togglePassword');
