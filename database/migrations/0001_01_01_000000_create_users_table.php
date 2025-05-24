@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('remember_token')->nullable();
             $table->string('rfc');
             $table->timestamp('ultimo_acceso')->nullable();
-            $table->enum('estado', ['activo', 'inactivo', 'suspendido'])->default('activo');
+            $table->enum('estado', ['pendiente', 'activo', 'inactivo', 'suspendido'])->default('pendiente');
             $table->string('verification_token')->nullable();
             $table->timestamps();
         });

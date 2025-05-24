@@ -36,10 +36,12 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
-// Registration routes
-Route::get('/register', [App\Http\Controllers\RegisterController::class, 'showRegistrationForm'])->name('register.form');
-Route::post('/register', [App\Http\Controllers\RegisterController::class, 'register'])->name('register');
-Route::post('/secure-registration-data', [App\Http\Controllers\RegisterController::class, 'secureData'])->name('secure.registration.data');
+// Rutas de registro y verificación (públicas)
+Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register.form');
+Route::post('/register', [RegisterController::class, 'register'])->name('register');
+Route::post('/secure-registration-data', [RegisterController::class, 'secureData'])->name('secure.registration.data');
+Route::get('/verify-email/{user_id}', [RegisterController::class, 'verifyEmail'])->name('verify.email');
+
 // Rutas para invitados (no autenticados)
 Route::middleware(['guest'])->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -71,36 +73,35 @@ Route::middleware(['auth'])->group(function () {
         ->name('inscripcion.terminos_y_condiciones');
     Route::post('/inscripcion/aceptar-terminos', [SolicitanteController::class, 'aceptarTerminos'])
         ->name('inscripcion.aceptar_terminos');
-    
+
     // RUTAS PARA LA INSCRIPCIÓN (MANTÉN COMPATIBILIDAD CON LAS EXISTENTES)
     // Rutas originales (para mantener compatibilidad)
     Route::get('/inscripcion', [InscripcionController::class, 'mostrarFormulario'])->name('inscripcion.formulario');
     Route::post('/inscripcion', [InscripcionController::class, 'procesarSeccion'])->name('inscripcion.procesar'); // Restaurada esta ruta original
     Route::get('/inscripcion/exito', [InscripcionController::class, 'exito'])->name('inscripcion.exito');
     Route::post('/inscripcion/documento/upload', [DocumentosController::class, 'subir'])->name('inscripcion.documento.upload'); // Restaurada esta ruta original
-Route::post('/inscripcion/obtener-datos-direccion', [DireccionController::class, 'obtenerDatosDireccion'])->name('inscripcion.obtener-datos-direccion');
-   Route::get('/inscripcion/actividades', [ActividadController::class, 'obtenerActividades'])->name('inscripcion.actividades');
-    
+    Route::post('/inscripcion/obtener-datos-direccion', [DireccionController::class, 'obtenerDatosDireccion'])->name('inscripcion.obtener-datos-direccion');
+    Route::get('/inscripcion/actividades', [ActividadController::class, 'obtenerActividades'])->name('inscripcion.actividades');
+
     // Rutas nuevas (para el código refactorizado)
     Route::post('/inscripcion/procesar-seccion', [InscripcionController::class, 'procesarSeccion'])->name('inscripcion.procesar_seccion');
     Route::post('/registro-datos-constitucion', [ConstitucionController::class, 'guardar'])->name('registro.datos.constitucion'); // Restaurada
-    
-    // Rutas para datos de actividades (AJAX)
 
-    
+    // Rutas para datos de actividades (AJAX)
+    // (si tienes más, agrégalas aquí)
+
     // Rutas para datos de dirección (AJAX)
     Route::get('/direccion/datos', [DireccionController::class, 'obtenerDatosDireccion'])->name('direccion.datos');
-    
+
     // Rutas para formularios específicos
     Route::post('/inscripcion/datos-generales', [DatosGeneralesController::class, 'guardar'])->name('inscripcion.datos_generales.guardar');
-
     Route::post('/inscripcion/constitucion', [ConstitucionController::class, 'guardar'])->name('inscripcion.constitucion.guardar');
     Route::post('/inscripcion/accionistas', [AccionistasController::class, 'guardar'])->name('inscripcion.accionistas.guardar');
     Route::post('/inscripcion/apoderado-legal', [ApoderadoLegalController::class, 'guardar'])->name('inscripcion.apoderado_legal.guardar');
-    
+
     // Ruta para subir documentos
     Route::post('/documentos/subir', [DocumentosController::class, 'subir'])->name('documentos.subir');
-    
+
     // Resto de rutas de tu sistema...
     Route::get('/sectores', [SectorActividadController::class, 'getSectores'])->name('sectores.index');
     Route::get('/sectores/{sectorId}/actividades', [SectorActividadController::class, 'getActividadesBySector'])->name('sectores.actividades');
