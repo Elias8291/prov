@@ -834,6 +834,7 @@ label {
     margin-bottom: 4px;
 }
 
+/* Left Section */
 .left-section {
     align-items: center;
     animation: carouselAnimation 1s ease-out forwards;
@@ -845,8 +846,7 @@ label {
     opacity: 0;
     overflow: hidden;
     position: relative;
-    width: 45%;
-    height: 600px; /* Explicitly set to match original container height */
+    width: 40%; /* Reduced from 45% to make right-section wider */
 }
 /* Link Button */
 .link-button {

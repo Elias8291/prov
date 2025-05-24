@@ -1,17 +1,18 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <form method="POST" action="{{ route('register') }}" enctype="multipart/form-data" id="registerForm">
     @csrf
-       @if($errors->any() && !$errors->has('email') && !$errors->has('password') && !$errors->has('password_confirmation'))
-        <div class="alert alert-danger" style="background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 12px; margin-bottom: 15px; border-radius: 4px;">
-            <strong>Error:</strong> 
+    @if ($errors->any() && !$errors->has('email') && !$errors->has('password') && !$errors->has('password_confirmation'))
+        <div class="alert alert-danger"
+            style="background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 12px; margin-bottom: 15px; border-radius: 4px;">
+            <strong>Error:</strong>
             <ul style="margin: 5px 0 0 20px; padding: 0;">
-                @foreach($errors->all() as $error)
+                @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
         </div>
     @endif
-    
+
     <div class="form-page register-form inactive" id="registerFormStep1">
         <img src="{{ asset('assets/imagenes/logoAdminsitracion.png') }}" alt="Logo" class="logo-img">
         <h1>Regístrate</h1>
@@ -68,12 +69,18 @@
                             <input type="password" name="password" id="password-input" class="email-input"
                                 placeholder="INGRESE CONTRASEÑA" required>
                             <button type="button" class="password-toggle">
-                                <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                     <circle cx="12" cy="12" r="3"></circle>
                                 </svg>
-                                <svg class="eye-slash-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                <svg class="eye-slash-icon" xmlns="http://www.w3.org/2000/svg" width="20"
+                                    height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path
+                                        d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                                    </path>
                                     <line x1="1" y1="1" x2="23" y2="23"></line>
                                 </svg>
                             </button>
@@ -91,12 +98,18 @@
                             <input type="password" name="password_confirmation" id="password-confirm-input"
                                 class="email-input" placeholder="CONFIRME CONTRASEÑA" required>
                             <button type="button" class="password-toggle">
-                                <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="20"
+                                    height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                     <circle cx="12" cy="12" r="3"></circle>
                                 </svg>
-                                <svg class="eye-slash-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                <svg class="eye-slash-icon" xmlns="http://www.w3.org/2000/svg" width="20"
+                                    height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path
+                                        d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                                    </path>
                                     <line x1="1" y1="1" x2="23" y2="23"></line>
                                 </svg>
                             </button>
@@ -114,6 +127,8 @@
         </div>
     </div>
 </form>
+
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         // ========== File Upload Handling ==========
@@ -127,22 +142,26 @@
 
         // Function to process PDF file
         async function processPDF(file, fileName) {
-@@ -119,7 +137,7 @@ class="email-input" placeholder="CONFIRME CONTRASEÑA" required>
-                    tokenInput.type = 'hidden';
-                    tokenInput.id = 'secure_data_token';
-                    tokenInput.name = 'secure_data_token';
-                    document.getElementById('registerForm').appendChild(tokenInput);
-                    registerForm.appendChild(tokenInput);
-                }
-                tokenInput.value = token;
+            @@ - 119, 7 + 137, 7 @@ class = "email-input"
+            placeholder = "CONFIRME CONTRASEÑA"
+            required >
+                tokenInput.type = 'hidden';
+            tokenInput.id = 'secure_data_token';
+            tokenInput.name = 'secure_data_token';
+            document.getElementById('registerForm').appendChild(tokenInput);
+            registerForm.appendChild(tokenInput);
+        }
+        tokenInput.value = token;
 
-@@ -161,12 +179,81 @@ class="email-input" placeholder="CONFIRME CONTRASEÑA" required>
-            }
-        });
+        @@ - 161, 12 + 179, 81 @@ class = "email-input"
+        placeholder = "CONFIRME CONTRASEÑA"
+        required >
+    }
+    });
 
-        // Check for temporary file on page load
-        @if (session('temp_sat_file_path'))
-            fetch('{{ asset('storage/' . session('temp_sat_file_path')) }}')
+    // Check for temporary file on page load
+    @if (session('temp_sat_file_path'))
+        fetch('{{ asset('storage/' . session('temp_sat_file_path')) }}')
         // ========== Password Validation ==========
 
         // Function to validate passwords match
@@ -222,42 +241,44 @@
                     const file = new File([blob], fileName, {
                         type: 'application/pdf'
                     });
-@@ -181,6 +268,105 @@ class="email-input" placeholder="CONFIRME CONTRASEÑA" required>
-                    fileUploadContainer.classList.remove('file-selected');
+                    @@ - 181, 6 + 268, 105 @@ class = "email-input"
+                    placeholder = "CONFIRME CONTRASEÑA"
+                    required >
+                        fileUploadContainer.classList.remove('file-selected');
                     pdfDataContainer.style.display = 'none';
                 });
         @endif
+    }
+
+    // ========== Helper Functions ==========
+    // These functions would normally be defined elsewhere or imported
+
+    // Create a modal with loading animation
+    function createModal(options = {}) {
+        const modalElement = document.createElement('div');
+        modalElement.className = 'modal-overlay';
+        modalElement.style.position = 'fixed';
+        modalElement.style.top = '0';
+        modalElement.style.left = '0';
+        modalElement.style.width = '100vw';
+        modalElement.style.height = '100vh';
+        modalElement.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        modalElement.style.display = 'flex';
+        modalElement.style.justifyContent = 'center';
+        modalElement.style.alignItems = 'center';
+        modalElement.style.zIndex = '9999';
+
+        if (options.html) {
+            modalElement.innerHTML = options.html;
         }
 
-        // ========== Helper Functions ==========
-        // These functions would normally be defined elsewhere or imported
+        document.body.appendChild(modalElement);
+        return modalElement;
+    }
 
-        // Create a modal with loading animation
-        function createModal(options = {}) {
-            const modalElement = document.createElement('div');
-            modalElement.className = 'modal-overlay';
-            modalElement.style.position = 'fixed';
-            modalElement.style.top = '0';
-            modalElement.style.left = '0';
-            modalElement.style.width = '100vw';
-            modalElement.style.height = '100vh';
-            modalElement.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-            modalElement.style.display = 'flex';
-            modalElement.style.justifyContent = 'center';
-            modalElement.style.alignItems = 'center';
-            modalElement.style.zIndex = '9999';
-
-            if (options.html) {
-                modalElement.innerHTML = options.html;
-            }
-
-            document.body.appendChild(modalElement);
-            return modalElement;
-        }
-
-        // Create a spinner animation
-        function createSpinner() {
-            return `
+    // Create a spinner animation
+    function createSpinner() {
+        return `
             <div class="spinner-container" style="background: white; border-radius: 8px; padding: 20px; text-align: center;">
                 <div class="spinner" style="border: 4px solid rgba(0, 0, 0, 0.1); width: 40px; height: 40px; border-radius: 50%; border-left-color: #09f; animation: spin 1s linear infinite; margin: 0 auto;"></div>
                 <p style="margin-top: 15px; color: #333;">Procesando documento...</p>
@@ -269,40 +290,40 @@
                 </style>
             </div>
         `;
-        }
+    }
 
-        // Function to extract QR code from PDF - placeholder
-        async function extractQRCodeFromPDF(file) {
-            // This would normally make an API call or process the PDF
-            // For now, we'll simulate a delay
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    resolve({
-                        qrUrl: 'https://example.com/qr'
-                    });
-                }, 1000);
-            });
-        }
+    // Function to extract QR code from PDF - placeholder
+    async function extractQRCodeFromPDF(file) {
+        // This would normally make an API call or process the PDF
+        // For now, we'll simulate a delay
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    qrUrl: 'https://example.com/qr'
+                });
+            }, 1000);
+        });
+    }
 
-        // Function to scrape SAT data - placeholder
-        async function scrapeSATData(qrUrl) {
-            // This would normally make an API call
-            // For now, we'll simulate a delay
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    resolve({
-                        email: 'example@example.com',
-                        rfc: 'EXAMPLE123456'
-                    });
-                }, 500);
-            });
-        }
+    // Function to scrape SAT data - placeholder
+    async function scrapeSATData(qrUrl) {
+        // This would normally make an API call
+        // For now, we'll simulate a delay
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    email: 'example@example.com',
+                    rfc: 'EXAMPLE123456'
+                });
+            }, 500);
+        });
+    }
 
-        // Function to secure data - placeholder
-        async function secureExtractedData(pdfData, satData) {
-            // This would normally generate a secure token
-            return 'secured_token_' + Date.now();
-        }
+    // Function to secure data - placeholder
+    async function secureExtractedData(pdfData, satData) {
+    // This would normally generate a secure token
+    return 'secured_token_' + Date.now();
+    }
     }); // Password Toggle Visibility
     document.querySelectorAll('.password-toggle').forEach(button => {
         button.addEventListener('click', function() {

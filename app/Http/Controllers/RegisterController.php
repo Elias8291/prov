@@ -173,7 +173,6 @@ class RegisterController extends Controller
                 'updated_at' => now(),
             ]);
 
-            // Enviar correo de verificación con URL que expira en 5 minutos
             $verificationUrl = URL::temporarySignedRoute(
                 'verify.email',
                 now()->addMinutes(5),
@@ -191,8 +190,9 @@ class RegisterController extends Controller
             Log::info('Registro completado exitosamente, correo de verificación enviado');
 
             return redirect('/')
-                ->with('show_login', true)
-                ->with('message', 'Registro exitoso. Por favor revisa tu correo para verificar tu cuenta.');
+                ->with('show_success_modal', true)
+                ->with('message', 'Registro exitoso. Te hemos enviado un correo de verificación. Por favor revisa tu bandeja de entrada y sigue las instrucciones para activar tu cuenta.')
+                ->with('show_login', true);
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
             Log::error('Error de validación: ' . json_encode($e->errors()));
@@ -213,6 +213,7 @@ class RegisterController extends Controller
                 ->with('show_register', true);
         }
     }
+
     public function verifyEmail(Request $request, $user_id)
     {
         Log::info('Iniciando verificación de correo', [
@@ -222,7 +223,6 @@ class RegisterController extends Controller
             'request_url' => $request->fullUrl()
         ]);
 
-        // Check if the URL signature is valid
         if (!$request->hasValidSignature()) {
             Log::error('URL de verificación inválida o expirada', ['user_id' => $user_id]);
             return redirect('/')
@@ -230,7 +230,6 @@ class RegisterController extends Controller
                 ->with('show_register', true);
         }
 
-        // Find the user
         $user = User::find($user_id);
         if (!$user) {
             Log::error('Usuario no encontrado', ['user_id' => $user_id]);
@@ -239,14 +238,12 @@ class RegisterController extends Controller
                 ->with('show_register', true);
         }
 
-        // Get the token from the request
         $token = $request->query('token');
         Log::info('Comparando tokens', [
             'provided_token' => $token,
             'stored_token' => $user->verification_token
         ]);
 
-        // Verify the token
         if (!$token || $user->verification_token !== $token) {
             Log::error('Token de verificación no coincide o es nulo', [
                 'user_id' => $user_id,
@@ -258,7 +255,6 @@ class RegisterController extends Controller
                 ->with('show_register', true);
         }
 
-        // Check if the email is already verified
         if ($user->fecha_verificacion_correo) {
             Log::info('Correo ya verificado', ['user_id' => $user_id]);
             return redirect('/')
@@ -266,10 +262,8 @@ class RegisterController extends Controller
                 ->with('show_login', true);
         }
 
-        // Start a database transaction
         DB::beginTransaction();
         try {
-            // Update user status to 'activo' and clear verification token
             $updated = $user->update([
                 'estado' => 'activo',
                 'fecha_verificacion_correo' => now(),
@@ -287,7 +281,6 @@ class RegisterController extends Controller
                 'fecha_verificacion_correo' => $user->fecha_verificacion_correo
             ]);
 
-            // Assign 'solicitante' role if it exists
             if (Role::where('name', 'solicitante')->exists()) {
                 $user->assignRole('solicitante');
                 Log::info('Rol "solicitante" asignado correctamente', ['user_id' => $user_id]);
@@ -295,11 +288,9 @@ class RegisterController extends Controller
                 Log::warning('Rol "solicitante" no encontrado, no se asignó ningún rol', ['user_id' => $user_id]);
             }
 
-            // Commit the transaction
             DB::commit();
             Log::info('Correo verificado exitosamente', ['user_id' => $user_id]);
         } catch (\Exception $e) {
-            // Roll back the transaction on error
             DB::rollBack();
             Log::error('Error al verificar el correo', [
                 'user_id' => $user_id,
@@ -311,11 +302,11 @@ class RegisterController extends Controller
                 ->with('show_register', true);
         }
 
-        // Redirect to login with success message
         return redirect('/')
             ->with('message', 'Correo verificado exitosamente. Por favor inicia sesión.')
             ->with('show_login', true);
     }
+
     protected function storeTempFile(Request $request)
     {
         if ($request->hasFile('sat_file') && $request->file('sat_file')->isValid()) {
