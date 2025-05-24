@@ -22,6 +22,8 @@ use App\Http\Controllers\Formularios\AccionistasController;
 use App\Http\Controllers\Formularios\ApoderadoLegalController;
 use App\Http\Controllers\Formularios\DocumentosController;
 use App\Providers\RouteServiceProvider;
+use App\Http\Controllers\CitaController;
+use App\Http\Controllers\DiasInhabilesController;
 
 // Ruta para verificar autenticación (usada por JavaScript)
 Route::get('/check-auth', function () {
@@ -137,4 +139,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/documentos/{documento}/edit', [DocumentoController::class, 'edit'])->name('documentos.edit');
     Route::put('/documentos/{documento}', [DocumentoController::class, 'update'])->name('documentos.update');
     Route::delete('/documentos/{documento}', [DocumentoController::class, 'destroy'])->name('documentos.destroy');
+Route::get('/citas', [CitaController::class, 'index'])->name('citas.index');
+Route::put('/citas/{cita}', [CitaController::class, 'update'])->name('citas.update');
+Route::delete('/citas/{cita}', [CitaController::class, 'destroy'])->name('citas.destroy');
+Route::post('/dias_inhabiles', [DiasInhabilesController::class, 'store'])->name('dias_inhabiles.store');
+Route::delete('/dias_inhabiles/{diaInhabil}', [DiasInhabilesController::class, 'destroy'])->name('dias_inhabiles.destroy');
 });

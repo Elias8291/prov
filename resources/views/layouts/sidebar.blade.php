@@ -17,20 +17,38 @@
         </div>
 
         <!-- Inscripción - visible para todos -->
-       <div class="menu-item">
-    <a href="{{ route('inscripcion.index') }}"
-        style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px">
-        <div class="menu-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                stroke-linejoin="round">
-                <circle cx="12" cy="7" r="4" />
-                <path d="M5.5 21h13a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2z" />
-            </svg>
+        <div class="menu-item {{ request()->routeIs('inscripcion.index') ? 'active' : '' }}">
+            <a href="{{ route('inscripcion.index') }}"
+                style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px">
+                <div class="menu-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="7" r="4" />
+                        <path d="M5.5 21h13a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2z" />
+                    </svg>
+                </div>
+                <div class="menu-text">Tramites</div>
+            </a>
         </div>
-        <div class="menu-text">Tramites</div>
-    </a>
-</div>
+
+        <!-- Citas - visible para todos -->
+        <div class="menu-item {{ request()->routeIs('citas.index') ? 'active' : '' }}">
+            <a href="{{ route('citas.index') }}"
+                style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px">
+                <div class="menu-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                </div>
+                <div class="menu-text">Citas</div>
+            </a>
+        </div>
 
         <!-- Revisión - visible para todos -->
         <div class="menu-item {{ request()->routeIs('revision.index') ? 'active' : '' }}">
@@ -129,4 +147,3 @@
         @endif
     </nav>
 </aside>
-

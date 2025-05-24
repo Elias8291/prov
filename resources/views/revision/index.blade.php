@@ -1,4 +1,3 @@
-
 @extends('dashboard')
 
 @section('title', 'Listado de Solicitudes por Revisar')
@@ -10,7 +9,7 @@
     <div class="dashboard-container">
         <!-- Header Section with Title -->
         <h1 class="page-title">Solicitudes Pendientes de Revisión</h1>
-        <p class="page-subtitle">Listado de solicitantes que requieren revisión (Progreso 1-7)</p>
+        <p class="page-subtitle">Listado de solicitantes que requieren revisión</p>
 
         <!-- Controls Bar with Search -->
         <div class="controls-bar">
@@ -76,12 +75,11 @@
                     <tr>
                         <th>ID</th>
                         <th>Nombre</th>
-                        <th>RFC</th>
                         <th>Tipo</th>
-                        <th>Progreso</th>
-                        <th>Avance</th>
+                        <th>Trámite</th>
                         <th>Estado</th>
-                        <th>Fecha</th>
+                        <th>Fecha Inicio</th>
+                        <th>Tiempo Restante</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -117,27 +115,50 @@
                                 default:
                                     $estadoClass = 'estado-default';
                             }
+                            
+                            // Store RFC in a data attribute for searching
+                            $rfc = $solicitud->solicitante->rfc;
+                            
+                            // Calculate time remaining
+                            $fechaInicio = \Carbon\Carbon::parse($solicitud->fecha_inicio);
+                            $currentDate = \Carbon\Carbon::now();
+                            
+                            // Determine total review hours based on tramite type
+                            $tipoTramite = $solicitud->tipo_tramite;
+                            $totalHours = ($tipoTramite == 'Renovacion') ? 42 : 72;
+                            
+                            // Calculate business hours remaining (rough approximation)
+                            $hoursElapsed = $fechaInicio->diffInHours($currentDate);
+                            $hoursRemaining = $totalHours - $hoursElapsed;
+                            
+                            // Format display for remaining time
+                            if ($hoursRemaining <= 0) {
+                                $timeRemainingDisplay = '<span class="time-expired">Vencido</span>';
+                                $timeRemainingClass = 'time-expired';
+                            } else if ($hoursRemaining < 24) {
+                                $timeRemainingDisplay = '<span class="time-critical">' . $hoursRemaining . ' horas</span>';
+                                $timeRemainingClass = 'time-critical';
+                            } else {
+                                $days = floor($hoursRemaining / 24);
+                                $hours = $hoursRemaining % 24;
+                                $timeRemainingDisplay = '<span class="time-normal">' . $days . 'd ' . $hours . 'h</span>';
+                                $timeRemainingClass = 'time-normal';
+                            }
                         @endphp
-                        <tr data-process-status="{{ $isComplete ? 'completo' : 'proceso' }}">
+                        <tr data-process-status="{{ $isComplete ? 'completo' : 'proceso' }}" data-progress="{{ $solicitud->progreso_tramite }}" data-rfc="{{ $rfc }}">
                             <td>{{ $solicitud->id }}</td>
                             <td class="product-name-cell">
                                 <div>
                                     <div class="product-name">
                                         {{ $solicitud->detalleTramite->razon_social ?? $solicitud->solicitante->usuario->nombre }}
                                     </div>
-                                    <div class="product-id">{{ $solicitud->solicitante->rfc }}</div>
+                                    <div class="product-id">{{ $rfc }}</div>
                                 </div>
                             </td>
-                            <td>{{ $solicitud->solicitante->rfc }}</td>
-                            <td>{{ $solicitud->solicitante->tipo_persona }}</td>
+                            <td>{{ $tipoPersona }}</td>
                             <td>
-                                <span class="progress-badge progress-{{ $solicitud->progreso_tramite }}">
-                                    Sección {{ $solicitud->progreso_tramite }}
-                                </span>
-                            </td>
-                            <td>
-                                <span class="status-badge {{ $statusClass }}">
-                                    {{ $statusText }}
+                                <span class="tipo-tramite-badge">
+                                    {{ $tipoTramite }}
                                 </span>
                             </td>
                             <td>
@@ -146,14 +167,18 @@
                                 </span>
                             </td>
                             <td>
-                                <div>{{ \Carbon\Carbon::parse($solicitud->created_at)->format('d M Y') }}</div>
+                                <div>{{ $fechaInicio->format('d M Y') }}</div>
+                                <div class="time-small">{{ $fechaInicio->format('H:i') }}</div>
+                            </td>
+                            <td class="{{ $timeRemainingClass }}">
+                                {!! $timeRemainingDisplay !!}
                             </td>
                             <td>
                                 <div class="action-buttons">
                                     <a href="{{ route('revision.show', $solicitud->id) }}" class="btn-action view-btn" title="Ver detalles" data-id="{{ $solicitud->id }}">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('revision.iniciar', $solicitud->solicitante->rfc) }}" class="btn-action begin-review-btn" title="Comenzar revisión" data-id="{{ $solicitud->id }}">
+                                    <a href="{{ route('revision.iniciar', $rfc) }}" class="btn-action begin-review-btn" title="Comenzar revisión" data-id="{{ $solicitud->id }}">
                                         <i class="fas fa-clipboard-check"></i>
                                     </a>
                                 </div>
@@ -161,7 +186,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="text-center">No hay solicitudes pendientes de revisión</td>
+                            <td colspan="8" class="text-center">No hay solicitudes pendientes de revisión</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -172,7 +197,36 @@
         @include('components.paginacion', ['paginator' => $solicitudes])
     </div>
 
-   
+    <style>
+        /* Add these styles to your CSS file */
+        .time-expired {
+            color: #ff0000;
+            font-weight: bold;
+        }
+        
+        .time-critical {
+            color: #ff6600;
+            font-weight: bold;
+        }
+        
+        .time-normal {
+            color: #006633;
+        }
+        
+        .time-small {
+            font-size: 0.8em;
+            color: #666;
+        }
+        
+        .tipo-tramite-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 500;
+            background-color: #e3f2fd;
+            color: #0d47a1;
+        }
+    </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -186,7 +240,7 @@
                 }, 5000);
             }
 
-            // Table Search Functionality
+            // Table Search Functionality - Updated to search by RFC even though column is hidden
             const searchInput = document.querySelector('.search-input');
             if (searchInput) {
                 searchInput.addEventListener('keyup', function() {
@@ -195,7 +249,8 @@
 
                     tableRows.forEach(row => {
                         const nombre = row.querySelector('.product-name')?.textContent.toLowerCase() || '';
-                        const rfc = row.querySelector('.product-id')?.textContent.toLowerCase() || '';
+                        const rfc = row.getAttribute('data-rfc')?.toLowerCase() || '';
+                        
                         if (nombre.includes(searchTerm) || rfc.includes(searchTerm)) {
                             row.style.display = '';
                         } else {
@@ -212,28 +267,26 @@
                     const progressValue = document.getElementById('progressFilter').value;
                     const statusValue = document.getElementById('statusProcessFilter').value;
 
-                    // Client-side filtering for process status
+                    // Client-side filtering for both process status and progress
                     const tableRows = document.querySelectorAll('tbody tr');
                     tableRows.forEach(row => {
                         const rowStatus = row.getAttribute('data-process-status');
-                        if (statusValue === '' || rowStatus === statusValue) {
-                            row.style.display = '';
-                        } else {
-                            row.style.display = 'none';
+                        const rowProgress = row.getAttribute('data-progress');
+                        
+                        let showRow = true;
+                        
+                        // Check status filter
+                        if (statusValue !== '' && rowStatus !== statusValue) {
+                            showRow = false;
                         }
+                        
+                        // Check progress filter
+                        if (progressValue !== '' && rowProgress !== progressValue) {
+                            showRow = false;
+                        }
+                        
+                        row.style.display = showRow ? '' : 'none';
                     });
-
-                    // Server-side filtering for progress level
-                    const currentUrl = new URL(window.location.href);
-                    if (currentUrl.searchParams.has('progreso')) {
-                        currentUrl.searchParams.delete('progreso');
-                    }
-                    if (progressValue) {
-                        currentUrl.searchParams.append('progreso', progressValue);
-                    }
-                    if (progressValue) {
-                        window.location.href = currentUrl.toString();
-                    }
                 });
             }
         });
