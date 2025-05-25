@@ -40,10 +40,10 @@
                         <select name="tipo_persona" id="tipo_persona" class="form-control">
                             <option value="">Seleccione un tipo</option>
                             <option value="Física"
-                                {{ old('tipo_persona', $tipoPersona ?? '') === 'Física' ? 'selected' : '' }}>Física
+                                {{ old('tipo_persona', $tipoPersona) === 'Física' ? 'selected' : '' }}>Física
                             </option>
                             <option value="Moral"
-                                {{ old('tipo_persona', $tipoPersona ?? '') === 'Moral' ? 'selected' : '' }}>Moral
+                                {{ old('tipo_persona', $tipoPersona) === 'Moral' ? 'selected' : '' }}>Moral
                             </option>
                         </select>
                         <p class="formulario__input-error"></p>
@@ -52,11 +52,11 @@
                 <div class="half-width">
                     <label class="form-label data-label">RFC</label>
                     @if (auth()->check() && auth()->user()->hasRole('solicitante'))
-                        <span class="data-field">{{ auth()->user()->rfc ?? 'No disponible' }}</span>
+                        <span class="data-field">{{ $datosPrevios['rfc'] ?? auth()->user()->rfc ?? 'No disponible' }}</span>
                     @else
                         <input type="text" name="rfc" id="rfc" class="form-control"
                             placeholder="Ej. XAXX010101000" maxlength="13" pattern="[A-Z0-9]{12,13}"
-                            value="{{ old('rfc') }}">
+                            value="{{ old('rfc', $datosPrevios['rfc'] ?? '') }}">
                         <p class="formulario__input-error"></p>
                     @endif
                 </div>
@@ -76,23 +76,23 @@
                     <div class="half-width form-group" id="formulario__grupo--razon_social">
                         <label class="form-label" for="razon_social">Razón Social</label>
                         <input type="text" id="razon_social" name="razon_social" class="form-control" maxlength="100"
-                            pattern="[A-Za-z\s&.,0-9]+" value="{{ old('razon_social') }}">
+                            pattern="[A-Za-z\s&.,0-9]+" value="{{ old('razon_social', $datosPrevios['razon_social'] ?? '') }}">
                         <p class="formulario__input-error"></p>
                     </div>
                     <div class="half-width form-group" id="formulario__grupo--correo_electronico">
                         <label class="form-label" for="correo_electronico">Correo Electrónico</label>
                         <input type="email" id="correo_electronico" name="correo_electronico" class="form-control"
-                            value="{{ old('correo_electronico') }}">
+                            value="{{ old('correo_electronico', $datosPrevios['correo_electronico'] ?? '') }}">
                         <p class="formulario__input-error"></p>
                     </div>
                 </div>
             @endif
 
-            <!-- Objeto Social field, shown only for Moral providers -->
+            <!-- Objeto Social field, shown only for Moral providers or revisor -->
             @if ($tipoPersona === 'Moral' || $isRevisor)
                 <div class="form-group full-width" id="formulario__grupo--objeto_social">
                     <label class="form-label" for="objeto_social">Objeto Social</label>
-                    <textarea id="objeto_social" name="objeto_social" class="form-control" maxlength="500">{{ old('objeto_social') }}</textarea>
+                    <textarea id="objeto_social" name="objeto_social" class="form-control" maxlength="500">{{ old('objeto_social', $datosPrevios['objeto_social'] ?? '') }}</textarea>
                     <p class="formulario__input-error"></p>
                 </div>
             @endif
@@ -102,8 +102,10 @@
                 <select name="sectores" id="sectores" class="form-control">
                     <option value="">Seleccione un sector</option>
                     @foreach ($sectores as $sector)
-                        <option value="{{ $sector['id'] }}" {{ old('sectores') == $sector['id'] ? 'selected' : '' }}>
-                            {{ $sector['nombre'] }}</option>
+                        <option value="{{ $sector['id'] }}"
+                            {{ old('sectores', !empty($actividadesSeleccionadas) ? $actividadesSeleccionadas[0]['sector_id'] ?? '' : '') == $sector['id'] ? 'selected' : '' }}>
+                            {{ $sector['nombre'] }}
+                        </option>
                     @endforeach
                 </select>
                 <p class="formulario__input-error"></p>
@@ -142,13 +144,14 @@
                     <label class="form-label" for="contacto_telefono">Teléfono de Contacto</label>
                     <input type="tel" id="contacto_telefono" name="contacto_telefono" class="form-control"
                         pattern="[0-9]{10}" maxlength="10" inputmode="numeric"
-                        value="{{ old('contacto_telefono') }}">
+                        value="{{ old('contacto_telefono', $datosPrevios['contacto_telefono'] ?? '') }}">
                     <p class="formulario__input-error"></p>
                 </div>
                 <div class="half-width form-group" id="formulario__grupo--contacto_web">
                     <label class="form-label" for="contacto_web">Página Web (opcional)</label>
                     <input type="url" id="contacto_web" name="contacto_web" class="form-control"
-                        placeholder="https://www.ejemplo.com" value="{{ old('contacto_web') }}">
+                        placeholder="https://www.ejemplo.com"
+                        value="{{ old('contacto_web', $datosPrevios['contacto_web'] ?? '') }}">
                     <p class="formulario__input-error"></p>
                 </div>
             </div>
@@ -159,21 +162,23 @@
             <div class="form-group" id="formulario__grupo--contacto_nombre">
                 <label class="form-label" for="contacto_nombre">Nombre Completo</label>
                 <input type="text" id="contacto_nombre" name="contacto_nombre" class="form-control"
-                    maxlength="40" pattern="[A-Za-z\s]+" value="{{ old('contacto_nombre') }}">
+                    maxlength="40" pattern="[A-Za-z\s]+"
+                    value="{{ old('contacto_nombre', $datosPrevios['contacto_nombre'] ?? '') }}">
                 <p class="formulario__input-error"></p>
             </div>
 
             <div class="form-group" id="formulario__grupo--contacto_cargo">
                 <label class="form-label" for="contacto_cargo">Cargo o Puesto</label>
                 <input type="text" id="contacto_cargo" name="contacto_cargo" class="form-control" maxlength="50"
-                    pattern="[A-Za-z\s]+" value="{{ old('contacto_cargo') }}">
+                    pattern="[A-Za-z\s]+"
+                    value="{{ old('contacto_cargo', $datosPrevios['contacto_cargo'] ?? '') }}">
                 <p class="formulario__input-error"></p>
             </div>
 
             <div class="form-group" id="formulario__grupo--contacto_correo">
                 <label class="form-label" for="contacto_correo">Correo Electrónico</label>
                 <input type="email" id="contacto_correo" name="contacto_correo" class="form-control"
-                    value="{{ old('contacto_correo') }}">
+                    value="{{ old('contacto_correo', $datosPrevios['contacto_correo'] ?? '') }}">
                 <p class="formulario__input-error"></p>
             </div>
 
@@ -181,7 +186,7 @@
                 <label class="form-label" for="contacto_telefono_2">Teléfono de Contacto</label>
                 <input type="tel" id="contacto_telefono_2" name="contacto_telefono_2" class="form-control"
                     pattern="[0-9]{10}" maxlength="10" inputmode="numeric"
-                    value="{{ old('contacto_telefono_2') }}">
+                    value="{{ old('contacto_telefono_2', $datosPrevios['contacto_telefono_2'] ?? '') }}">
                 <p class="formulario__input-error"></p>
             </div>
 
@@ -199,7 +204,7 @@
                 const sectorSelect = $('#sectores');
                 const actividadSelect = $('#actividad');
                 const actividadesSeleccionadas = $('#actividades-seleccionadas');
-                const tipoPersonaSelect = $('#tipo_persona'); // Fixed typo
+                const tipoPersonaSelect = $('#tipo_persona');
                 const objetoSocialGroup = $('#formulario__grupo--objeto_social');
                 const selectedActivities = @json($actividadesSeleccionadas ?? []);
                 let availableActivities = [];

@@ -17,6 +17,7 @@ class Seccion1 extends Component
     public $totalSecciones;
     public $isConfirmationSection;
     public $actividadesSeleccionadas;
+    
 
     public function __construct(
         $action = null,
@@ -29,6 +30,7 @@ class Seccion1 extends Component
         $seccion = 1,
         $totalSecciones = 3,
         $isConfirmationSection = false,
+        
         $actividadesSeleccionadas = []
     ) {
         $this->action = $action ?? route('inscripcion.procesar');

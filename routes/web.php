@@ -126,6 +126,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/revision/{id}/complete', [RevisionController::class, 'completeReview'])->name('revision.complete');
     Route::get('/my-revisions', [RevisionController::class, 'myRevisions'])->name('revision.my-revisions');
     Route::get('/revision/iniciar/{rfc}', [RevisionController::class, 'iniciarRevision'])->name('revision.iniciar');
+
+    Route::post('/revision/{tramiteId}/procesar', [RevisionController::class, 'procesar'])->name('revision.procesar');
     Route::get('/solicitante/address-info', [DireccionController::class, 'getSolicitanteAddressInfo']);
     Route::get('/direccion/by-codigo-postal/{codigo}', [DireccionController::class, 'getAddressByCodigoPostal']);
 

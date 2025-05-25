@@ -66,4 +66,57 @@ class DocumentosController extends Controller
             'mensaje' => 'Documento subido correctamente',
         ]);
     }
+
+
+    public function get(Request $request, $tramiteId)
+{
+    try {
+        // Validate the tramite_id
+        $request->validate([
+            'tramiteId' => 'required|exists:tramite,id',
+        ]);
+
+        // Fetch documents associated with the tramite
+        $documentos = DocumentoSolicitante::where('tramite_id', $tramiteId)
+            ->with('documento')
+            ->get()
+            ->map(function ($docSolicitante) {
+                return [
+                    'id' => $docSolicitante->id,
+                    'documento_id' => $docSolicitante->documento_id,
+                    'nombre' => $docSolicitante->documento->nombre,
+                    'tipo' => $docSolicitante->documento->tipo,
+                    'fecha_entrega' => $docSolicitante->fecha_entrega ? $docSolicitante->fecha_entrega->toIso8601String() : null,
+                    'estado' => $docSolicitante->estado,
+                    'version_documento' => $docSolicitante->version_documento,
+                    'ruta_archivo' => Storage::disk('public')->url(Crypt::decryptString($docSolicitante->ruta_archivo)),
+                ];
+            })
+            ->toArray();
+
+        return response()->json([
+            'success' => true,
+            'documentos' => $documentos,
+            'mensaje' => 'Documentos obtenidos correctamente.',
+        ], 200);
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return response()->json([
+            'success' => false,
+            'mensaje' => 'Error de validación.',
+            'errors' => $e->errors(),
+        ], 422);
+    } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+        Log::error('Error decrypting document path: ' . $e->getMessage(), ['tramite_id' => $tramiteId]);
+        return response()->json([
+            'success' => false,
+            'mensaje' => 'Error al desencriptar la ruta de un documento.',
+        ], 500);
+    } catch (\Exception $e) {
+        Log::error('Error fetching documents: ' . $e->getMessage(), ['tramite_id' => $tramiteId]);
+        return response()->json([
+            'success' => false,
+            'mensaje' => 'Error al obtener los documentos.',
+        ], 500);
+    }
+}
 }

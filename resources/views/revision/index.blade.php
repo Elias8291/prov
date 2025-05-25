@@ -115,37 +115,40 @@
                                 default:
                                     $estadoClass = 'estado-default';
                             }
-                            
+
                             // Store RFC in a data attribute for searching
                             $rfc = $solicitud->solicitante->rfc;
-                            
+
                             // Calculate time remaining
                             $fechaInicio = \Carbon\Carbon::parse($solicitud->fecha_inicio);
                             $currentDate = \Carbon\Carbon::now();
-                            
+
                             // Determine total review hours based on tramite type
                             $tipoTramite = $solicitud->tipo_tramite;
-                            $totalHours = ($tipoTramite == 'Renovacion') ? 42 : 72;
-                            
+                            $totalHours = $tipoTramite == 'Renovacion' ? 42 : 72;
+
                             // Calculate business hours remaining (rough approximation)
                             $hoursElapsed = $fechaInicio->diffInHours($currentDate);
                             $hoursRemaining = $totalHours - $hoursElapsed;
-                            
+
                             // Format display for remaining time
                             if ($hoursRemaining <= 0) {
                                 $timeRemainingDisplay = '<span class="time-expired">Vencido</span>';
                                 $timeRemainingClass = 'time-expired';
-                            } else if ($hoursRemaining < 24) {
-                                $timeRemainingDisplay = '<span class="time-critical">' . $hoursRemaining . ' horas</span>';
+                            } elseif ($hoursRemaining < 24) {
+                                $timeRemainingDisplay =
+                                    '<span class="time-critical">' . $hoursRemaining . ' horas</span>';
                                 $timeRemainingClass = 'time-critical';
                             } else {
                                 $days = floor($hoursRemaining / 24);
                                 $hours = $hoursRemaining % 24;
-                                $timeRemainingDisplay = '<span class="time-normal">' . $days . 'd ' . $hours . 'h</span>';
+                                $timeRemainingDisplay =
+                                    '<span class="time-normal">' . $days . 'd ' . $hours . 'h</span>';
                                 $timeRemainingClass = 'time-normal';
                             }
                         @endphp
-                        <tr data-process-status="{{ $isComplete ? 'completo' : 'proceso' }}" data-progress="{{ $solicitud->progreso_tramite }}" data-rfc="{{ $rfc }}">
+                        <tr data-process-status="{{ $isComplete ? 'completo' : 'proceso' }}"
+                            data-progress="{{ $solicitud->progreso_tramite }}" data-rfc="{{ $rfc }}">
                             <td>{{ $solicitud->id }}</td>
                             <td class="product-name-cell">
                                 <div>
@@ -175,10 +178,12 @@
                             </td>
                             <td>
                                 <div class="action-buttons">
-                                    <a href="{{ route('revision.show', $solicitud->id) }}" class="btn-action view-btn" title="Ver detalles" data-id="{{ $solicitud->id }}">
+                                    <a href="{{ route('revision.show', $solicitud->id) }}" class="btn-action view-btn"
+                                        title="Ver detalles" data-id="{{ $solicitud->id }}">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('revision.iniciar', $rfc) }}" class="btn-action begin-review-btn" title="Comenzar revisión" data-id="{{ $solicitud->id }}">
+                                    <a href="{{ route('revision.iniciar', $rfc) }}" class="btn-action begin-review-btn"
+                                        title="Comenzar revisión" data-id="{{ $solicitud->id }}">
                                         <i class="fas fa-clipboard-check"></i>
                                     </a>
                                 </div>
@@ -203,21 +208,21 @@
             color: #ff0000;
             font-weight: bold;
         }
-        
+
         .time-critical {
             color: #ff6600;
             font-weight: bold;
         }
-        
+
         .time-normal {
             color: #006633;
         }
-        
+
         .time-small {
             font-size: 0.8em;
             color: #666;
         }
-        
+
         .tipo-tramite-badge {
             padding: 3px 8px;
             border-radius: 12px;
@@ -229,66 +234,56 @@
     </style>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Auto-hide alerts after 5 seconds
-            const alerts = document.querySelectorAll('.alert');
-            if (alerts.length > 0) {
-                setTimeout(function() {
-                    alerts.forEach(function(alert) {
-                        alert.style.display = 'none';
-                    });
-                }, 5000);
-            }
+     document.addEventListener('DOMContentLoaded', function() {
+    // Ocultar alertas automáticamente
+    const alerts = document.querySelectorAll('.alert');
+    if (alerts.length > 0) {
+        setTimeout(function() {
+            alerts.forEach(function(alert) {
+                alert.style.display = 'none';
+            });
+        }, 5000);
+    }
 
-            // Table Search Functionality - Updated to search by RFC even though column is hidden
-            const searchInput = document.querySelector('.search-input');
-            if (searchInput) {
-                searchInput.addEventListener('keyup', function() {
-                    const searchTerm = this.value.toLowerCase();
-                    const tableRows = document.querySelectorAll('tbody tr');
-
-                    tableRows.forEach(row => {
-                        const nombre = row.querySelector('.product-name')?.textContent.toLowerCase() || '';
-                        const rfc = row.getAttribute('data-rfc')?.toLowerCase() || '';
-                        
-                        if (nombre.includes(searchTerm) || rfc.includes(searchTerm)) {
-                            row.style.display = '';
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    });
-                });
-            }
-
-            // Apply Filters Button
-            const applyFiltersBtn = document.getElementById('applyFilters');
-            if (applyFiltersBtn) {
-                applyFiltersBtn.addEventListener('click', function() {
-                    const progressValue = document.getElementById('progressFilter').value;
-                    const statusValue = document.getElementById('statusProcessFilter').value;
-
-                    // Client-side filtering for both process status and progress
-                    const tableRows = document.querySelectorAll('tbody tr');
-                    tableRows.forEach(row => {
-                        const rowStatus = row.getAttribute('data-process-status');
-                        const rowProgress = row.getAttribute('data-progress');
-                        
-                        let showRow = true;
-                        
-                        // Check status filter
-                        if (statusValue !== '' && rowStatus !== statusValue) {
-                            showRow = false;
-                        }
-                        
-                        // Check progress filter
-                        if (progressValue !== '' && rowProgress !== progressValue) {
-                            showRow = false;
-                        }
-                        
-                        row.style.display = showRow ? '' : 'none';
-                    });
-                });
-            }
+    // Funcionalidad de búsqueda
+    const searchInput = document.querySelector('.search-input');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = this.value.toLowerCase();
+            const tableRows = document.querySelectorAll('tbody tr');
+            tableRows.forEach(row => {
+                const nombre = row.querySelector('.product-name')?.textContent.toLowerCase() || '';
+                const rfc = row.getAttribute('data-rfc')?.toLowerCase() || '';
+                if (nombre.includes(searchTerm) || rfc.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
         });
+    }
+
+    // Botón de aplicar filtros
+    const applyFiltersBtn = document.getElementById('applyFilters');
+    if (applyFiltersBtn) {
+        applyFiltersBtn.addEventListener('click', function() {
+            const progressValue = document.getElementById('progressFilter').value;
+            const statusValue = document.getElementById('statusProcessFilter').value;
+            const tableRows = document.querySelectorAll('tbody tr');
+            tableRows.forEach(row => {
+                const rowStatus = row.getAttribute('data-process-status');
+                const rowProgress = row.getAttribute('data-progress');
+                let showRow = true;
+                if (statusValue !== '' && rowStatus !== statusValue) {
+                    showRow = false;
+                }
+                if (progressValue !== '' && rowProgress !== progressValue) {
+                    showRow = false;
+                }
+                row.style.display = showRow ? '' : 'none';
+            });
+        });
+    }
+});
     </script>
 @endsection
