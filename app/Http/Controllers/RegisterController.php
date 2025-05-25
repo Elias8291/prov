@@ -317,4 +317,5 @@ class RegisterController extends Controller
             Log::info('Archivo temporal almacenado: ' . $tempPath);
         }
     }
+    
 }

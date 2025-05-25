@@ -60,8 +60,17 @@ class InscripcionController extends Controller
             $seccion = 1;
             $totalSecciones = $this->obtenerTotalSecciones($tipoPersona);
             $datosPrevios = [
-                'rfc' => '', // Initialize RFC for revisors
+                'rfc' => '',
+                'razon_social' => '',
+                'objeto_social' => '',
+                'contacto_telefono' => '',
+                'contacto_web' => '',
+                'contacto_nombre' => '',
+                'contacto_cargo' => '',
+                'contacto_correo' => '',
+                'correo_electronico' => '',
             ];
+            $actividadesSeleccionadas = [];
             $porcentaje = 0;
             $seccionesCompletadas = 0;
             $isConfirmationSection = false;
@@ -72,10 +81,10 @@ class InscripcionController extends Controller
                 return redirect()->route('dashboard')->withErrors(['error' => 'No tienes un perfil de solicitante asociado.']);
             }
 
-            $tipoPersona = $solicitante->tipo_persona ?? 'No Redacted';
+            $tipoPersona = $solicitante->tipo_persona ?? 'Física';
             $tramite = Tramite::where('solicitante_id', $solicitante->id)
                 ->where('estado', 'Pendiente')
-                ->with('detalleTramite.direccion')
+                ->with(['detalleTramite.direccion.asentamiento.localidad.municipio.estado', 'detalleTramite.contacto'])
                 ->first();
 
             if (!$tramite && !$isRevisor) {
@@ -88,6 +97,7 @@ class InscripcionController extends Controller
 
             if ($request->has('retroceder') && $tramite && $tramite->progreso_tramite > 1) {
                 $tramite->decrement('progreso_tramite');
+                $tramite->save();
             }
 
             $seccion = $tramite ? $tramite->progreso_tramite : 1;
@@ -103,16 +113,25 @@ class InscripcionController extends Controller
                 $porcentaje = $totalSecciones > 0 ? round(($seccionesCompletadas / $totalSecciones) * 100) : 0;
             }
 
-            $datosPrevios = $tramite && method_exists($tramite, 'getDatosPorSeccion')
-                ? $tramite->getDatosPorSeccion($seccion)
-                : [];
+            // Fetch section-specific data using TramiteService
+            $sectionData = $this->tramiteService->obtenerDatosSeccion($tramite, $seccion, $tipoPersona, $isRevisor);
+            $datosPrevios = $sectionData['datosPrevios'] ?? [];
+            $actividadesSeleccionadas = $sectionData['actividadesSeleccionadas'] ?? [];
 
-            // Ensure RFC is included for non-revisors
-            if (!$isRevisor && $tipoPersona == 'Física' && $seccion == 1 && $user->hasRole('solicitante')) {
-                $datosPrevios['curp'] = $solicitante->curp ?? 'No disponible';
-                $datosPrevios['rfc'] = $solicitante->rfc ?? 'No disponible'; // Add RFC
-            } elseif (!$isRevisor) {
-                $datosPrevios['rfc'] = $solicitante->rfc ?? 'No disponible'; // Add RFC for all sections
+            // Ensure section 1 data is fully populated
+            if ($seccion == 1 && $tramite) {
+                $datosPrevios = array_merge([
+                    'rfc' => $solicitante->rfc ?? 'No disponible',
+                    'curp' => $tipoPersona == 'Física' ? ($solicitante->curp ?? 'No disponible') : null,
+                    'razon_social' => $solicitante->razon_social ?? '',
+                    'objeto_social' => $tramite->detalleTramite->objeto_social ?? '',
+                    'contacto_telefono' => $tramite->detalleTramite->contacto->telefono ?? '',
+                    'contacto_web' => $tramite->detalleTramite->contacto->pagina_web ?? '',
+                    'contacto_nombre' => $tramite->detalleTramite->contacto->nombre ?? '',
+                    'contacto_cargo' => $tramite->detalleTramite->contacto->cargo ?? '',
+                    'contacto_correo' => $tramite->detalleTramite->contacto->correo_electronico ?? '',
+                    'correo_electronico' => $solicitante->correo_electronico ?? '',
+                ], $datosPrevios);
             }
 
             if ($seccion == 2 && $tramite && $tramite->detalleTramite && $tramite->detalleTramite->direccion) {
@@ -178,30 +197,28 @@ class InscripcionController extends Controller
                 ->keyBy('documento_id');
         }
 
-        $seccionPartial = $this->obtenerSeccionPartial($seccion ?? 1, $tipoPersona ?? 'Física');
+        $seccionPartial = $this->obtenerSeccionPartial($seccion, $tipoPersona);
 
         return view('inscripcion.formularios', [
-            'seccion' => $seccion ?? 1,
+            'seccion' => $seccion,
             'seccionPartial' => $seccionPartial,
-            'totalSecciones' => $totalSecciones ?? 1,
-            'porcentaje' => $porcentaje ?? 0,
-            'tipoPersona' => $tipoPersona ?? 'Física',
-            'seccionesInfo' => $this->obtenerSecciones($tipoPersona ?? 'Física'),
-            'datosPrevios' => $datosPrevios ?? [],
-            'isConfirmationSection' => $isConfirmationSection ?? false,
-            'mostrarCurp' => ($tipoPersona ?? 'Física') == 'Física' && $user->hasRole('solicitante') && ($seccion ?? 1) == 1,
+            'totalSecciones' => $totalSecciones,
+            'porcentaje' => $porcentaje,
+            'tipoPersona' => $tipoPersona,
+            'seccionesInfo' => $this->obtenerSecciones($tipoPersona),
+            'datosPrevios' => $datosPrevios,
+            'isConfirmationSection' => $isConfirmationSection,
+            'mostrarCurp' => $tipoPersona == 'Física' && $user->hasRole('solicitante') && $seccion == 1,
             'sectores' => $sectores,
+            'actividadesSeleccionadas' => $actividadesSeleccionadas,
             'isRevisor' => $isRevisor,
-            'direccion' => $direccion ?? null,
-            'estados' => $estados ?? [],
-            'tramite' => $tramite ?? null,
+            'direccion' => $direccion,
+            'estados' => $estados,
+            'tramite' => $tramite,
             'documentos' => $documentos,
             'documentosSubidos' => $documentosSubidos,
         ]);
     }
-
-
-
     public function procesarSeccion(Request $request)
     {
         $user = Auth::user();
@@ -223,9 +240,20 @@ class InscripcionController extends Controller
             return redirect()->route('inscripcion.terminos_y_condiciones');
         }
 
+        if ($request->input('action') === 'previous') {
+            \Log::info("Procesando acción 'previous'. Progreso actual: {$tramite->progreso_tramite}");
+            if ($tramite->progreso_tramite > 1) {
+                \Log::info("Reduciendo progreso_tramite de {$tramite->progreso_tramite} a " . ($tramite->progreso_tramite - 1));
+                $tramite->decrement('progreso_tramite');
+                $tramite->save();
+            } else {
+                \Log::info("progreso_tramite ya está en el mínimo: {$tramite->progreso_tramite}");
+            }
+            return redirect()->route('inscripcion.formulario');
+        }
+
         $seccion = $tramite->progreso_tramite;
         $tipoPersona = $solicitante->tipo_persona ?? 'No definido';
-
 
         // Validación de documentos para las secciones correspondientes
         if (($tipoPersona == 'Moral' && $seccion == 6) || ($tipoPersona == 'Física' && $seccion == 3)) {
@@ -294,7 +322,6 @@ class InscripcionController extends Controller
             return back()->withErrors(['error' => 'Ocurrió un error al guardar los datos: ' . $e->getMessage()])->withInput();
         }
     }
-
     public function exito()
     {
         return view('inscripcion.exito');

@@ -494,6 +494,11 @@ inputs5.forEach(input => {
 // Validar al enviar formularios
 const validarSubmit = (formulario, camposRequeridos) => {
     formulario.addEventListener('submit', (e) => {
+        const action = e.submitter ? e.submitter.value : formulario.querySelector('button[type="submit"]:focus')?.value;
+       if (action === 'previous') {
+            formulario.submit();
+            return;
+        }
         e.preventDefault();
         let camposValidos = true;
 

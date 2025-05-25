@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 class Tramite extends Model
 {
     use HasFactory;
@@ -34,7 +35,7 @@ class Tramite extends Model
         return $this->belongsTo(User::class, 'revisado_por');
     }
 
- public function detalleTramite(): HasOne
+    public function detalleTramite(): HasOne
     {
         return $this->hasOne(DetalleTramite::class, 'tramite_id', 'id');
     }

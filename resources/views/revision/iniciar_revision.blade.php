@@ -29,25 +29,25 @@
             revisor-status="inactive" />
 
         <!-- Opcional: Sección para comentarios del revisor -->
-        @if ($componentParams['isRevisor'])
-            <form action="{{ $componentParams['action'] }}" method="POST">
-                @csrf
-                <div class="form-group">
-                    <label for="observaciones">Observaciones</label>
-                    <textarea name="observaciones" id="observaciones" class="form-control"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="estado">Estado</label>
-                    <select name="estado" id="estado" class="form-control">
-                        <option value="En Revision">En Revisión</option>
-                        <option value="Aprobado">Aprobado</option>
-                        <option value="Rechazado">Rechazado</option>
-                        <option value="Por Cotejar">Por Cotejar</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary">Guardar Revisión</button>
-            </form>
-        @endif
+       @if ($componentParams['isRevisor'])
+    <form action="{{ $componentParams['action'] }}" method="POST">
+        @csrf
+        <div class="form-group">
+            <label for="observaciones">Observaciones</label>
+            <textarea name="observaciones" id="observaciones" class="form-control"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="estado">Estado</label>
+            <select name="estado" id="estado" class="form-control">
+                <option value="En Revision">En Revisión</option>
+                <option value="Aprobado">Aprobado</option>
+                <option value="Rechazado">Rechazado</option>
+                <option value="Por Cotejar">Por Cotejar</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar Revisión</button>
+    </form>
+@endif
     </div>
 
     <script>

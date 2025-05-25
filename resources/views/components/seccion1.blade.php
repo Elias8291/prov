@@ -188,7 +188,6 @@
             </div>
 
             <div class="form-buttons">
-                <button type="button" class="btn btn-secondary" onclick="window.history.back();">Anterior</button>
                 <button type="submit" class="btn btn-primary" id="submitForm">Siguiente</button>
             </div>
         </div>

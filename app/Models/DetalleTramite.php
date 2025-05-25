@@ -16,7 +16,7 @@ class DetalleTramite extends Model
         'contacto_id',
         'direccion_id',
         'dato_constitutivo_id',
-        'apoderado_legal_id',  // Añadir este campo
+        'apoderado_legal_id',  
         'razon_social',
         'telefono',
         'sitio_web',

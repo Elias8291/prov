@@ -128,7 +128,49 @@
     </div>
 </form>
 
+<!-- Modal de éxito al enviar correo de confirmación -->
+<div id="successModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+        <h2>¡Registro Exitoso!</h2>
+        <p>Te hemos enviado un correo de verificación.<br>
+        Por favor revisa tu bandeja de entrada y sigue las instrucciones para activar tu cuenta.</p>
+        <button id="closeSuccessModal" class="btn">Cerrar</button>
+    </div>
+</div>
+<style>
+.modal-overlay {
+    position: fixed; top:0; left:0; width:100vw; height:100vh;
+    background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 10000;
+}
+.modal-content {
+    background: #fff; border-radius: 8px; padding: 30px 40px; text-align: center;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.20);
+    max-width: 90vw;
+}
+.modal-content h2 { color: #28a745; margin-bottom: 15px; }
+#closeSuccessModal.btn {
+    background: #28a745; color: #fff; border: none; padding: 8px 28px; border-radius: 4px; margin-top: 18px;
+    font-size: 1rem; cursor: pointer;
+}
+#closeSuccessModal.btn:hover { background: #218838; }
+</style>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    @if(session('registration_success'))
+        // Mostrar el modal de éxito
+        document.getElementById('successModal').style.display = 'flex';
+        // Permitir cerrar el modal
+        document.getElementById('closeSuccessModal').onclick = function() {
+            document.getElementById('successModal').style.display = 'none';
+        };
+        // Cerrar al hacer clic fuera
+        document.getElementById('successModal').onclick = function(e) {
+            if (e.target === this) this.style.display = 'none';
+        }
+    @endif
+});
+</script>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         // ========== File Upload Handling ==========

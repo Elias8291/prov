@@ -45,8 +45,6 @@
                     enctype="multipart/form-data">
                     @csrf
 
-                    <!-- Sección dinámica -->
-                    <!-- Sección dinámica -->
                     @if ($seccionPartial === 'seccion1')
                         <x-seccion1 :tipoPersona="$tipoPersona" :datosPrevios="$datosPrevios" :sectores="$sectores" :isRevisor="auth()->check() && auth()->user()->hasRole('revisor')"
                             :mostrarCurp="$mostrarCurp" :seccion="$seccion" :totalSecciones="$totalSecciones" :isConfirmationSection="$isConfirmationSection ?? false" :actividadesSeleccionadas="$actividadesSeleccionadas ?? []" />

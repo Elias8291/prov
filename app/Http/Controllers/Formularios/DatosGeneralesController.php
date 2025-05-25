@@ -83,103 +83,27 @@ class DatosGeneralesController extends Controller
         return true;
     }
 
-    public function get(Request $request)
+   public function obtenerDatos(Tramite $tramite)
     {
-        try {
-            // Validar que se proporcione al menos rfc o solicitante_id
-            $request->validate([
-                'rfc' => 'required_without:solicitante_id|string|size:13', // Asume RFC de 13 caracteres
-                'solicitante_id' => 'required_without:rfc|exists:solicitante,id',
-            ]);
+        $solicitante = $tramite->solicitante;
+        $sectores = $tramite->sectores->pluck('id')->toArray();
+        $actividades = $tramite->actividades()->pluck('id')->toArray();
 
-            // Buscar el solicitante
-            $solicitante = null;
-            if ($request->has('rfc')) {
-                $solicitante = Solicitante::where('rfc', $request->input('rfc'))->first();
-            } else {
-                $solicitante = Solicitante::find($request->input('solicitante_id'));
-            }
-
-            if (!$solicitante) {
-                return response()->json([
-                    'success' => false,
-                    'mensaje' => 'Solicitante no encontrado.'
-                ], 404);
-            }
-
-            // Obtener los trámites con sus relaciones
-            $tramites = Tramite::with([
-                'solicitante',
-                'detalleTramite.contacto',
-                'actividadSolicitantes.actividad.sector'
-            ])
-                ->where('solicitante_id', $solicitante->id)
-                ->get();
-
-            if ($tramites->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'mensaje' => 'No se encontraron trámites para este solicitante.'
-                ], 404);
-            }
-
-            // Estructurar la respuesta
-            $response = $tramites->map(function ($tramite) {
-                return [
-                    'tramite_id' => $tramite->id,
-                    'tipo_tramite' => $tramite->tipo_tramite,
-                    'estado' => $tramite->estado,
-                    'progreso_tramite' => $tramite->progreso_tramite,
-                    'fecha_inicio' => $tramite->fecha_inicio ? $tramite->fecha_inicio->toIso8601String() : null,
-                    'fecha_finalizacion' => $tramite->fecha_finalizacion ? $tramite->fecha_finalizacion->toIso8601String() : null,
-                    'observaciones' => $tramite->observaciones,
-                    'detalle_tramite' => $tramite->detalleTramite ? [
-                        'razon_social' => $tramite->detalleTramite->razon_social,
-                        'email' => $tramite->detalleTramite->email,
-                        'telefono' => $tramite->detalleTramite->telefono,
-                        'sitio_web' => $tramite->detalleTramite->sitio_web,
-                        'contacto' => $tramite->detalleTramite->contacto ? [
-                            'nombre' => $tramite->detalleTramite->contacto->nombre,
-                            'puesto' => $tramite->detalleTramite->contacto->puesto,
-                            'telefono' => $tramite->detalleTramite->contacto->telefono,
-                            'email' => $tramite->detalleTramite->contacto->email,
-                        ] : null,
-                    ] : null,
-                    'actividades' => $tramite->actividadSolicitantes->map(function ($actividadSolicitante) {
-                        return [
-                            'actividad_id' => $actividadSolicitante->actividad_id,
-                            'nombre_actividad' => $actividadSolicitante->actividad->nombre,
-                            'sector' => $actividadSolicitante->actividad->sector ? $actividadSolicitante->actividad->sector->nombre : null,
-                        ];
-                    })->toArray(),
-                ];
-            });
-
-            return response()->json([
-                'success' => true,
-                'solicitante' => [
-                    'id' => $solicitante->id,
-                    'rfc' => $solicitante->rfc,
-                    'tipo_persona' => $solicitante->tipo_persona,
-                    'objeto_social' => $solicitante->objeto_social,
-                ],
-                'tramites' => $response,
-                'mensaje' => 'Datos generales obtenidos correctamente.'
-            ], 200);
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'mensaje' => 'Error de validación.',
-                'errors' => $e->errors()
-            ], 422);
-        } catch (\Exception $e) {
-            Log::error('Error al obtener datos generales: ' . $e->getMessage(), ['exception' => $e]);
-            return response()->json([
-                'success' => false,
-                'mensaje' => 'Error al obtener los datos generales.'
-            ], 500);
-        }
+        return [
+            'rfc' => $solicitante->rfc ?? null,
+            'tipo_persona' => $solicitante->tipo_persona ?? null,
+            'razon_social' => $solicitante->razon_social ?? null,
+            'correo_electronico' => $solicitante->correo_electronico ?? null,
+            'contacto_telefono' => $solicitante->contacto_telefono ?? '',
+            'objeto_social' => $solicitante->objeto_social ?? null,
+            'sectores' => $sectores ? $sectores[0] : null, // Suponiendo un solo sector
+            'actividades' => $actividades,
+            'contacto_nombre' => $solicitante->contacto_nombre ?? '',
+            'contacto_cargo' => $solicitante->contacto_cargo ?? '',
+            'contacto_correo' => $solicitante->contacto_correo ?? '',
+            'contacto_telefono_2' => $solicitante->contacto_2 ?? '',
+            'contacto_web' => $solicitante->contacto_web ?? '',
+        ];
     }
     
 }
