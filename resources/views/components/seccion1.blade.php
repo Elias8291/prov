@@ -87,15 +87,12 @@
                     </div>
                 </div>
             @endif
-
-            <!-- Objeto Social field, shown only for Moral providers or revisor -->
-            @if ($tipoPersona === 'Moral' || $isRevisor)
                 <div class="form-group full-width" id="formulario__grupo--objeto_social">
                     <label class="form-label" for="objeto_social">Objeto Social</label>
                     <textarea id="objeto_social" name="objeto_social" class="form-control" maxlength="500">{{ old('objeto_social', $datosPrevios['objeto_social'] ?? '') }}</textarea>
                     <p class="formulario__input-error"></p>
                 </div>
-            @endif
+            
 
             <div class="form-group full-width" id="formulario__grupo--sectores">
                 <label class="form-label">Sectores</label>

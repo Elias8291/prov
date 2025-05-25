@@ -5,6 +5,9 @@
 <link rel="stylesheet" href="{{ asset('assets/css/tabla.css') }}">
 @section('content')
     <div class="dashboard-container">
+        <a href="javascript:void(0)" onclick="goBack()" class="btn btn-secondary back-button">
+            <i class="fas fa-arrow-left"></i> Regresar
+        </a>
         <h1 class="page-title">Revisión de Solicitud</h1>
         <p class="page-subtitle">Revisión de datos generales del solicitante: {{ $solicitante->rfc }}</p>
 
@@ -21,23 +24,12 @@
         @endif
 
         <!-- Renderizar Componente Seccion1 -->
-        <x-seccion1
-            :action="$componentParams['action']"
-            :method="$componentParams['method']"
-            :tipoPersona="$componentParams['tipoPersona']"
-            :datosPrevios="$componentParams['datosPrevios']"
-            :sectores="$componentParams['sectores']"
-            :isRevisor="$componentParams['isRevisor']"
-            :mostrarCurp="$componentParams['mostrarCurp']"
-            :seccion="$componentParams['seccion']"
-            :totalSecciones="$componentParams['totalSecciones']"
-            :isConfirmationSection="$componentParams['isConfirmationSection']"
-            :actividadesSeleccionadas="$componentParams['actividadesSeleccionadas']"
-            revisor-status="inactive"
-        />
+        <x-seccion1 :action="$componentParams['action']" :method="$componentParams['method']" :tipoPersona="$componentParams['tipoPersona']" :datosPrevios="$componentParams['datosPrevios']" :sectores="$componentParams['sectores']"
+            :isRevisor="$componentParams['isRevisor']" :mostrarCurp="$componentParams['mostrarCurp']" :seccion="$componentParams['seccion']" :totalSecciones="$componentParams['totalSecciones']" :isConfirmationSection="$componentParams['isConfirmationSection']" :actividadesSeleccionadas="$componentParams['actividadesSeleccionadas']"
+            revisor-status="inactive" />
 
         <!-- Opcional: Sección para comentarios del revisor -->
-        @if($componentParams['isRevisor'])
+        @if ($componentParams['isRevisor'])
             <form action="{{ $componentParams['action'] }}" method="POST">
                 @csrf
                 <div class="form-group">
@@ -59,14 +51,23 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const alerts = document.querySelectorAll('.alert');
             if (alerts.length > 0) {
-                setTimeout(function () {
-                    alerts.forEach(function (alert) {
+                setTimeout(function() {
+                    alerts.forEach(function(alert) {
                         alert.style.display = 'none';
                     });
                 }, 5000);
+            }
+
+            function goBack() {
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.location.href =
+                    '{{ url('/dashboard') }}'; 
+                }
             }
         });
     </script>
