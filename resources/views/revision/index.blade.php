@@ -88,7 +88,7 @@
                         @php
                             // Determine if process is complete based on persona type and progress
                             $isComplete = false;
-                            $tipoPersona = $solicitud->solicitante->tipo_persona ?? '';
+                            $tipoPersona = optional($solicitud->solicitante)->tipo_persona ?? 'Desconocido';
                             if ($tipoPersona === 'Física' && $solicitud->progreso_tramite >= 4) {
                                 $isComplete = true;
                             } elseif ($tipoPersona === 'Moral' && $solicitud->progreso_tramite >= 7) {
@@ -117,14 +117,14 @@
                             }
 
                             // Store RFC in a data attribute for searching
-                            $rfc = $solicitud->solicitante->rfc;
+                            $rfc = optional($solicitud->solicitante)->rfc ?? 'N/A';
 
                             // Calculate time remaining
                             $fechaInicio = \Carbon\Carbon::parse($solicitud->fecha_inicio);
                             $currentDate = \Carbon\Carbon::now();
 
                             // Determine total review hours based on tramite type
-                            $tipoTramite = $solicitud->tipo_tramite;
+                            $tipoTramite = $solicitud->tipo_tramite ?? 'Desconocido';
                             $totalHours = $tipoTramite == 'Renovacion' ? 42 : 72;
 
                             // Calculate business hours remaining (rough approximation)
@@ -153,7 +153,7 @@
                             <td class="product-name-cell">
                                 <div>
                                     <div class="product-name">
-                                        {{ $solicitud->detalleTramite->razon_social ?? $solicitud->solicitante->usuario->nombre }}
+                                        {{ optional($solicitud->detalleTramite)->razon_social ?? optional($solicitud->solicitante)->usuario->nombre ?? 'Sin Nombre' }}
                                     </div>
                                     <div class="product-id">{{ $rfc }}</div>
                                 </div>
@@ -234,56 +234,56 @@
     </style>
 
     <script>
-     document.addEventListener('DOMContentLoaded', function() {
-    // Ocultar alertas automáticamente
-    const alerts = document.querySelectorAll('.alert');
-    if (alerts.length > 0) {
-        setTimeout(function() {
-            alerts.forEach(function(alert) {
-                alert.style.display = 'none';
-            });
-        }, 5000);
-    }
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ocultar alertas automáticamente
+            const alerts = document.querySelectorAll('.alert');
+            if (alerts.length > 0) {
+                setTimeout(function() {
+                    alerts.forEach(function(alert) {
+                        alert.style.display = 'none';
+                    });
+                }, 5000);
+            }
 
-    // Funcionalidad de búsqueda
-    const searchInput = document.querySelector('.search-input');
-    if (searchInput) {
-        searchInput.addEventListener('keyup', function() {
-            const searchTerm = this.value.toLowerCase();
-            const tableRows = document.querySelectorAll('tbody tr');
-            tableRows.forEach(row => {
-                const nombre = row.querySelector('.product-name')?.textContent.toLowerCase() || '';
-                const rfc = row.getAttribute('data-rfc')?.toLowerCase() || '';
-                if (nombre.includes(searchTerm) || rfc.includes(searchTerm)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        });
-    }
+            // Funcionalidad de búsqueda
+            const searchInput = document.querySelector('.search-input');
+            if (searchInput) {
+                searchInput.addEventListener('keyup', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const tableRows = document.querySelectorAll('tbody tr');
+                    tableRows.forEach(row => {
+                        const nombre = row.querySelector('.product-name')?.textContent.toLowerCase() || '';
+                        const rfc = row.getAttribute('data-rfc')?.toLowerCase() || '';
+                        if (nombre.includes(searchTerm) || rfc.includes(searchTerm)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+            }
 
-    // Botón de aplicar filtros
-    const applyFiltersBtn = document.getElementById('applyFilters');
-    if (applyFiltersBtn) {
-        applyFiltersBtn.addEventListener('click', function() {
-            const progressValue = document.getElementById('progressFilter').value;
-            const statusValue = document.getElementById('statusProcessFilter').value;
-            const tableRows = document.querySelectorAll('tbody tr');
-            tableRows.forEach(row => {
-                const rowStatus = row.getAttribute('data-process-status');
-                const rowProgress = row.getAttribute('data-progress');
-                let showRow = true;
-                if (statusValue !== '' && rowStatus !== statusValue) {
-                    showRow = false;
-                }
-                if (progressValue !== '' && rowProgress !== progressValue) {
-                    showRow = false;
-                }
-                row.style.display = showRow ? '' : 'none';
-            });
+            // Botón de aplicar filtros
+            const applyFiltersBtn = document.getElementById('applyFilters');
+            if (applyFiltersBtn) {
+                applyFiltersBtn.addEventListener('click', function() {
+                    const progressValue = document.getElementById('progressFilter').value;
+                    const statusValue = document.getElementById('statusProcessFilter').value;
+                    const tableRows = document.querySelectorAll('tbody tr');
+                    tableRows.forEach(row => {
+                        const rowStatus = row.getAttribute('data-process-status');
+                        const rowProgress = row.getAttribute('data-progress');
+                        let showRow = true;
+                        if (statusValue !== '' && rowStatus !== statusValue) {
+                            showRow = false;
+                        }
+                        if (progressValue !== '' && rowProgress !== progressValue) {
+                            showRow = false;
+                        }
+                        row.style.display = showRow ? '' : 'none';
+                    });
+                });
+            }
         });
-    }
-});
     </script>
 @endsection

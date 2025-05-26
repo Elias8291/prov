@@ -62,4 +62,8 @@ class DetalleTramite extends Model
     {
         return $this->belongsTo(ApoderadoLegal::class, 'apoderado_legal_id');
     }
+    public function representanteLegal()
+    {
+        return $this->belongsTo(RepresentanteLegal::class, 'representante_legal_id');
+    }
 }

@@ -5,8 +5,8 @@
             @csrf
         @endif
 
-        <!-- Sección para subir Constancia de Situación Fiscal, visible solo para admin -->
-        @if (auth()->check() && auth()->user()->hasRole('admin'))
+        <!-- Sección para subir Constancia de Situación Fiscal, visible solo para admin and when showPdfUpload is true -->
+        @if (auth()->check() && auth()->user()->hasRole('admin') && $showPdfUpload)
             <div class="form-section" id="constancia-upload-section">
                 <h4><i class="fas fa-file-pdf"></i> Subir Constancia de Situación Fiscal</h4>
                 <div class="form-group full-width" id="formulario__grupo--constancia">
@@ -15,12 +15,12 @@
                         <span class="file-desc">Formato PDF, máximo 5MB</span>
                     </label>
                     <input type="file" id="constancia_upload" name="constancia_upload" class="form-control"
-                        accept="application/pdf">
+                        accept="application/pdf" {{ $isEditable ? '' : 'disabled' }}>
                     <p class="formulario__input-error"></p>
                     <div class="pdf-preview-container" id="upload-feedback" style="display: none;">
                         <i class="fas fa-file-pdf pdf-icon"></i>
                         <span class="pdf-name upload-success">PDF subido correctamente</span>
-                        <button class="view-pdf-btn preview-pdf" id="preview-pdf" title="Ver PDF">
+                        <button class="view-pdf-btn preview-pdf" id="preview-pdf" title="Ver PDF" {{ $isEditable ? '' : 'disabled' }}>
                             <i class="fas fa-eye"></i> Ver PDF
                         </button>
                     </div>
@@ -37,16 +37,20 @@
                     @if (auth()->check() && auth()->user()->hasRole('solicitante'))
                         <span class="data-field">{{ $tipoPersona ?? 'No disponible' }}</span>
                     @else
-                        <select name="tipo_persona" id="tipo_persona" class="form-control">
-                            <option value="">Seleccione un tipo</option>
-                            <option value="Física"
-                                {{ old('tipo_persona', $tipoPersona) === 'Física' ? 'selected' : '' }}>Física
-                            </option>
-                            <option value="Moral"
-                                {{ old('tipo_persona', $tipoPersona) === 'Moral' ? 'selected' : '' }}>Moral
-                            </option>
-                        </select>
-                        <p class="formulario__input-error"></p>
+                        @if ($isEditable)
+                            <select name="tipo_persona" id="tipo_persona" class="form-control">
+                                <option value="">Seleccione un tipo</option>
+                                <option value="Física"
+                                    {{ old('tipo_persona', $tipoPersona) === 'Física' ? 'selected' : '' }}>Física
+                                </option>
+                                <option value="Moral"
+                                    {{ old('tipo_persona', $tipoPersona) === 'Moral' ? 'selected' : '' }}>Moral
+                                </option>
+                            </select>
+                            <p class="formulario__input-error"></p>
+                        @else
+                            <span class="data-field">{{ $tipoPersona ?? 'No disponible' }}</span>
+                        @endif
                     @endif
                 </div>
                 <div class="half-width">
@@ -54,10 +58,14 @@
                     @if (auth()->check() && auth()->user()->hasRole('solicitante'))
                         <span class="data-field">{{ $datosPrevios['rfc'] ?? auth()->user()->rfc ?? 'No disponible' }}</span>
                     @else
-                        <input type="text" name="rfc" id="rfc" class="form-control"
-                            placeholder="Ej. XAXX010101000" maxlength="13" pattern="[A-Z0-9]{12,13}"
-                            value="{{ old('rfc', $datosPrevios['rfc'] ?? '') }}">
-                        <p class="formulario__input-error"></p>
+                        @if ($isEditable)
+                            <input type="text" name="rfc" id="rfc" class="form-control"
+                                placeholder="Ej. XAXX010101000" maxlength="13" pattern="[A-Z0-9]{12,13}"
+                                value="{{ old('rfc', $datosPrevios['rfc'] ?? '') }}">
+                            <p class="formulario__input-error"></p>
+                        @else
+                            <span class="data-field">{{ $datosPrevios['rfc'] ?? 'No disponible' }}</span>
+                        @endif
                     @endif
                 </div>
             </div>
@@ -75,45 +83,69 @@
                 <div class="form-group horizontal-group">
                     <div class="half-width form-group" id="formulario__grupo--razon_social">
                         <label class="form-label" for="razon_social">Razón Social</label>
-                        <input type="text" id="razon_social" name="razon_social" class="form-control" maxlength="100"
-                            pattern="[A-Za-z\s&.,0-9]+" value="{{ old('razon_social', $datosPrevios['razon_social'] ?? '') }}">
-                        <p class="formulario__input-error"></p>
+                        @if ($isEditable)
+                            <input type="text" id="razon_social" name="razon_social" class="form-control" maxlength="100"
+                                pattern="[A-Za-z\s&.,0-9]+" value="{{ old('razon_social', $datosPrevios['razon_social'] ?? '') }}">
+                            <p class="formulario__input-error"></p>
+                        @else
+                            <span class="data-field">{{ $datosPrevios['razon_social'] ?? 'No disponible' }}</span>
+                        @endif
                     </div>
                     <div class="half-width form-group" id="formulario__grupo--correo_electronico">
                         <label class="form-label" for="correo_electronico">Correo Electrónico</label>
-                        <input type="email" id="correo_electronico" name="correo_electronico" class="form-control"
-                            value="{{ old('correo_electronico', $datosPrevios['correo_electronico'] ?? '') }}">
-                        <p class="formulario__input-error"></p>
+                        @if ($isEditable)
+                            <input type="email" id="correo_electronico" name="correo_electronico" class="form-control"
+                                value="{{ old('correo_electronico', $datosPrevios['correo_electronico'] ?? '') }}">
+                            <p class="formulario__input-error"></p>
+                        @else
+                            <span class="data-field">{{ $datosPrevios['correo_electronico'] ?? 'No disponible' }}</span>
+                        @endif
                     </div>
                 </div>
             @endif
-                <div class="form-group full-width" id="formulario__grupo--objeto_social">
-                    <label class="form-label" for="objeto_social">Objeto Social</label>
+            <div class="form-group full-width" id="formulario__grupo--objeto_social">
+                <label class="form-label" for="objeto_social">Objeto Social</label>
+                @if ($isEditable)
                     <textarea id="objeto_social" name="objeto_social" class="form-control" maxlength="500">{{ old('objeto_social', $datosPrevios['objeto_social'] ?? '') }}</textarea>
                     <p class="formulario__input-error"></p>
-                </div>
-            
+                @else
+                    <span class="data-field">{{ $datosPrevios['objeto_social'] ?? 'No disponible' }}</span>
+                @endif
+            </div>
 
             <div class="form-group full-width" id="formulario__grupo--sectores">
                 <label class="form-label">Sectores</label>
-                <select name="sectores" id="sectores" class="form-control">
-                    <option value="">Seleccione un sector</option>
-                    @foreach ($sectores as $sector)
-                        <option value="{{ $sector['id'] }}"
-                            {{ old('sectores', !empty($actividadesSeleccionadas) ? $actividadesSeleccionadas[0]['sector_id'] ?? '' : '') == $sector['id'] ? 'selected' : '' }}>
-                            {{ $sector['nombre'] }}
-                        </option>
-                    @endforeach
-                </select>
-                <p class="formulario__input-error"></p>
+                @if ($isEditable)
+                    <select name="sectores" id="sectores" class="form-control">
+                        <option value="">Seleccione un sector</option>
+                        @foreach ($sectores as $sector)
+                            <option value="{{ $sector['id'] }}"
+                                {{ old('sectores', !empty($actividadesSeleccionadas) ? $actividadesSeleccionadas[0]['sector_id'] ?? '' : '') == $sector['id'] ? 'selected' : '' }}>
+                                {{ $sector['nombre'] }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="formulario__input-error"></p>
+                @else
+                    <span class="data-field">
+                        @php
+                            $selectedSector = collect($sectores)->firstWhere('id', $actividadesSeleccionadas[0]['sector_id'] ?? null);
+                        @endphp
+                        {{ $selectedSector['nombre'] ?? 'No disponible' }}
+                    </span>
+                @endif
             </div>
 
             <div class="form-group full-width" id="formulario__grupo--actividades">
                 <label class="form-label">Actividades</label>
-                <select name="actividad" id="actividad" class="form-control">
-                    <option value="">Seleccione una actividad</option>
-                </select>
-                <p class="formulario__input-error"></p>
+                @if ($isEditable)
+                    <select name="actividad" id="actividad" class="form-control">
+                        <option value="">Seleccione una actividad</option>
+                    </select>
+                    <p class="formulario__input-error"></p>
+                @else
+                    <span class="data-field">No editable</span>
+                @endif
             </div>
 
             <div class="form-group full-width" id="actividades-seleccionadas-container">
@@ -123,33 +155,45 @@
                         @foreach ($actividadesSeleccionadas as $actividad)
                             <div class="actividad-seleccionada">
                                 <span>{{ $actividad['nombre'] }}</span>
-                                <button class="remove-activity" data-id="{{ $actividad['id'] }}"
-                                    title="Eliminar actividad">×</button>
+                                @if ($isEditable)
+                                    <button class="remove-activity" data-id="{{ $actividad['id'] }}"
+                                        title="Eliminar actividad">×</button>
+                                @endif
                             </div>
                         @endforeach
                     @else
                         <span>Sin actividad seleccionada</span>
                     @endif
                 </div>
-                <input type="hidden" name="actividades_seleccionadas" id="actividades_seleccionadas_input"
-                    value="{{ json_encode(array_column($actividadesSeleccionadas, 'id')) }}">
-                <p class="formulario__input-error"></p>
+                @if ($isEditable)
+                    <input type="hidden" name="actividades_seleccionadas" id="actividades_seleccionadas_input"
+                        value="{{ json_encode(array_column($actividadesSeleccionadas, 'id')) }}">
+                    <p class="formulario__input-error"></p>
+                @endif
             </div>
 
             <div class="horizontal-group">
                 <div class="half-width form-group" id="formulario__grupo--contacto_telefono">
                     <label class="form-label" for="contacto_telefono">Teléfono de Contacto</label>
-                    <input type="tel" id="contacto_telefono" name="contacto_telefono" class="form-control"
-                        pattern="[0-9]{10}" maxlength="10" inputmode="numeric"
-                        value="{{ old('contacto_telefono', $datosPrevios['contacto_telefono'] ?? '') }}">
-                    <p class="formulario__input-error"></p>
+                    @if ($isEditable)
+                        <input type="tel" id="contacto_telefono" name="contacto_telefono" class="form-control"
+                            pattern="[0-9]{10}" maxlength="10" inputmode="numeric"
+                            value="{{ old('contacto_telefono', $datosPrevios['contacto_telefono'] ?? '') }}">
+                        <p class="formulario__input-error"></p>
+                    @else
+                        <span class="data-field">{{ $datosPrevios['contacto_telefono'] ?? 'No disponible' }}</span>
+                    @endif
                 </div>
                 <div class="half-width form-group" id="formulario__grupo--contacto_web">
                     <label class="form-label" for="contacto_web">Página Web (opcional)</label>
-                    <input type="url" id="contacto_web" name="contacto_web" class="form-control"
-                        placeholder="https://www.ejemplo.com"
-                        value="{{ old('contacto_web', $datosPrevios['contacto_web'] ?? '') }}">
-                    <p class="formulario__input-error"></p>
+                    @if ($isEditable)
+                        <input type="url" id="contacto_web" name="contacto_web" class="form-control"
+                            placeholder="https://www.ejemplo.com"
+                            value="{{ old('contacto_web', $datosPrevios['contacto_web'] ?? '') }}">
+                        <p class="formulario__input-error"></p>
+                    @else
+                        <span class="data-field">{{ $datosPrevios['contacto_web'] ?? 'No disponible' }}</span>
+                    @endif
                 </div>
             </div>
 
@@ -158,188 +202,213 @@
 
             <div class="form-group" id="formulario__grupo--contacto_nombre">
                 <label class="form-label" for="contacto_nombre">Nombre Completo</label>
-                <input type="text" id="contacto_nombre" name="contacto_nombre" class="form-control"
-                    maxlength="40" pattern="[A-Za-z\s]+"
-                    value="{{ old('contacto_nombre', $datosPrevios['contacto_nombre'] ?? '') }}">
-                <p class="formulario__input-error"></p>
+                @if ($isEditable)
+                    <input type="text" id="contacto_nombre" name="contacto_nombre" class="form-control"
+                        maxlength="40" pattern="[A-Za-z\s]+"
+                        value="{{ old('contacto_nombre', $datosPrevios['contacto_nombre'] ?? '') }}">
+                    <p class="formulario__input-error"></p>
+                @else
+                    <span class="data-field">{{ $datosPrevios['contacto_nombre'] ?? 'No disponible' }}</span>
+                @endif
             </div>
 
             <div class="form-group" id="formulario__grupo--contacto_cargo">
                 <label class="form-label" for="contacto_cargo">Cargo o Puesto</label>
-                <input type="text" id="contacto_cargo" name="contacto_cargo" class="form-control" maxlength="50"
-                    pattern="[A-Za-z\s]+"
-                    value="{{ old('contacto_cargo', $datosPrevios['contacto_cargo'] ?? '') }}">
-                <p class="formulario__input-error"></p>
+                @if ($isEditable)
+                    <input type="text" id="contacto_cargo" name="contacto_cargo" class="form-control" maxlength="50"
+                        pattern="[A-Za-z\s]+"
+                        value="{{ old('contacto_cargo', $datosPrevios['contacto_cargo'] ?? '') }}">
+                    <p class="formulario__input-error"></p>
+                @else
+                    <span class="data-field">{{ $datosPrevios['contacto_cargo'] ?? 'No disponible' }}</span>
+                @endif
             </div>
 
             <div class="form-group" id="formulario__grupo--contacto_correo">
                 <label class="form-label" for="contacto_correo">Correo Electrónico</label>
-                <input type="email" id="contacto_correo" name="contacto_correo" class="form-control"
-                    value="{{ old('contacto_correo', $datosPrevios['contacto_correo'] ?? '') }}">
-                <p class="formulario__input-error"></p>
+                @if ($isEditable)
+                    <input type="email" id="contacto_correo" name="contacto_correo" class="form-control"
+                        value="{{ old('contacto_correo', $datosPrevios['contacto_correo'] ?? '') }}">
+                    <p class="formulario__input-error"></p>
+                @else
+                    <span class="data-field">{{ $datosPrevios['contacto_correo'] ?? 'No disponible' }}</span>
+                @endif
             </div>
 
             <div class="form-group" id="formulario__grupo--contacto_telefono_2">
                 <label class="form-label" for="contacto_telefono_2">Teléfono de Contacto</label>
-                <input type="tel" id="contacto_telefono_2" name="contacto_telefono_2" class="form-control"
-                    pattern="[0-9]{10}" maxlength="10" inputmode="numeric"
-                    value="{{ old('contacto_telefono_2', $datosPrevios['contacto_telefono_2'] ?? '') }}">
-                <p class="formulario__input-error"></p>
+                @if ($isEditable)
+                    <input type="tel" id="contacto_telefono_2" name="contacto_telefono_2" class="form-control"
+                        pattern="[0-9]{10}" maxlength="10" inputmode="numeric"
+                        value="{{ old('contacto_telefono_2', $datosPrevios['contacto_telefono_2'] ?? '') }}">
+                    <p class="formulario__input-error"></p>
+                @else
+                    <span class="data-field">{{ $datosPrevios['contacto_telefono_2'] ?? 'No disponible' }}</span>
+                @endif
             </div>
 
-            <div class="form-buttons">
-                <button type="submit" class="btn btn-primary" id="submitForm">Siguiente</button>
-            </div>
+            @if ($isEditable)
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-primary" id="submitForm">Siguiente</button>
+                </div>
+            @endif
         </div>
     </form>
 
     @push('scripts')
         <script>
             $(document).ready(function() {
-                // Activity selection and objeto_social logic
-                const sectorSelect = $('#sectores');
-                const actividadSelect = $('#actividad');
-                const actividadesSeleccionadas = $('#actividades-seleccionadas');
-                const tipoPersonaSelect = $('#tipo_persona');
-                const objetoSocialGroup = $('#formulario__grupo--objeto_social');
-                const selectedActivities = @json($actividadesSeleccionadas ?? []);
-                let availableActivities = [];
+                const isEditable = @json($isEditable);
+                if (!isEditable) {
+                    // Disable all interactive elements
+                    $('#formulario1 select, #formulario1 input, #formulario1 textarea, #formulario1 button').prop('disabled', true);
+                    $('.remove-activity').hide(); // Hide remove buttons for activities
+                } else {
+                    // Existing JavaScript logic for editable mode
+                    const sectorSelect = $('#sectores');
+                    const actividadSelect = $('#actividad');
+                    const actividadesSeleccionadas = $('#actividades-seleccionadas');
+                    const tipoPersonaSelect = $('#tipo_persona');
+                    const objetoSocialGroup = $('#formulario__grupo--objeto_social');
+                    const selectedActivities = @json($actividadesSeleccionadas ?? []);
+                    let availableActivities = [];
 
-                function updateActividades() {
-                    actividadSelect.html('<option value="">Seleccione una actividad</option>');
-                    const remainingActivities = availableActivities.filter(
-                        actividad => !selectedActivities.some(selected => selected.id == actividad.id)
-                    );
-                    remainingActivities.forEach(actividad => {
-                        const option = $('<option>', {
-                            value: actividad.id,
-                            text: actividad.nombre
+                    function updateActividades() {
+                        actividadSelect.html('<option value="">Seleccione una actividad</option>');
+                        const remainingActivities = availableActivities.filter(
+                            actividad => !selectedActivities.some(selected => selected.id == actividad.id)
+                        );
+                        remainingActivities.forEach(actividad => {
+                            const option = $('<option>', {
+                                value: actividad.id,
+                                text: actividad.nombre
+                            });
+                            actividadSelect.append(option);
                         });
-                        actividadSelect.append(option);
-                    });
-                }
+                    }
 
-                function isActivitySelected(id) {
-                    return selectedActivities.some(activity => activity.id == id);
-                }
+                    function isActivitySelected(id) {
+                        return selectedActivities.some(activity => activity.id == id);
+                    }
 
-                function removeActivity(id) {
-                    const index = selectedActivities.findIndex(activity => activity.id == id);
-                    if (index !== -1) {
-                        selectedActivities.splice(index, 1);
+                    function removeActivity(id) {
+                        const index = selectedActivities.findIndex(activity => activity.id == id);
+                        if (index !== -1) {
+                            selectedActivities.splice(index, 1);
+                            updateActivityDisplay();
+                            updateActividades();
+                        }
+                    }
+
+                    function updateActivityDisplay() {
+                        actividadesSeleccionadas.html('');
+                        if (selectedActivities.length === 0) {
+                            actividadesSeleccionadas.html('<span>Sin actividad seleccionada</span>');
+                            $('#actividades_seleccionadas_input').val('');
+                            return;
+                        }
+                        selectedActivities.forEach(activity => {
+                            const activityElement = $('<div>', {
+                                class: 'actividad-seleccionada'
+                            });
+                            const activityText = $('<span>', {
+                                text: activity.nombre
+                            });
+                            const removeButton = $('<button>', {
+                                class: 'remove-activity',
+                                html: '×',
+                                'data-id': activity.id,
+                                title: 'Eliminar actividad'
+                            }).on('click', function() {
+                                removeActivity(activity.id);
+                            });
+                            activityElement.append(activityText).append(removeButton);
+                            actividadesSeleccionadas.append(activityElement);
+                        });
+                        $('#actividades_seleccionadas_input').val(JSON.stringify(selectedActivities.map(a => a.id)));
+                    }
+
+                    function addSelectedActivity() {
+                        const selectedOption = actividadSelect[0].options[actividadSelect[0].selectedIndex];
+                        if (!selectedOption || selectedOption.value === '') {
+                            return;
+                        }
+                        const activityId = selectedOption.value;
+                        const activityName = selectedOption.textContent;
+                        if (isActivitySelected(activityId)) {
+                            return;
+                        }
+                        selectedActivities.push({
+                            id: activityId,
+                            nombre: activityName
+                        });
                         updateActivityDisplay();
                         updateActividades();
+                        actividadSelect.val('');
                     }
-                }
 
-                function updateActivityDisplay() {
-                    actividadesSeleccionadas.html('');
-                    if (selectedActivities.length === 0) {
-                        actividadesSeleccionadas.html('<span>Sin actividad seleccionada</span>');
-                        $('#actividades_seleccionadas_input').val('');
-                        return;
+                    function toggleObjetoSocial() {
+                        if (tipoPersonaSelect.length && objetoSocialGroup.length) {
+                            const isMoral = tipoPersonaSelect.val() === 'Moral';
+                            const isRevisor = @json($isRevisor);
+                            objetoSocialGroup.css('display', isMoral || isRevisor ? 'block' : 'none');
+                        }
                     }
-                    selectedActivities.forEach(activity => {
-                        const activityElement = $('<div>', {
-                            class: 'actividad-seleccionada'
-                        });
-                        const activityText = $('<span>', {
-                            text: activity.nombre
-                        });
-                        const removeButton = $('<button>', {
-                            class: 'remove-activity',
-                            html: '×',
-                            'data-id': activity.id,
-                            title: 'Eliminar actividad'
-                        }).on('click', function() {
-                            removeActivity(activity.id);
-                        });
-                        activityElement.append(activityText).append(removeButton);
-                        actividadesSeleccionadas.append(activityElement);
-                    });
-                    $('#actividades_seleccionadas_input').val(JSON.stringify(selectedActivities.map(a => a.id)));
-                }
 
-                function addSelectedActivity() {
-                    const selectedOption = actividadSelect[0].options[actividadSelect[0].selectedIndex];
-                    if (!selectedOption || selectedOption.value === '') {
-                        return;
-                    }
-                    const activityId = selectedOption.value;
-                    const activityName = selectedOption.textContent;
-                    if (isActivitySelected(activityId)) {
-                        return;
-                    }
-                    selectedActivities.push({
-                        id: activityId,
-                        nombre: activityName
-                    });
-                    updateActivityDisplay();
-                    updateActividades();
-                    actividadSelect.val('');
-                }
-
-                function toggleObjetoSocial() {
-                    if (tipoPersonaSelect.length && objetoSocialGroup.length) {
-                        const isMoral = tipoPersonaSelect.val() === 'Moral';
-                        const isRevisor = @json($isRevisor);
-                        objetoSocialGroup.css('display', isMoral || isRevisor ? 'block' : 'none');
-                    }
-                }
-
-                sectorSelect.on('change', function() {
-                    const sectorId = this.value;
-                    selectedActivities.length = 0;
-                    updateActivityDisplay();
-                    if (!sectorId) {
-                        actividadSelect.html('<option value="">Seleccione una actividad</option>');
-                        availableActivities = [];
-                        return;
-                    }
-                    $.ajax({
-                        url: `/inscripcion/actividades?sector_id=${sectorId}`,
-                        method: 'GET',
-                        headers: {
-                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                            'Accept': 'application/json'
-                        },
-                        success: function(data) {
-                            if (data.error) {
-                                console.error(data.error);
+                    sectorSelect.on('change', function() {
+                        const sectorId = this.value;
+                        selectedActivities.length = 0;
+                        updateActivityDisplay();
+                        if (!sectorId) {
+                            actividadSelect.html('<option value="">Seleccione una actividad</option>');
+                            availableActivities = [];
+                            return;
+                        }
+                        $.ajax({
+                            url: `/inscripcion/actividades?sector_id=${sectorId}`,
+                            method: 'GET',
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                                'Accept': 'application/json'
+                            },
+                            success: function(data) {
+                                if (data.error) {
+                                    console.error(data.error);
+                                    actividadSelect.html(
+                                        '<option value="">Error al cargar actividades</option>');
+                                    availableActivities = [];
+                                    return;
+                                }
+                                availableActivities = data.actividades;
+                                updateActividades();
+                            },
+                            error: function(error) {
+                                console.error('Error:', error);
                                 actividadSelect.html(
                                     '<option value="">Error al cargar actividades</option>');
                                 availableActivities = [];
-                                return;
                             }
-                            availableActivities = data.actividades;
-                            updateActividades();
-                        },
-                        error: function(error) {
-                            console.error('Error:', error);
-                            actividadSelect.html(
-                                '<option value="">Error al cargar actividades</option>');
-                            availableActivities = [];
+                        });
+                    });
+
+                    actividadSelect.on('change', function() {
+                        if (this.value) {
+                            addSelectedActivity();
                         }
                     });
-                });
 
-                actividadSelect.on('change', function() {
-                    if (this.value) {
-                        addSelectedActivity();
-                    }
-                });
+                    toggleObjetoSocial();
+                    tipoPersonaSelect.on('change', toggleObjetoSocial);
 
-                toggleObjetoSocial();
-                tipoPersonaSelect.on('change', toggleObjetoSocial);
+                    $(document).on('click', '.remove-activity', function() {
+                        const activityId = $(this).data('id');
+                        removeActivity(activityId);
+                    });
 
-                $(document).on('click', '.remove-activity', function() {
-                    const activityId = $(this).data('id');
-                    removeActivity(activityId);
-                });
-
-                @if (old('sectores'))
-                    sectorSelect.val(@json(old('sectores'))).trigger('change');
-                @endif
+                    @if (old('sectores'))
+                        sectorSelect.val(@json(old('sectores'))).trigger('change');
+                    @endif
+                }
             });
         </script>
     @endpush

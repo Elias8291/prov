@@ -8,7 +8,14 @@ use App\Models\Solicitante;
 use App\Models\DetalleTramite;
 use App\Models\Sector;
 use App\Models\ActividadSolicitante;
+use App\Models\RepresentanteLegal;
+use App\Models\InstrumentoNotarial;
+use App\Http\Controllers\Formularios\DocumentosController;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Formularios\DomicilioController;
+use App\Http\Controllers\Formularios\ConstitucionController;
+use App\Http\Controllers\Formularios\AccionistasController;
+use DateTime;
 
 class RevisionController extends Controller
 {
@@ -38,69 +45,149 @@ class RevisionController extends Controller
         ]);
     }
 
-   public function iniciarRevision($rfc)
-{
-    $tramite = Tramite::with([
-        'solicitante',
-        'solicitante.usuario',
-        'detalleTramite',
-        'detalleTramite.direccion.asentamiento.localidad.municipio.estado',
-        'detalleTramite.contacto',
-    ])
-    ->whereHas('solicitante', function ($query) use ($rfc) {
-        $query->where('rfc', $rfc);
-    })
-    ->firstOrFail();
+    public function iniciarRevision($rfc)
+    {
+        setlocale(LC_TIME, 'es_ES.UTF-8', 'es_MX.UTF-8', 'Spanish_Spain', 'Spanish_Mexico');
 
-    $sectores = Sector::all();
+        $monthNames = [
+            1 => 'enero',
+            2 => 'febrero',
+            3 => 'marzo',
+            4 => 'abril',
+            5 => 'mayo',
+            6 => 'junio',
+            7 => 'julio',
+            8 => 'agosto',
+            9 => 'septiembre',
+            10 => 'octubre',
+            11 => 'noviembre',
+            12 => 'diciembre',
+        ];
 
-    // Fetch selected activities with full details
-    $actividadesSeleccionadas = ActividadSolicitante::where('tramite_id', $tramite->id)
-        ->with('actividad.sector')
-        ->get()
-        ->map(function ($actividadSolicitante) {
-            return [
-                'id' => $actividadSolicitante->actividad_id,
-                'nombre' => $actividadSolicitante->actividad->nombre,
-                'sector_id' => $actividadSolicitante->actividad->sector_id,
+        $tramite = Tramite::with([
+            'solicitante',
+            'solicitante.usuario',
+            'detalleTramite',
+            'detalleTramite.direccion.asentamiento.localidad.municipio.estado',
+            'detalleTramite.contacto',
+            'detalleTramite.representanteLegal.instrumentoNotarial.estado',
+        ])
+            ->whereHas('solicitante', function ($query) use ($rfc) {
+                $query->where('rfc', $rfc);
+            })
+            ->firstOrFail();
+
+        $sectores = Sector::all();
+
+        $actividadesSeleccionadas = ActividadSolicitante::where('tramite_id', $tramite->id)
+            ->with('actividad.sector')
+            ->get()
+            ->map(function ($actividadSolicitante) {
+                return [
+                    'id' => $actividadSolicitante->actividad_id,
+                    'nombre' => $actividadSolicitante->actividad->nombre,
+                    'sector_id' => $actividadSolicitante->actividad->sector_id,
+                ];
+            })
+            ->toArray();
+
+        $domicilioController = new DomicilioController();
+        $addressData = $domicilioController->getAddressData($tramite);
+
+        $constitucionController = new ConstitucionController();
+        $incorporationData = $constitucionController->getIncorporationData($tramite);
+
+        $accionistasController = new AccionistasController();
+        $accionistas = $accionistasController->getShareholdersData($tramite);
+        $documentosController = new DocumentosController();
+        $documentosResponse = $documentosController->get(new Request(['tramiteId' => $tramite->id]), $tramite->id);
+
+        $documentos = [];
+        if ($documentosResponse->getStatusCode() === 200) {
+            $documentos = $documentosResponse->getData(true)['documentos'];
+        }
+
+        $legalRepresentativeData = [];
+        if ($tramite->detalleTramite && $tramite->detalleTramite->representanteLegal) {
+            $representanteLegal = $tramite->detalleTramite->representanteLegal;
+            $instrumentoNotarial = $representanteLegal->instrumentoNotarial;
+
+            if (setlocale(LC_TIME, 'es_ES.UTF-8', 'es_MX.UTF-8', 'Spanish_Spain', 'Spanish_Mexico')) {
+                $fechaEscritura = $instrumentoNotarial->fecha
+                    ? (new DateTime($instrumentoNotarial->fecha))->format('j \d\e F \d\e Y')
+                    : 'No disponible';
+                $fechaInscripcion = $instrumentoNotarial->fecha_registro
+                    ? (new DateTime($instrumentoNotarial->fecha_registro))->format('j \d\e F \d\e Y')
+                    : 'No disponible';
+            } else {
+                $fechaEscritura = $instrumentoNotarial->fecha
+                    ? (new DateTime($instrumentoNotarial->fecha))->format('j \d\e ' . $monthNames[(new DateTime($instrumentoNotarial->fecha))->format('n')] . ' \d\e Y')
+                    : 'No disponible';
+                $fechaInscripcion = $instrumentoNotarial->fecha_registro
+                    ? (new DateTime($instrumentoNotarial->fecha_registro))->format('j \d\e ' . $monthNames[(new DateTime($instrumentoNotarial->fecha_registro))->format('n')] . ' \d\e Y')
+                    : 'No disponible';
+            }
+
+            $legalRepresentativeData = [
+                'nombre_apoderado' => $representanteLegal->nombre ?? 'No disponible',
+                'numero_escritura_apoderado' => $instrumentoNotarial->numero_escritura ?? 'No disponible',
+                'fecha_escritura_apoderado' => $fechaEscritura,
+                'nombre_notario_apoderado' => $instrumentoNotarial->nombre_notario ?? 'No disponible',
+                'numero_notario_apoderado' => $instrumentoNotarial->numero_notario ?? 'No disponible',
+                'entidad_federativa_apoderado' => $instrumentoNotarial->estado ? $instrumentoNotarial->estado->nombre : 'No disponible',
+                'numero_registro_apoderado' => $instrumentoNotarial->registro_mercantil ?? 'No disponible',
+                'fecha_inscripcion_apoderado' => $fechaInscripcion,
             ];
-        })
-        ->toArray();
+        } else {
+            $legalRepresentativeData = [
+                'nombre_apoderado' => 'No disponible',
+                'numero_escritura_apoderado' => 'No disponible',
+                'fecha_escritura_apoderado' => 'No disponible',
+                'nombre_notario_apoderado' => 'No disponible',
+                'numero_notario_apoderado' => 'No disponible',
+                'entidad_federativa_apoderado' => 'No disponible',
+                'numero_registro_apoderado' => 'No disponible',
+                'fecha_inscripcion_apoderado' => 'No disponible',
+            ];
+        }
 
-    $datosPrevios = [
-        'razon_social' => $tramite->detalleTramite?->razon_social,
-        'email' => $tramite->detalleTramite?->email,
-        'telefono' => $tramite->detalleTramite?->telefono,
-        'sitio_web' => $tramite->detalleTramite?->sitio_web,
-        'rfc' => $tramite->solicitante->rfc,
-        'curp' => $tramite->solicitante->curp,
-        'objeto_social' => $tramite->solicitante->objeto_social,
-        'contacto_telefono' => $tramite->detalleTramite?->telefono,
-        'contacto_web' => $tramite->detalleTramite?->sitio_web,
-        'contacto_nombre' => $tramite->detalleTramite?->contacto?->nombre,
-        'contacto_cargo' => $tramite->detalleTramite?->contacto?->puesto,
-        'contacto_correo' => $tramite->detalleTramite?->contacto?->email,
-        'contacto_telefono_2' => $tramite->detalleTramite?->contacto?->telefono,
-        // Add other fields as needed
-    ];
+        $datosPrevios = array_merge([
+            'razon_social' => $tramite->detalleTramite?->razon_social ?? 'No disponible',
+            'email' => $tramite->detalleTramite?->email ?? 'No disponible',
+            'telefono' => $tramite->detalleTramite?->telefono ?? 'No disponible',
+            'sitio_web' => $tramite->detalleTramite?->sitio_web ?? 'No disponible',
+            'rfc' => $tramite->solicitante->rfc ?? 'No disponible',
+            'curp' => $tramite->solicitante->curp ?? 'No disponible',
+            'objeto_social' => $tramite->solicitante->objeto_social ?? 'No disponible',
+            'contacto_telefono' => $tramite->detalleTramite?->telefono ?? 'No disponible',
+            'contacto_web' => $tramite->detalleTramite?->sitio_web ?? 'No disponible',
+            'contacto_nombre' => $tramite->detalleTramite?->contacto?->nombre ?? 'No disponible',
+            'contacto_cargo' => $tramite->detalleTramite?->contacto?->puesto ?? 'No disponible',
+            'contacto_correo' => $tramite->detalleTramite?->contacto?->email ?? 'No disponible',
+            'contacto_telefono_2' => $tramite->detalleTramite?->contacto?->telefono ?? 'No disponible',
+        ], $addressData, $incorporationData, $legalRepresentativeData);
 
-    return view('revision.iniciar_revision', [
-        'solicitante' => $tramite->solicitante,
-        'componentParams' => [
-            'action' => route('revision.procesar', $tramite->id),
-            'method' => 'POST',
-            'tipoPersona' => $tramite->solicitante->tipo_persona,
-            'datosPrevios' => $datosPrevios,
-            'sectores' => $sectores,
-            'isRevisor' => true,
-            'mostrarCurp' => $tramite->solicitante->tipo_persona === 'Física',
-            'seccion' => 1,
-            'totalSecciones' => 3,
-            'isConfirmationSection' => false,
-            'actividadesSeleccionadas' => $actividadesSeleccionadas,
-        ],
-    ]);
-}
+        return view('revision.iniciar_revision', [
+    'solicitante' => $tramite->solicitante,
+    'accionistas' => $accionistas,
+    'componentParams' => [
+        'action' => route('revision.procesar', $tramite->id),
+        'method' => 'POST',
+        'tipoPersona' => $tramite->solicitante->tipo_persona,
+        'datosPrevios' => $datosPrevios,
+        'sectores' => $sectores,
+        'isRevisor' => true,
+        'mostrarCurp' => $tramite->solicitante->tipo_persona === 'Física',
+        'seccion' => 1,
+        'totalSecciones' => 6, // Updated to include document section
+        'isConfirmationSection' => false,
+        'actividadesSeleccionadas' => $actividadesSeleccionadas,
+        'isEditable' => false,
+        'showPdfUpload' => false,
+        'documentos' => $documentos, // Add documents to componentParams
+    ],
+]);
+    }
 
     public function procesar(Request $request, $tramiteId)
     {

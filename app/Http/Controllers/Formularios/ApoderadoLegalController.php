@@ -39,12 +39,12 @@ class ApoderadoLegalController extends Controller
 
             // Fill the instrumento_notarial data
             $instrumentoNotarial->numero_escritura = $request->input('numero-escritura');
-            $instrumentoNotarial->fecha = $request->input('fecha-escritura');
+            $instrumentoNotarial->fecha = $request->input('fecha-escritura'); // Store as raw date (YYYY-MM-DD)
             $instrumentoNotarial->nombre_notario = $request->input('nombre-notario');
             $instrumentoNotarial->numero_notario = $request->input('numero-notario');
             $instrumentoNotarial->estado_id = $request->input('entidad-federativa');
             $instrumentoNotarial->registro_mercantil = $request->input('numero-registro');
-            $instrumentoNotarial->fecha_registro = $request->input('fecha-inscripcion');
+            $instrumentoNotarial->fecha_registro = $request->input('fecha-inscripcion'); // Store as raw date (YYYY-MM-DD)
             $instrumentoNotarial->save();
             
             Log::info('InstrumentoNotarial saved with ID: ' . $instrumentoNotarial->id);

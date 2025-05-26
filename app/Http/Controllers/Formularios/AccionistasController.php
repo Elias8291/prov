@@ -16,45 +16,36 @@ class AccionistasController extends Controller
         try {
             Log::info('Processing shareholders data:', $request->all());
 
-            // Obtener el array JSON de accionistas
             $accionistasData = $request->input('accionistas');
             
             if (!is_array($accionistasData)) {
-                // Si los datos vienen como string JSON, convertirlos a array
                 $accionistasData = json_decode($accionistasData, true) ?: [];
             }
 
-            // Eliminar accionistas anteriores de este trámite antes de guardar los nuevos
             AccionistaSolicitante::where('tramite_id', $tramite->id)->delete();
             
             Log::info('Previous shareholders removed for tramite: ' . $tramite->id);
             
-            // Total de porcentaje para validación
             $totalPorcentaje = 0;
             
-            // Procesar cada accionista
             foreach ($accionistasData as $accionistaData) {
-                // Validar datos mínimos requeridos
                 if (
                     empty($accionistaData['nombre']) || 
                     empty($accionistaData['apellido_paterno']) || 
                     !isset($accionistaData['porcentaje'])
                 ) {
-                    continue; // Saltar registros inválidos
+                    continue;
                 }
                 
-                // Crear o actualizar el accionista
                 $accionista = Accionista::firstOrCreate([
                     'nombre' => $accionistaData['nombre'],
                     'apellido_paterno' => $accionistaData['apellido_paterno'],
                     'apellido_materno' => $accionistaData['apellido_materno'] ?? '',
                 ]);
                 
-                // Sumar al total
                 $porcentaje = floatval($accionistaData['porcentaje']);
                 $totalPorcentaje += $porcentaje;
                 
-                // Crear la relación con el trámite
                 AccionistaSolicitante::create([
                     'tramite_id' => $tramite->id,
                     'accionista_id' => $accionista->id,
@@ -64,7 +55,6 @@ class AccionistasController extends Controller
                 Log::info('Shareholder added: ' . $accionista->id . ' with ' . $porcentaje . '% participation');
             }
             
-            // Verificar si el total es aproximadamente 100% (con un margen de error pequeño)
             if (abs($totalPorcentaje - 100) > 0.1) {
                 Log::warning('Total shareholder percentage is not 100%: ' . $totalPorcentaje);
             } else {
@@ -78,4 +68,49 @@ class AccionistasController extends Controller
             throw $e;
         }
     }
+
+ public function getShareholdersData(Tramite $tramite)
+{
+    try {
+        Log::info('Fetching shareholders data for tramite: ' . $tramite->id);
+
+        $accionistas = AccionistaSolicitante::where('tramite_id', $tramite->id)
+            ->with('accionista')
+            ->get()
+            ->map(function ($accionistaSolicitante) {
+                return [
+                    'id' => $accionistaSolicitante->accionista->id ?? 0,
+                    'nombre' => is_string($accionistaSolicitante->accionista->nombre) 
+                        ? $accionistaSolicitante->accionista->nombre 
+                        : (is_array($accionistaSolicitante->accionista->nombre) 
+                            ? json_encode($accionistaSolicitante->accionista->nombre) 
+                            : 'No disponible'),
+                    'apellido_paterno' => is_string($accionistaSolicitante->accionista->apellido_paterno) 
+                        ? $accionistaSolicitante->accionista->apellido_paterno 
+                        : (is_array($accionistaSolicitante->accionista->apellido_paterno) 
+                            ? json_encode($accionistaSolicitante->accionista->apellido_paterno) 
+                            : 'No disponible'),
+                    'apellido_materno' => is_string($accionistaSolicitante->accionista->apellido_materno) 
+                        ? $accionistaSolicitante->accionista->apellido_materno 
+                        : (is_array($accionistaSolicitante->accionista->apellido_materno) 
+                            ? json_encode($accionistaSolicitante->accionista->apellido_materno) 
+                            : ''),
+                    'porcentaje_participacion' => is_numeric($accionistaSolicitante->porcentaje_participacion) 
+                        ? $accionistaSolicitante->porcentaje_participacion 
+                        : (is_array($accionistaSolicitante->porcentaje_participacion) 
+                            ? json_encode($accionistaSolicitante->porcentaje_participacion) 
+                            : 0),
+                ];
+            })
+            ->toArray();
+
+        Log::info('Shareholders data retrieved: ', $accionistas);
+
+        return $accionistas;
+    } catch (\Exception $e) {
+        Log::error('Error fetching shareholders data: ' . $e->getMessage());
+        Log::error($e->getTraceAsString());
+        return []; // Return empty array to avoid breaking the view
+    }
+}
 }

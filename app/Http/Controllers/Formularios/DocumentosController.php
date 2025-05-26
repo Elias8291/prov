@@ -68,7 +68,7 @@ class DocumentosController extends Controller
     }
 
 
-    public function get(Request $request, $tramiteId)
+   public function get(Request $request, $tramiteId)
 {
     try {
         // Validate the tramite_id
@@ -86,7 +86,9 @@ class DocumentosController extends Controller
                     'documento_id' => $docSolicitante->documento_id,
                     'nombre' => $docSolicitante->documento->nombre,
                     'tipo' => $docSolicitante->documento->tipo,
-                    'fecha_entrega' => $docSolicitante->fecha_entrega ? $docSolicitante->fecha_entrega->toIso8601String() : null,
+                    'fecha_entrega' => $docSolicitante->fecha_entrega 
+                        ? \Carbon\Carbon::parse($docSolicitante->fecha_entrega)->toIso8601String() 
+                        : null,
                     'estado' => $docSolicitante->estado,
                     'version_documento' => $docSolicitante->version_documento,
                     'ruta_archivo' => Storage::disk('public')->url(Crypt::decryptString($docSolicitante->ruta_archivo)),

@@ -83,27 +83,6 @@ class DatosGeneralesController extends Controller
         return true;
     }
 
-   public function obtenerDatos(Tramite $tramite)
-    {
-        $solicitante = $tramite->solicitante;
-        $sectores = $tramite->sectores->pluck('id')->toArray();
-        $actividades = $tramite->actividades()->pluck('id')->toArray();
-
-        return [
-            'rfc' => $solicitante->rfc ?? null,
-            'tipo_persona' => $solicitante->tipo_persona ?? null,
-            'razon_social' => $solicitante->razon_social ?? null,
-            'correo_electronico' => $solicitante->correo_electronico ?? null,
-            'contacto_telefono' => $solicitante->contacto_telefono ?? '',
-            'objeto_social' => $solicitante->objeto_social ?? null,
-            'sectores' => $sectores ? $sectores[0] : null, // Suponiendo un solo sector
-            'actividades' => $actividades,
-            'contacto_nombre' => $solicitante->contacto_nombre ?? '',
-            'contacto_cargo' => $solicitante->contacto_cargo ?? '',
-            'contacto_correo' => $solicitante->contacto_correo ?? '',
-            'contacto_telefono_2' => $solicitante->contacto_2 ?? '',
-            'contacto_web' => $solicitante->contacto_web ?? '',
-        ];
-    }
+ 
     
 }

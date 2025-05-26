@@ -17,7 +17,8 @@ class Seccion1 extends Component
     public $totalSecciones;
     public $isConfirmationSection;
     public $actividadesSeleccionadas;
-    
+    public $isEditable;
+    public $showPdfUpload; // Confirm showPdfUpload property
 
     public function __construct(
         $action = null,
@@ -30,8 +31,9 @@ class Seccion1 extends Component
         $seccion = 1,
         $totalSecciones = 3,
         $isConfirmationSection = false,
-        
-        $actividadesSeleccionadas = []
+        $actividadesSeleccionadas = [],
+        $isEditable = true,
+        $showPdfUpload = true 
     ) {
         $this->action = $action ?? route('inscripcion.procesar');
         $this->method = $method;
@@ -44,6 +46,8 @@ class Seccion1 extends Component
         $this->totalSecciones = $totalSecciones;
         $this->isConfirmationSection = $isConfirmationSection;
         $this->actividadesSeleccionadas = $actividadesSeleccionadas;
+        $this->isEditable = $isEditable;
+        $this->showPdfUpload = $showPdfUpload; // Initialize showPdfUpload
     }
 
     public function render()

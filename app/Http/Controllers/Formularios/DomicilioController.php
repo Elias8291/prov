@@ -13,15 +13,62 @@ use App\Models\Asentamiento;
 
 class DomicilioController extends Controller
 {
+    /**
+     * Fetch formatted address data for a given Tramite.
+     *
+     * @param Tramite $tramite
+     * @return array
+     */
+    public function getAddressData(Tramite $tramite)
+    {
+        $addressData = [
+            'codigo_postal' => 'No disponible',
+            'estado' => 'No disponible',
+            'municipio' => 'No disponible',
+            'colonia' => 'No disponible',
+            'calle' => 'No disponible',
+            'numero_exterior' => 'No disponible',
+            'numero_interior' => 'No disponible',
+            'entre_calle_1' => 'No disponible',
+            'entre_calle_2' => 'No disponible',
+        ];
+
+        try {
+            $detalle = DetalleTramite::where('tramite_id', $tramite->id)->first();
+
+            if ($detalle && $detalle->direccion) {
+                $direccion = $detalle->direccion;
+                $addressData['codigo_postal'] = $direccion->codigo_postal ?? 'No disponible';
+                $addressData['calle'] = $direccion->calle ?? 'No disponible';
+                $addressData['numero_exterior'] = $direccion->numero_exterior ?? 'No disponible';
+                $addressData['numero_interior'] = $direccion->numero_interior ?? 'No disponible';
+                $addressData['entre_calle_1'] = $direccion->entre_calle_1 ?? 'No disponible';
+                $addressData['entre_calle_2'] = $direccion->entre_calle_2 ?? 'No disponible';
+
+                if ($direccion->asentamiento) {
+                    $addressData['colonia'] = $direccion->asentamiento->nombre ?? 'No disponible';
+                    if ($direccion->asentamiento->localidad && $direccion->asentamiento->localidad->municipio) {
+                        $addressData['municipio'] = $direccion->asentamiento->localidad->municipio->nombre ?? 'No disponible';
+                        $addressData['estado'] = $direccion->asentamiento->localidad->municipio->estado->nombre ?? 'No disponible';
+                    }
+                }
+            }
+
+            Log::info('Address data retrieved for tramite ID: ' . $tramite->id, $addressData);
+        } catch (\Exception $e) {
+            Log::error('Error fetching address data for tramite ID: ' . $tramite->id . ' - ' . $e->getMessage());
+        }
+
+        return $addressData;
+    }
+
     public function guardar(Request $request, Tramite $tramite)
     {
         try {
             Log::info('Input data for procesarDatosLegales:', $request->all());
 
-            // Obtener o crear el detalle_tramite
             $detalle = DetalleTramite::firstOrNew(['tramite_id' => $tramite->id]);
 
-            // Crear o actualizar la dirección
             if ($detalle->direccion_id) {
                 $direccion = Direccion::find($detalle->direccion_id);
                 Log::info('Updating existing address with ID: ' . $detalle->direccion_id);
@@ -29,25 +76,21 @@ class DomicilioController extends Controller
                 $direccion = new Direccion();
                 Log::info('Creating new address');
             }
-            
-            // Normalizar el código postal a 5 dígitos
+
             $codigoPostal = str_pad($request->input('codigo_postal'), 5, '0', STR_PAD_LEFT);
-            
-            // Obtener el asentamiento basado en el código postal y colonia seleccionada
             $coloniaValue = $request->input('colonia');
             Log::info("Looking for asentamiento with CP: $codigoPostal and colonia: $coloniaValue");
-            
+
             $asentamiento = Asentamiento::where('codigo_postal', $codigoPostal)
                 ->where('nombre', $coloniaValue)
                 ->first();
-                
+
             if (!$asentamiento) {
                 Log::warning("Asentamiento not found for codigo_postal: $codigoPostal and colonia: $coloniaValue");
             } else {
                 Log::info("Asentamiento found with ID: " . $asentamiento->id);
             }
 
-            // AQUÍ SE CONFIGURA LA DIRECCIÓN CON LOS DATOS OBTENIDOS
             $direccion->codigo_postal = $codigoPostal;
             $direccion->asentamiento_id = $asentamiento ? $asentamiento->id : null;
             $direccion->calle = $request->input('calle');
@@ -56,15 +99,14 @@ class DomicilioController extends Controller
             $direccion->entre_calle_1 = $request->input('entre_calle_1');
             $direccion->entre_calle_2 = $request->input('entre_calle_2');
             $direccion->save();
-            
+
             Log::info('Address saved with ID: ' . $direccion->id);
 
-            // Actualizar el detalle_tramite con el direccion_id
             $detalle->direccion_id = $direccion->id;
             $detalle->save();
-            
+
             Log::info('DetalleTramite updated with direccion_id: ' . $direccion->id);
-            
+
             return true;
         } catch (\Exception $e) {
             Log::error('Error procesando datos legales: ' . $e->getMessage());
@@ -73,16 +115,14 @@ class DomicilioController extends Controller
         }
     }
 
-    // Este método se puede usar desde JavaScript para obtener datos del CP
     public function obtenerDatosPorCodigoPostal(Request $request)
     {
         $codigoPostal = $request->input('codigo_postal');
-        
-        // Llamar internamente al endpoint que ya tienes
+
         $response = Http::post(route('inscripcion.obtener-datos-direccion'), [
             'codigo_postal' => $codigoPostal
         ]);
-        
+
         return $response->json();
     }
 }
