@@ -66,9 +66,7 @@ class DocumentosController extends Controller
             'mensaje' => 'Documento subido correctamente',
         ]);
     }
-
-
-   public function get(Request $request, $tramiteId)
+public function get(Request $request, $tramiteId)
 {
     try {
         // Validate the tramite_id

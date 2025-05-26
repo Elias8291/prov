@@ -182,10 +182,10 @@
                                         title="Ver detalles" data-id="{{ $solicitud->id }}">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('revision.iniciar', $rfc) }}" class="btn-action begin-review-btn"
-                                        title="Comenzar revisión" data-id="{{ $solicitud->id }}">
-                                        <i class="fas fa-clipboard-check"></i>
-                                    </a>
+                                   <a href="{{ route('revision.iniciar', $solicitud->id) }}" class="btn-action begin-review-btn"
+    title="Comenzar revisión" data-id="{{ $solicitud->id }}">
+    <i class="fas fa-clipboard-check"></i>
+</a>
                                 </div>
                             </td>
                         </tr>

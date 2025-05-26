@@ -4,15 +4,57 @@
 <link rel="stylesheet" href="{{ asset('assets/css/formularios.css') }}">
 <link rel="stylesheet" href="{{ asset('assets/css/tabla.css') }}">
 <style>
-    /* General form styling */
-    .form-section {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 20px;
-        background-color: #f9fafb;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
+  /* Distinct borders for each form section */
+.form-section {
+    max-width: 800px;
+    margin: 20px auto; /* Increased margin for separation */
+    padding: 20px;
+    background-color: #f9fafb;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border: 2px solid transparent; /* Default border */
+}
+
+/* Oaxaca-inspired border colors */
+#form-step-1 {
+    border-color: #006D77; /* Deep Turquoise for General Data */
+}
+
+#form-step-2 {
+    border-color: #9A031E; /* Oaxacan Red for Address */
+}
+
+#form-step-3 {
+    border-color: #E3A008; /* Sunlit Yellow for Constitution Data */
+}
+
+#form-step-4 {
+    border-color: #468F54; /* Jade Green for Shareholders */
+}
+
+#form-step-5 {
+    border-color: #5C2A9D; /* Deep Purple for Legal Representative */
+}
+
+#form-step-6 {
+    border-color: #CB7756; /* Warm Terracotta for Documents */
+}
+
+/* Add a subtle divider between forms */
+.form-section + .form-section {
+    margin-top: 30px; /* Extra spacing between forms */
+    position: relative;
+}
+
+.form-section + .form-section::before {
+    content: '';
+    position: absolute;
+    top: -15px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: #e5e7eb; /* Subtle divider line */
+}
 
     /* Form heading */
     .form-section h4 {
@@ -179,7 +221,91 @@
         transform: translateY(-2px);
     }
 
-    /* NUEVOS ESTILOS PARA EL PDF VIEWER */
+    /* Comment section */
+    .comment-section {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .comment-section label {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .comment-textarea {
+        width: 100%;
+        min-height: 100px;
+        padding: 10px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        color: #1f2937;
+        resize: vertical;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .comment-textarea:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    /* Updated styles for approval toggle button */
+    .approval-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .approval-btn {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        border-radius: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .approval-btn.approved {
+        background: linear-gradient(135deg, #34d399, #10b981);
+        color: #fff;
+    }
+
+    .approval-btn.approved:hover {
+        background: linear-gradient(135deg, #6ee7b7, #059669);
+        transform: scale(1.05);
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .approval-btn.not-approved {
+        background: linear-gradient(135deg, #f87171, #ef4444);
+        color: #fff;
+    }
+
+    .approval-btn.not-approved:hover {
+        background: linear-gradient(135deg, #fca5a5, #dc2626);
+        transform: scale(1.05);
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .approval-icon {
+        font-size: 0.9rem;
+    }
+
+    /* Split container for PDF viewer */
     .split-container {
         display: flex;
         gap: 20px;
@@ -264,7 +390,7 @@
         color: #1d4ed8;
     }
 
-    /* Media query para dispositivos más pequeños */
+    /* Media query for smaller devices */
     @media (max-width: 1200px) {
         .split-container {
             flex-direction: column;
@@ -305,21 +431,38 @@
                             <i class="fas fa-building"></i> Datos Generales
                             @php
                                 $constanciaDoc = null;
+                                $identificacionDoc = null;
                                 if (!empty($componentParams['documentos'])) {
                                     foreach ($componentParams['documentos'] as $documento) {
-                                        if ($documento['id'] == 1) {
+                                        if ($documento['documento_id'] == 1) {
                                             $constanciaDoc = $documento;
-                                            break;
+                                        }
+                                        if ($documento['documento_id'] == 2) {
+                                            $identificacionDoc = $documento;
                                         }
                                     }
                                 }
                             @endphp
+                            <!-- Icono para Constancia de Situación Fiscal (ID 1) -->
                             @if ($constanciaDoc && !empty($constanciaDoc['ruta_archivo']))
                                 <a href="javascript:void(0);" class="pdf-icon" title="Ver Constancia de Situación Fiscal"
                                     onclick="togglePdfViewer('{{ $constanciaDoc['ruta_archivo'] }}', '{{ $constanciaDoc['nombre'] ?? 'Constancia de Situación Fiscal' }}')">
                                     <i class="fas fa-file-pdf"></i>
                                 </a>
+                            @else
+                                <span class="form-hint">Constancia de Situación Fiscal no disponible</span>
                             @endif
+                            <!-- Icono para Identificación Oficial (ID 2) solo para Persona Física -->
+                            @if ($componentParams['tipoPersona'] === 'Física' && $identificacionDoc && !empty($identificacionDoc['ruta_archivo']))
+                                <a href="javascript:void(0);" class="pdf-icon" title="Ver Identificación Oficial"
+                                    onclick="togglePdfViewer('{{ $identificacionDoc['ruta_archivo'] }}', '{{ $identificacionDoc['nombre'] ?? 'Identificación Oficial' }}')">
+                                    <i class="fas fa-id-card"></i>
+                                </a>
+                            @elseif ($componentParams['tipoPersona'] === 'Física')
+                                <span class="form-hint">Identificación Oficial no disponible</span>
+                            @endif
+                           
+                           
                         </h4>
                         <div class="form-group horizontal-group">
                             <div class="half-width">
@@ -448,69 +591,98 @@
                             <span
                                 class="data-field">{{ $componentParams['datosPrevios']['contacto_telefono_2'] ?? 'No disponible' }}</span>
                         </div>
+                         <div class="comment-section">
+                            <label for="comment-form2">Comentarios sobre Domicilio</label>
+                            <textarea class="comment-textarea" id="comment-form2" name="comment_form2" placeholder="Escribe tus observaciones aquí..."></textarea>
+                            <div class="approval-toggle">
+                                <button class="approval-btn approved"><i class="fas fa-check approval-icon"></i> Aprobado</button>
+                                <button class="approval-btn not-approved"><i class="fas fa-times approval-icon"></i> No Aprobado</button>
+                            </div>
+                        </div>
                     </div>
                 </form>
 
                 <!-- Formulario 2 -->
-               <!-- Formulario 2 -->
-<form id="formulario2" action="{{ $componentParams['action'] }}" method="POST" enctype="multipart/form-data">
-    @csrf
-    <input type="hidden" name="action" value="next">
-    <div class="form-section" id="form-step-2">
-        <h4><i class="fas fa-map-marker-alt"></i> Domicilio</h4>
-        <div class="form-group horizontal-group">
-            <div class="half-width form-group">
-                <label class="form-label data-label" for="codigo_postal">Código Postal</label>
-                <span class="data-field">{{ $componentParams['datosPrevios']['codigo_postal'] ?? 'No disponible' }}</span>
-            </div>
-            <div class="half-width form-group">
-                <label class="form-label data-label" for="estado">Estado</label>
-                <span class="data-field">{{ $componentParams['datosPrevios']['estado'] ?? 'No disponible' }}</span>
-            </div>
-        </div>
-        <div class="form-group horizontal-group">
-            <div class="half-width form-group">
-                <label class="form-label data-label" for="municipio">Municipio</label>
-                <span class="data-field">{{ $componentParams['datosPrevios']['municipio'] ?? 'No disponible' }}</span>
-            </div>
-            <div class="half-width form-group">
-                <label class="form-label" for="colonia">Asentamiento</label>
-                <span class="data-field">{{ $componentParams['datosPrevios']['colonia'] ?? 'No disponible' }}</span>
-            </div>
-        </div>
-        <div class="form-group horizontal-group">
-            <div class="half-width form-group">
-                <label class="form-label" for="calle">Calle</label>
-                <span class="data-field">{{ $componentParams['datosPrevios']['calle'] ?? 'No disponible' }}</span>
-            </div>
-            <div class="half-width form-group">
-                <label class="form-label" for="numero_exterior">Número Exterior</label>
-                <span class="data-field">{{ $componentParams['datosPrevios']['numero_exterior'] ?? 'No disponible' }}</span>
-            </div>
-        </div>
-        <div class="form-group horizontal-group">
-            <div class="half-width form-group">
-                <label class="form-label" for="numero_interior">Número Interior (Opcional)</label>
-                <span class="data-field">{{ $componentParams['datosPrevios']['numero_interior'] ?? 'No disponible' }}</span>
-            </div>
-            <div class="half-width form-group">
-                <label class="form-label" for="entre_calle_1">Entre Calle 1</label>
-                <span class="data-field">{{ $componentParams['datosPrevios']['entre_calle_1'] ?? 'No disponible' }}</span>
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="form-label" for="entre_calle_2">Entre Calle 2</label>
-            <span class="data-field">{{ $componentParams['datosPrevios']['entre_calle_2'] ?? 'No disponible' }}</span>
-        </div>
+                <form id="formulario2" action="{{ $componentParams['action'] }}" method="POST"
+                    enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="action" value="next">
+                    <div class="form-section" id="form-step-2">
+                        <h4><i class="fas fa-map-marker-alt"></i> Domicilio</h4>
+                        <div class="form-group horizontal-group">
+                            <div class="half-width form-group">
+                                <label class="form-label data-label" for="codigo_postal">Código Postal</label>
+                                <span
+                                    class="data-field">{{ $componentParams['datosPrevios']['codigo_postal'] ?? 'No disponible' }}</span>
+                            </div>
+                            <div class="half-width form-group">
+                                <label class="form-label data-label" for="estado">Estado</label>
+                                <span
+                                    class="data-field">{{ $componentParams['datosPrevios']['estado'] ?? 'No disponible' }}</span>
+                            </div>
+                        </div>
+                        <div class="form-group horizontal-group">
+                            <div class="half-width form-group">
+                                <label class="form-label data-label" for="municipio">Municipio</label>
+                                <span
+                                    class="data-field">{{ $componentParams['datosPrevios']['municipio'] ?? 'No disponible' }}</span>
+                            </div>
+                            <div class="half-width form-group">
+                                <label class="form-label" for="colonia">Asentamiento</label>
+                                <span
+                                    class="data-field">{{ $componentParams['datosPrevios']['colonia'] ?? 'No disponible' }}</span>
+                            </div>
+                        </div>
+                        <div class="form-group horizontal-group">
+                            <div class="half-width form-group">
+                                <label class="form-label" for="calle">Calle</label>
+                                <span
+                                    class="data-field">{{ $componentParams['datosPrevios']['calle'] ?? 'No disponible' }}</span>
+                            </div>
+                            <div class="half-width form-group">
+                                <label class="form-label" for="numero_exterior">Número Exterior</label>
+                                <span
+                                    class="data-field">{{ $componentParams['datosPrevios']['numero_exterior'] ?? 'No disponible' }}</span>
+                            </div>
+                        </div>
+                        <div class="form-group horizontal-group">
+                            <div class="half-width form-group">
+                                <label class="form-label" for="numero_interior">Número Interior (Opcional)</label>
+                                <span
+                                    class="data-field">{{ $componentParams['datosPrevios']['numero_interior'] ?? 'No disponible' }}</span>
+                            </div>
+                            <div class="half-width form-group">
+                                <label class="form-label" for="entre_calle_1">Entre Calle 1</label>
+                                <span
+                                    class="data-field">{{ $componentParams['datosPrevios']['entre_calle_1'] ?? 'No disponible' }}</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="entre_calle_2">Entre Calle 2</label>
+                            <span
+                                class="data-field">{{ $componentParams['datosPrevios']['entre_calle_2'] ?? 'No disponible' }}</span>
+                        </div>
 
-        <!-- Map Container -->
-        <div class="form-group full-width">
-            <label class="form-label">Croquis del Domicilio</label>
-            <div id="map-container" style="height: 400px; width: 100%; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);"></div>
-            <span class="form-hint">Mapa interactivo que muestra la ubicación del domicilio proporcionado.</span>
-        </div>
-    </div>
-</form>
+                        <!-- Map Container -->
+                        <div class="form-group full-width">
+                            <label class="form-label">Croquis del Domicilio</label>
+                            <div id="map-container"
+                                style="height: 400px; width: 100%; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);">
+                            </div>
+                            <span class="form-hint">Mapa interactivo que muestra la ubicación del domicilio
+                                proporcionado.</span>
+                        </div>
+                         <div class="comment-section">
+                            <label for="comment-form2">Comentarios sobre Domicilio</label>
+                            <textarea class="comment-textarea" id="comment-form2" name="comment_form2" placeholder="Escribe tus observaciones aquí..."></textarea>
+                            <div class="approval-toggle">
+                                <button class="approval-btn approved"><i class="fas fa-check approval-icon"></i> Aprobado</button>
+                                <button class="approval-btn not-approved"><i class="fas fa-times approval-icon"></i> No Aprobado</button>
+                            </div>
+                        </div>
+                    </div>
+                
+                </form>
                 <!-- Formulario 3 -->
                 <form id="formulario3" action="{{ $componentParams['action'] }}" method="POST"
                     enctype="multipart/form-data">
@@ -567,6 +739,7 @@
                         </div>
                     </div>
                 </form>
+                
                 <!-- Formulario 4: Socios o Accionistas -->
                 <form id="formulario4" action="{{ $componentParams['action'] }}" method="POST">
                     @csrf
@@ -602,6 +775,15 @@
                             </div>
                         @endif
                         <input type="hidden" name="accionistas" id="accionistas-data">
+
+                         <div class="comment-section">
+                            <label for="comment-form2">Comentarios sobre Domicilio</label>
+                            <textarea class="comment-textarea" id="comment-form2" name="comment_form2" placeholder="Escribe tus observaciones aquí..."></textarea>
+                            <div class="approval-toggle">
+                                <button class="approval-btn approved"><i class="fas fa-check approval-icon"></i> Aprobado</button>
+                                <button class="approval-btn not-approved"><i class="fas fa-times approval-icon"></i> No Aprobado</button>
+                            </div>
+                        </div>
                     </div>
                 </form>
 
@@ -661,6 +843,14 @@
                                 <label class="form-label data-label" for="fecha-inscripcion">Fecha de Inscripción</label>
                                 <span
                                     class="data-field">{{ $componentParams['datosPrevios']['fecha_inscripcion_apoderado'] ?? 'No disponible' }}</span>
+                            </div>
+                        </div>
+                         <div class="comment-section">
+                            <label for="comment-form2">Comentarios sobre Domicilio</label>
+                            <textarea class="comment-textarea" id="comment-form2" name="comment_form2" placeholder="Escribe tus observaciones aquí..."></textarea>
+                            <div class="approval-toggle">
+                                <button class="approval-btn approved"><i class="fas fa-check approval-icon"></i> Aprobado</button>
+                                <button class="approval-btn not-approved"><i class="fas fa-times approval-icon"></i> No Aprobado</button>
                             </div>
                         </div>
                     </div>

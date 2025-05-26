@@ -125,9 +125,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/revision/{id}/begin', [RevisionController::class, 'beginReview'])->name('revision.begin');
     Route::post('/revision/{id}/complete', [RevisionController::class, 'completeReview'])->name('revision.complete');
     Route::get('/my-revisions', [RevisionController::class, 'myRevisions'])->name('revision.my-revisions');
-    Route::get('/revision/iniciar/{rfc}', [RevisionController::class, 'iniciarRevision'])->name('revision.iniciar');
 
-    Route::post('/revision/{tramiteId}/procesar', [RevisionController::class, 'procesar'])->name('revision.procesar');
+    Route::get('/revision/iniciar/{tramiteId}', [RevisionController::class, 'iniciarRevision'])->name('revision.iniciar');
+    Route::post('/revision/procesar/{tramiteId}', [RevisionController::class, 'procesar'])->name('revision.procesar');
     Route::get('/solicitante/address-info', [DireccionController::class, 'getSolicitanteAddressInfo']);
     Route::get('/direccion/by-codigo-postal/{codigo}', [DireccionController::class, 'getAddressByCodigoPostal']);
 
@@ -141,9 +141,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/documentos/{documento}/edit', [DocumentoController::class, 'edit'])->name('documentos.edit');
     Route::put('/documentos/{documento}', [DocumentoController::class, 'update'])->name('documentos.update');
     Route::delete('/documentos/{documento}', [DocumentoController::class, 'destroy'])->name('documentos.destroy');
-Route::get('/citas', [CitaController::class, 'index'])->name('citas.index');
-Route::put('/citas/{cita}', [CitaController::class, 'update'])->name('citas.update');
-Route::delete('/citas/{cita}', [CitaController::class, 'destroy'])->name('citas.destroy');
-Route::post('/dias_inhabiles', [DiasInhabilesController::class, 'store'])->name('dias_inhabiles.store');
-Route::delete('/dias_inhabiles/{diaInhabil}', [DiasInhabilesController::class, 'destroy'])->name('dias_inhabiles.destroy');
+    Route::get('/citas', [CitaController::class, 'index'])->name('citas.index');
+    Route::put('/citas/{cita}', [CitaController::class, 'update'])->name('citas.update');
+    Route::delete('/citas/{cita}', [CitaController::class, 'destroy'])->name('citas.destroy');
+    Route::post('/dias_inhabiles', [DiasInhabilesController::class, 'store'])->name('dias_inhabiles.store');
+    Route::delete('/dias_inhabiles/{diaInhabil}', [DiasInhabilesController::class, 'destroy'])->name('dias_inhabiles.destroy');
 });
