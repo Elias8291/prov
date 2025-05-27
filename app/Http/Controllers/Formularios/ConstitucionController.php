@@ -10,119 +10,62 @@ use App\Models\InstrumentoNotarial;
 use App\Models\Estado;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class ConstitucionController extends Controller
 {
-    // Obtiene datos de constitución para formulario3
-    public function getIncorporationData(Tramite $tramite)
+    /**
+     * Obtiene los datos de constitución para un trámite, formateando fechas en español
+     *
+     * @param Tramite $tramite El trámite del cual obtener los datos de constitución
+     * @return array Los datos de constitución formateados
+     */
+    public function getIncorporationData(Tramite $tramite): array
     {
-        try {
-            Log::info('Fetching incorporation data for tramite ID: ' . $tramite->id);
+        setlocale(LC_TIME, 'es_MX.UTF-8', 'es_ES.UTF-8', 'Spanish_Mexico');
 
-            // Set Spanish locale for date formatting
-            setlocale(LC_TIME, 'es_MX.UTF-8', 'es_ES.UTF-8', 'Spanish_Mexico');
+        $incorporationData = $this->initializeIncorporationData();
+        $detalleTramite = $this->getDetalleTramite($tramite);
 
-            $incorporationData = [
-                'numero_escritura' => 'No disponible',
-                'nombre_notario' => 'No disponible',
-                'entidad_federativa' => 'No disponible',
-                'fecha_constitucion' => 'No disponible',
-                'numero_notario' => 'No disponible',
-                'numero_registro' => 'No disponible',
-                'fecha_inscripcion' => 'No disponible',
-            ];
-
-            $detalleTramite = DetalleTramite::where('tramite_id', $tramite->id)->first();
-
-            if ($detalleTramite && $detalleTramite->dato_constitutivo_id) {
-                $datoConstitutivo = DatoConstitutivo::find($detalleTramite->dato_constitutivo_id);
-
-                if ($datoConstitutivo && $datoConstitutivo->instrumento_notarial_id) {
-                    $instrumentoNotarial = InstrumentoNotarial::find($datoConstitutivo->instrumento_notarial_id);
-
-                    if ($instrumentoNotarial) {
-                        $incorporationData['numero_escritura'] = $instrumentoNotarial->numero_escritura ?? 'No disponible';
-                        $incorporationData['nombre_notario'] = $instrumentoNotarial->nombre_notario ?? 'No disponible';
-                        $incorporationData['numero_notario'] = $instrumentoNotarial->numero_notario ?? 'No disponible';
-                        // Format dates to "d de MMMM de YYYY" (e.g., "25 de mayo de 2025")
-                        $incorporationData['fecha_constitucion'] = $instrumentoNotarial->fecha
-                            ? strftime('%d de %B de %Y', $instrumentoNotarial->fecha->getTimestamp())
-                            : 'No disponible';
-                        $incorporationData['numero_registro'] = $instrumentoNotarial->registro_mercantil ?? 'No disponible';
-                        $incorporationData['fecha_inscripcion'] = $instrumentoNotarial->fecha_registro
-                            ? strftime('%d de %B de %Y', $instrumentoNotarial->fecha_registro->getTimestamp())
-                            : 'No disponible';
-
-                        if ($instrumentoNotarial->estado_id) {
-                            $estado = Estado::find($instrumentoNotarial->estado_id);
-                            $incorporationData['entidad_federativa'] = $estado ? $estado->nombre : 'No disponible';
-                        }
-                    }
-                }
-            }
-
-            return $incorporationData;
-        } catch (\Exception $e) {
-            Log::error('Error fetching incorporation data for tramite ID: ' . $tramite->id . ' - ' . $e->getMessage());
-            return $incorporationData;
+        if ($detalleTramite?->datoConstitutivo?->instrumentoNotarial) {
+            $this->fillIncorporationData($detalleTramite->datoConstitutivo->instrumentoNotarial, $incorporationData);
         }
+
+        return $incorporationData;
     }
 
-    // Guarda datos de constitución
-    public function guardar(Request $request, Tramite $tramite)
+    /**
+     * Guarda los datos de constitución para un trámite específico
+     *
+     * @param Request $request La solicitud con los datos de constitución
+     * @param Tramite $tramite El trámite asociado
+     * @return bool Indica si la operación fue exitosa
+     * @throws \Illuminate\Validation\ValidationException|\Exception
+     */
+    public function guardar(Request $request, Tramite $tramite): bool
     {
-        try {
-            Log::info('Processing incorporation data for section 3:', $request->all());
+        $this->validateRequest($request);
 
-            $this->validarDatos($request);
-
-            $detalleTramite = DetalleTramite::firstOrNew(['tramite_id' => $tramite->id]);
-            $instrumentoNotarial = new InstrumentoNotarial();
-
-            if ($detalleTramite->dato_constitutivo_id) {
-                $datoConstitutivo = DatoConstitutivo::find($detalleTramite->dato_constitutivo_id);
-                if ($datoConstitutivo && $datoConstitutivo->instrumento_notarial_id) {
-                    $existingInstrument = InstrumentoNotarial::find($datoConstitutivo->instrumento_notarial_id);
-                    if ($existingInstrument) {
-                        $instrumentoNotarial = $existingInstrument;
-                    }
-                }
-            }
-
-            $instrumentoNotarial->numero_escritura = $request->input('numero_escritura');
-            $instrumentoNotarial->fecha = $request->input('fecha_constitucion');
-            $instrumentoNotarial->nombre_notario = $request->input('nombre_notario');
-            $instrumentoNotarial->numero_notario = $request->input('numero_notario');
-            $instrumentoNotarial->estado_id = $request->input('entidad_federativa');
-            $instrumentoNotarial->registro_mercantil = $request->input('numero_registro');
-            $instrumentoNotarial->fecha_registro = $request->input('fecha_inscripcion');
-            $instrumentoNotarial->save();
-
-            if ($detalleTramite->dato_constitutivo_id) {
-                $datoConstitutivo = DatoConstitutivo::find($detalleTramite->dato_constitutivo_id);
-            }
-
-            if (empty($datoConstitutivo)) {
-                $datoConstitutivo = new DatoConstitutivo();
-            }
-
-            $datoConstitutivo->instrumento_notarial_id = $instrumentoNotarial->id;
-            $datoConstitutivo->objeto_social = Auth::user()->solicitante->objeto_social ?? '';
-            $datoConstitutivo->save();
+        return DB::transaction(function () use ($request, $tramite) {
+            $detalleTramite = $this->getOrCreateDetalleTramite($tramite);
+            $instrumentoNotarial = $this->guardarInstrumentoNotarial($request, $detalleTramite->datoConstitutivo?->instrumento_notarial_id);
+            $datoConstitutivo = $this->guardarDatoConstitutivo($instrumentoNotarial->id, $detalleTramite->dato_constitutivo_id);
 
             $detalleTramite->dato_constitutivo_id = $datoConstitutivo->id;
             $detalleTramite->save();
 
             return true;
-        } catch (\Exception $e) {
-            Log::error('Error processing incorporation data: ' . $e->getMessage());
-            throw $e;
-        }
+        });
     }
 
-    // Valida datos de entrada
-    private function validarDatos(Request $request)
+    /**
+     * Valida los datos recibidos en la solicitud para los campos de constitución
+     *
+     * @param Request $request La solicitud a validar
+     * @return void
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    private function validateRequest(Request $request): void
     {
         $rules = [
             'numero_escritura' => 'required|numeric|max:9999999999',
@@ -153,6 +96,126 @@ class ConstitucionController extends Controller
             'fecha_inscripcion.before_or_equal' => 'La fecha de inscripción no puede ser futura.',
         ];
 
-        return $request->validate($rules, $messages);
+        $request->validate($rules, $messages);
+    }
+
+    /**
+     * Inicializa el array de datos de constitución con valores por defecto
+     *
+     * @return array Los datos de constitución inicializados
+     */
+    private function initializeIncorporationData(): array
+    {
+        return [
+            'numero_escritura' => 'No disponible',
+            'nombre_notario' => 'No disponible',
+            'entidad_federativa' => 'No disponible',
+            'fecha_constitucion' => 'No disponible',
+            'numero_notario' => 'No disponible',
+            'numero_registro' => 'No disponible',
+            'fecha_inscripcion' => 'No disponible',
+        ];
+    }
+
+    /**
+     * Obtiene el registro de DetalleTramite para el trámite especificado
+     *
+     * @param Tramite $tramite El trámite asociado
+     * @return DetalleTramite|null El registro de DetalleTramite o null si no existe
+     */
+    private function getDetalleTramite(Tramite $tramite): ?DetalleTramite
+    {
+        return DetalleTramite::where('tramite_id', $tramite->id)->first();
+    }
+
+    /**
+     * Obtiene o crea un registro de DetalleTramite para el trámite especificado
+     *
+     * @param Tramite $tramite El trámite asociado
+     * @return DetalleTramite El registro de DetalleTramite
+     */
+    private function getOrCreateDetalleTramite(Tramite $tramite): DetalleTramite
+    {
+        return DetalleTramite::firstOrNew(['tramite_id' => $tramite->id]);
+    }
+
+    /**
+     * Llena el array de datos de constitución con información del instrumento notarial
+     *
+     * @param InstrumentoNotarial $instrumentoNotarial El registro del instrumento notarial
+     * @param array &$incorporationData El array de datos a llenar
+     * @return void
+     */
+    private function fillIncorporationData(InstrumentoNotarial $instrumentoNotarial, array &$incorporationData): void
+    {
+        $incorporationData['numero_escritura'] = $this->safeString($instrumentoNotarial->numero_escritura, 'No disponible');
+        $incorporationData['nombre_notario'] = $this->safeString($instrumentoNotarial->nombre_notario, 'No disponible');
+        $incorporationData['numero_notario'] = $this->safeString($instrumentoNotarial->numero_notario, 'No disponible');
+        $incorporationData['fecha_constitucion'] = $instrumentoNotarial->fecha
+            ? strftime('%d de %B de %Y', $instrumentoNotarial->fecha->getTimestamp())
+            : 'No disponible';
+        $incorporationData['numero_registro'] = $this->safeString($instrumentoNotarial->registro_mercantil, 'No disponible');
+        $incorporationData['fecha_inscripcion'] = $instrumentoNotarial->fecha_registro
+            ? strftime('%d de %B de %Y', $instrumentoNotarial->fecha_registro->getTimestamp())
+            : 'No disponible';
+        $incorporationData['entidad_federativa'] = $instrumentoNotarial->estado?->nombre ?? 'No disponible';
+    }
+
+    /**
+     * Crea o actualiza un registro de instrumento notarial con los datos proporcionados
+     *
+     * @param Request $request La solicitud con los datos del instrumento notarial
+     * @param int|null $instrumentoId El ID del instrumento notarial existente, si aplica
+     * @return InstrumentoNotarial El registro del instrumento notarial creado o actualizado
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
+    private function guardarInstrumentoNotarial(Request $request, ?int $instrumentoId): InstrumentoNotarial
+    {
+        $instrumentoNotarial = $instrumentoId ? InstrumentoNotarial::findOrFail($instrumentoId) : new InstrumentoNotarial();
+
+        $instrumentoNotarial->numero_escritura = $request->input('numero_escritura');
+        $instrumentoNotarial->fecha = $request->input('fecha_constitucion');
+        $instrumentoNotarial->nombre_notario = $request->input('nombre_notario');
+        $instrumentoNotarial->numero_notario = $request->input('numero_notario');
+        $instrumentoNotarial->estado_id = $request->input('entidad_federativa');
+        $instrumentoNotarial->registro_mercantil = $request->input('numero_registro');
+        $instrumentoNotarial->fecha_registro = $request->input('fecha_inscripcion');
+        $instrumentoNotarial->save();
+
+        return $instrumentoNotarial;
+    }
+
+    /**
+     * Crea o actualiza un registro de datos constitutivos con el objeto social del solicitante
+     *
+     * @param int $instrumentoNotarialId El ID del instrumento notarial asociado
+     * @param int|null $datoConstitutivoId El ID del dato constitutivo existente, si aplica
+     * @return DatoConstitutivo El registro de datos constitutivos creado o actualizado
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
+    private function guardarDatoConstitutivo(int $instrumentoNotarialId, ?int $datoConstitutivoId): DatoConstitutivo
+    {
+        $datoConstitutivo = $datoConstitutivoId ? DatoConstitutivo::findOrFail($datoConstitutivoId) : new DatoConstitutivo();
+
+        $datoConstitutivo->instrumento_notarial_id = $instrumentoNotarialId;
+        $datoConstitutivo->objeto_social = $this->safeString(Auth::user()->solicitante->objeto_social, '');
+        $datoConstitutivo->save();
+
+        return $datoConstitutivo;
+    }
+
+    /**
+     * Convierte un valor a string seguro, manejando casos no válidos
+     *
+     * @param mixed $value El valor a convertir
+     * @param string $default El valor por defecto si no es válido
+     * @return string
+     */
+    private function safeString($value, string $default): string
+    {
+        if (is_string($value)) {
+            return $value;
+        }
+        return is_array($value) ? json_encode($value) : $default;
     }
 }

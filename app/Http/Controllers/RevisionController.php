@@ -218,41 +218,5 @@ class RevisionController extends Controller
         return redirect()->route('revision.index')->with('success', 'Revisión procesada correctamente.');
     }
 
-    private function calculateDeadline($fechaInicio, $tipoTramite)
-    {
-        if ($tipoTramite !== 'Inscripcion') {
-            $totalHours = $tipoTramite == 'Renovacion' ? 42 : 72;
-            return Carbon::parse($fechaInicio)->addHours($totalHours);
-        }
-
-        $currentDate = Carbon::parse($fechaInicio);
-        $businessDaysAdded = 0;
-        $maxBusinessDays = 3;
-
-        $diasInhabiles = DiasInhabiles::all()->map(function ($dia) {
-            $start = Carbon::parse($dia->fecha_inicio);
-            $end = $dia->fecha_fin ? Carbon::parse($dia->fecha_fin) : $start;
-            return [$start, $end];
-        });
-
-        while ($businessDaysAdded < $maxBusinessDays) {
-            $currentDate->addDay();
-
-            if ($currentDate->isWeekend()) {
-                continue;
-            }
-
-            $isNonWorkingDay = $diasInhabiles->contains(function ($range) use ($currentDate) {
-                $start = $range[0];
-                $end = $range[1];
-                return $currentDate->between($start, $end);
-            });
-
-            if (!$isNonWorkingDay) {
-                $businessDaysAdded++;
-            }
-        }
-
-        return $currentDate->endOfDay();
-    }
+   
 }

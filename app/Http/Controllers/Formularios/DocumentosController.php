@@ -7,20 +7,26 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Crypt; // Add Crypt facade
+use Illuminate\Support\Facades\Crypt;
 use App\Models\Documento;
 use App\Models\DocumentoSolicitante;
 use App\Models\Tramite;
+use Illuminate\Support\Facades\DB;
 
 class DocumentosController extends Controller
 {
+    /**
+     * Sube un documento para un trámite pendiente
+     *
+     * @param Request $request La solicitud con los datos del documento
+     * @return \Illuminate\Http\JsonResponse Respuesta JSON con el resultado de la operación
+     */
     public function subir(Request $request)
     {
-        $user = Auth::user();
-        $solicitante = $user->solicitante;
-        $tramite = Tramite::where('solicitante_id', $solicitante->id)
-            ->where('estado', 'Pendiente')
-            ->first();
+        $this->validateRequest($request, 'subir');
+
+        $solicitante = Auth::user()->solicitante;
+        $tramite = $this->getTramitePendiente($solicitante->id);
 
         if (!$tramite) {
             return response()->json([
@@ -29,94 +35,129 @@ class DocumentosController extends Controller
             ], 400);
         }
 
-        // Validar input
-        $request->validate([
-            'documento_id' => 'required|exists:documento,id',
-            'archivo' => 'required|file|mimes:pdf|max:10240', // 10MB
-        ]);
+        return DB::transaction(function () use ($request, $tramite) {
+            $documento = Documento::find($request->input('documento_id'));
+            $ruta = $this->storeArchivo($request->file('archivo'), $tramite->id, $documento->id);
+            $docSolicitante = $this->guardarDocumentoSolicitante($tramite->id, $documento->id, $ruta);
 
-        $documento = Documento::find($request->input('documento_id'));
-        $archivo = $request->file('archivo');
-        $nombreArchivo = uniqid('doc_'.$documento->id.'_').'.pdf';
-        $ruta = $archivo->storeAs('documentos_solicitante/'.$tramite->id, $nombreArchivo, 'public');
-
-        // Encrypt the file path
-        $rutaEncriptada = Crypt::encryptString($ruta);
-
-        // Crear o actualizar registro en documento_solicitante
-        $docSolicitante = DocumentoSolicitante::updateOrCreate(
-            [
-                'tramite_id' => $tramite->id,
-                'documento_id' => $documento->id
-            ],
-            [
-                'fecha_entrega' => now(),
-                'estado' => 'Pendiente',
-                'version_documento' => DocumentoSolicitante::where('tramite_id', $tramite->id)
-                    ->where('documento_id', $documento->id)
-                    ->max('version_documento') + 1,
-                'ruta_archivo' => $rutaEncriptada // Store encrypted path
-            ]
-        );
-
-        return response()->json([
-            'success' => true,
-            'ruta' => Storage::disk('public')->url($ruta), // Return unencrypted URL for client use
-            'docSolicitanteId' => $docSolicitante->id,
-            'mensaje' => 'Documento subido correctamente',
-        ]);
+            return response()->json([
+                'success' => true,
+                'ruta' => asset('storage/' . $ruta),
+                'docSolicitanteId' => $docSolicitante->id,
+                'mensaje' => 'Documento subido correctamente',
+            ]);
+        });
     }
-public function get(Request $request, $tramiteId)
-{
-    try {
-        // Validate the tramite_id
-        $request->validate([
-            'tramiteId' => 'required|exists:tramite,id',
-        ]);
 
-        // Fetch documents associated with the tramite
+    /**
+     * Obtiene los documentos asociados a un trámite
+     *
+     * @param Request $request La solicitud HTTP
+     * @param int $tramiteId El ID del trámite
+     * @return \Illuminate\Http\JsonResponse Respuesta JSON con los documentos
+     */
+    public function get(Request $request, $tramiteId)
+    {
+        $this->validateRequest($request, 'get', $tramiteId);
+
         $documentos = DocumentoSolicitante::where('tramite_id', $tramiteId)
             ->with('documento')
             ->get()
-            ->map(function ($docSolicitante) {
-                return [
-                    'id' => $docSolicitante->id,
-                    'documento_id' => $docSolicitante->documento_id,
-                    'nombre' => $docSolicitante->documento->nombre,
-                    'tipo' => $docSolicitante->documento->tipo,
-                    'fecha_entrega' => $docSolicitante->fecha_entrega 
-                        ? \Carbon\Carbon::parse($docSolicitante->fecha_entrega)->toIso8601String() 
-                        : null,
-                    'estado' => $docSolicitante->estado,
-                    'version_documento' => $docSolicitante->version_documento,
-                    'ruta_archivo' => Storage::disk('public')->url(Crypt::decryptString($docSolicitante->ruta_archivo)),
-                ];
-            })
+            ->map(fn ($doc) => [
+                'id' => $doc->id,
+                'documento_id' => $doc->documento_id,
+                'nombre' => $doc->documento->nombre,
+                'tipo' => $doc->documento->tipo,
+                'fecha_entrega' => $doc->fecha_entrega
+                    ? \Carbon\Carbon::parse($doc->fecha_entrega)->toIso8601String()
+                    : null,
+                'estado' => $doc->estado,
+                'version_documento' => $doc->version_documento,
+                'ruta_archivo' => asset('storage/' . Crypt::decryptString($doc->ruta_archivo)),
+            ])
             ->toArray();
 
         return response()->json([
             'success' => true,
             'documentos' => $documentos,
             'mensaje' => 'Documentos obtenidos correctamente.',
-        ], 200);
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        return response()->json([
-            'success' => false,
-            'mensaje' => 'Error de validación.',
-            'errors' => $e->errors(),
-        ], 422);
-    } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
-        Log::error('Error decrypting document path: ' . $e->getMessage(), ['tramite_id' => $tramiteId]);
-        return response()->json([
-            'success' => false,
-            'mensaje' => 'Error al desencriptar la ruta de un documento.',
-        ], 500);
-    } catch (\Exception $e) {
-        Log::error('Error fetching documents: ' . $e->getMessage(), ['tramite_id' => $tramiteId]);
-        return response()->json([
-            'success' => false,
-            'mensaje' => 'Error al obtener los documentos.',
-        ], 500);
+        ]);
     }
-}
+
+    /**
+     * Valida los datos de la solicitud
+     *
+     * @param Request $request La solicitud a validar
+     * @param string $method El método que se está ejecutando (subir o get)
+     * @param int|null $tramiteId El ID del trámite, si aplica
+     * @return void
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    private function validateRequest(Request $request, string $method, $tramiteId = null)
+    {
+        $rules = $method === 'subir'
+            ? [
+                'documento_id' => 'required|exists:documento,id',
+                'archivo' => 'required|file|mimes:pdf|max:10240',
+            ]
+            : [
+                'tramiteId' => 'required|exists:tramite,id',
+            ];
+
+        $request->merge(['tramiteId' => $tramiteId]);
+        $request->validate($rules);
+    }
+
+    /**
+     * Obtiene el trámite pendiente para un solicitante
+     *
+     * @param int $solicitanteId El ID del solicitante
+     * @return Tramite|null El trámite pendiente o null si no se encuentra
+     */
+    private function getTramitePendiente($solicitanteId): ?Tramite
+    {
+        return Tramite::where('solicitante_id', $solicitanteId)
+            ->where('estado', 'Pendiente')
+            ->first();
+    }
+
+    /**
+     * Almacena el archivo en el sistema de almacenamiento
+     *
+     * @param \Illuminate\Http\UploadedFile $archivo El archivo subido
+     * @param int $tramiteId El ID del trámite
+     * @param int $documentoId El ID del documento
+     * @return string La ruta donde se almacenó el archivo
+     */
+    private function storeArchivo($archivo, $tramiteId, $documentoId): string
+    {
+        $nombreArchivo = uniqid('doc_' . $documentoId . '_') . '.pdf';
+        return $archivo->storeAs('documentos_solicitante/' . $tramiteId, $nombreArchivo, 'public');
+    }
+
+    /**
+     * Guarda o actualiza el registro del documento del solicitante
+     *
+     * @param int $tramiteId El ID del trámite
+     * @param int $documentoId El ID del documento
+     * @param string $ruta La ruta del archivo almacenado
+     * @return DocumentoSolicitante El registro del documento del solicitante
+     */
+    private function guardarDocumentoSolicitante($tramiteId, $documentoId, $ruta): DocumentoSolicitante
+    {
+        return DocumentoSolicitante::updateOrCreate(
+            [
+                'tramite_id' => $tramiteId,
+                'documento_id' => $documentoId,
+            ],
+            [
+                'fecha_entrega' => now(),
+                'estado' => 'Pendiente',
+                'version_documento' => DocumentoSolicitante::where('tramite_id', $tramiteId)
+                    ->where('documento_id', $documentoId)
+                    ->max('version_documento') + 1,
+                'ruta_archivo' => Crypt::encryptString($ruta),
+            ]
+        );
+    }
 }

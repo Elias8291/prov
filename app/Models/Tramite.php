@@ -44,4 +44,8 @@ class Tramite extends Model
     {
         return $this->hasMany(DocumentoSolicitante::class);
     }
+    public function sectores()
+    {
+        return $this->belongsToMany(Sector::class, 'tramite_sector'); // Adjust pivot table name if different
+    }
 }

@@ -14,29 +14,57 @@ use App\Models\Solicitante;
 
 class DatosGeneralesController extends Controller
 {
+    /**
+     * Guarda los datos generales del trámite y sus relaciones
+     *
+     * @param Request $request La solicitud HTTP con los datos del formulario
+     * @param Tramite $tramite El modelo de trámite asociado
+     * @return bool Retorna true si la operación fue exitosa
+     */
     public function guardar(Request $request, Tramite $tramite)
     {
         $solicitante = Auth::user()->solicitante;
 
-        // Get or create detalle_tramite
+        $detalle = $this->saveDetalleTramite($request, $tramite);
+        $this->saveContactoSolicitante($request, $detalle);
+        $this->updateSolicitanteObjetoSocial($request, $solicitante);
+        $this->syncActividades($request, $tramite);
+
+        return true;
+    }
+
+    /**
+     * Guarda o actualiza los detalles del trámite
+     *
+     * @param Request $request La solicitud HTTP con los datos del formulario
+     * @param Tramite $tramite El modelo de trámite asociado
+     * @return DetalleTramite El modelo de detalle de trámite actualizado
+     */
+    private function saveDetalleTramite(Request $request, Tramite $tramite)
+    {
         $detalle = DetalleTramite::firstOrNew(['tramite_id' => $tramite->id]);
 
-        // Update detalle_tramite with phone and website
         $detalle->telefono = $request->input('contacto_telefono');
         $detalle->sitio_web = $request->input('contacto_web');
 
-        // Set razon_social and email based on user role
-        if (Auth::user()->hasRole('admin') || Auth::user()->hasRole('revisor')) {
-            $detalle->razon_social = $request->input('razon_social');
-            $detalle->email = $request->input('correo_electronico');
-        } elseif (Auth::user()->hasRole('solicitante')) {
-            $detalle->razon_social = Auth::user()->name; // Use the user's name for razon_social
-            $detalle->email = Auth::user()->email; // Optionally set email from user account
-        }
+
+        $detalle->razon_social = Auth::user()->name;
+        $detalle->email = Auth::user()->email;
 
         $detalle->save();
 
-        // Create or update contacto_solicitante
+        return $detalle;
+    }
+
+    /**
+     * Guarda o actualiza la información del contacto del solicitante
+     *
+     * @param Request $request La solicitud HTTP con los datos del formulario
+     * @param DetalleTramite $detalle El modelo de detalle de trámite asociado
+     * @return void
+     */
+    private function saveContactoSolicitante(Request $request, DetalleTramite $detalle)
+    {
         $contacto = ContactoSolicitante::firstOrNew([
             'id' => $detalle->contacto_id
         ]);
@@ -47,29 +75,44 @@ class DatosGeneralesController extends Controller
         $contacto->email = $request->input('contacto_correo');
         $contacto->save();
 
-        // Update detalle_tramite with new contacto_id if it was just created
         if (!$detalle->contacto_id) {
             $detalle->contacto_id = $contacto->id;
             $detalle->save();
         }
+    }
 
-        // Update solicitante with objeto_social for Moral providers or when admin/revisor specifies it
+    /**
+     * Actualiza el objeto social del solicitante si se proporciona
+     *
+     * @param Request $request La solicitud HTTP con los datos del formulario
+     * @param Solicitante $solicitante El modelo de solicitante asociado
+     * @return void
+     */
+    private function updateSolicitanteObjetoSocial(Request $request, Solicitante $solicitante)
+    {
         if ($request->input('objeto_social') !== null) {
             $solicitante->objeto_social = $request->input('objeto_social');
             $solicitante->save();
-            Log::info('Objeto social actualizado para solicitante ID: ' . $solicitante->id, ['objeto_social' => $request->input('objeto_social')]);
+            Log::info('Objeto social actualizado para solicitante ID: ' . $solicitante->id, [
+                'objeto_social' => $request->input('objeto_social')
+            ]);
         }
+    }
 
-        // Process selected activities
+    /**
+     * Sincroniza las actividades seleccionadas con el trámite
+     *
+     * @param Request $request La solicitud HTTP con los datos del formulario
+     * @param Tramite $tramite El modelo de trámite asociado
+     * @return void
+     */
+    private function syncActividades(Request $request, Tramite $tramite)
+    {
         $existingActivities = ActividadSolicitante::where('tramite_id', $tramite->id)
             ->pluck('actividad_id')
             ->toArray();
 
-        $selectedActivities = $request->input('actividades_seleccionadas', []);
-
-        if (!is_array($selectedActivities) && is_string($selectedActivities)) {
-            $selectedActivities = json_decode($selectedActivities, true) ?: [];
-        }
+        $selectedActivities = $this->parseSelectedActivities($request->input('actividades_seleccionadas', []));
 
         foreach ($selectedActivities as $activityId) {
             if (!in_array($activityId, $existingActivities)) {
@@ -79,10 +122,48 @@ class DatosGeneralesController extends Controller
                 ]);
             }
         }
-
-        return true;
     }
 
- 
-    
+    /**
+     * Convierte las actividades seleccionadas a un array válido
+     *
+     * @param mixed $activities Las actividades seleccionadas del formulario
+     * @return array Las actividades parseadas como array
+     */
+    private function parseSelectedActivities($activities)
+    {
+        if (!is_array($activities) && is_string($activities)) {
+            return json_decode($activities, true) ?: [];
+        }
+        return is_array($activities) ? $activities : [];
+    }
+
+    /**
+     * Obtiene los datos generales del trámite y el solicitante
+     *
+     * @param Tramite $tramite El modelo de trámite asociado
+     * @return array Los datos generales formateados
+     */
+    public function obtenerDatos(Tramite $tramite)
+    {
+        $solicitante = $tramite->solicitante;
+        $sectores = $tramite->sectores->pluck('id')->toArray();
+        $actividades = $tramite->actividades()->pluck('id')->toArray();
+
+        return [
+            'rfc' => $solicitante->rfc ?? null,
+            'tipo_persona' => $solicitante->tipo_persona ?? null,
+            'razon_social' => $solicitante->razon_social ?? null,
+            'correo_electronico' => $solicitante->correo_electronico ?? null,
+            'contacto_telefono' => $solicitante->contacto_telefono ?? '',
+            'objeto_social' => $solicitante->objeto_social ?? null,
+            'sectores' => $sectores ? $sectores[0] : null,
+            'actividades' => $actividades,
+            'contacto_nombre' => $solicitante->contacto_nombre ?? '',
+            'contacto_cargo' => $solicitante->contacto_cargo ?? '',
+            'contacto_correo' => $solicitante->contacto_correo ?? '',
+            'contacto_telefono_2' => $solicitante->contacto_2 ?? '',
+            'contacto_web' => $solicitante->contacto_web ?? '',
+        ];
+    }
 }

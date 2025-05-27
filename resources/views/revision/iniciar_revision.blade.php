@@ -1,4 +1,3 @@
-
 @extends('dashboard')
 
 @section('title', 'Iniciar Revisión de Proveedor')
@@ -624,8 +623,7 @@
                         </div>
                         <div class="modal-comment-section">
                             <label for="modal-comment">Observaciones</label>
-                            <textarea class="comment-textarea" id="modal-comment"
-                                placeholder="Escribe tus observaciones aquí..."></textarea>
+                            <textarea class="comment-textarea" id="modal-comment" placeholder="Escribe tus observaciones aquí..."></textarea>
                             <div class="approval-toggle">
                                 <button type="button" class="approval-btn approved" data-status="approved"
                                     data-selected="false">
@@ -802,6 +800,9 @@
             }
         });
     </script>
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCUqfgNQ2Q4AVy8OTNMfogJceDbA0FHZKs&callback=initMap"></script>
+    <script src="{{ asset('assets/js/maps/maps.js') }}"></script>
 
     <style>
         .modal {
