@@ -455,3 +455,93 @@
             font-size: 1rem;
         }
     }
+
+    .review-btn {
+    background-color: #000000;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-top: 8px;
+}
+
+.review-btn {
+    background-color: #6c757d; /* Soft grayish-blue for a gentle, professional look */
+    color: #ffffff; /* White text for contrast */
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-top: 8px;
+    font-size: 0.9rem; /* Smaller for elegance */
+    font-weight: 500; /* Matches file-name weight */
+    transition: background-color 0.2s ease; /* Smooth hover transition */
+}
+
+.review-btn:hover {
+    background-color: #5a6268; /* Slightly darker grayish-blue for hover */
+}
+
+.file-name {
+    font-size: 0.95rem; /* Small size for refined look */
+    font-weight: 500; /* Medium weight for elegance */
+    color: #2c2c2c; /* Dark gray for readability */
+    display: block;
+    margin-bottom: 6px; /* Compact spacing */
+    padding: 4px 8px; /* Minimal padding for sleekness */
+    background-color: #fdfdfd; /* Near-white background */
+    border-radius: 3px; /* Soft rounded corners */
+    border-left: 3px solid #9d2449; /* Burgundy accent bar */
+    text-overflow: ellipsis; /* Handle long names */
+    overflow: hidden; /* Prevent overflow */
+    white-space: nowrap; /* Single line */
+    transition: background-color 0.2s ease; /* Subtle hover transition */
+}
+
+.file-name:hover {
+    background-color: #f5f5f5; /* Light gray on hover */
+}
+
+.alert.alert-warning {
+    background-color: #fef3c7; /* Fondo amarillo claro para advertencia */
+    border: 2px solid #f59e0b; /* Borde ámbar para destacar */
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #78350f; /* Texto marrón oscuro para contraste */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.alert.alert-warning i.fas.fa-exclamation-triangle {
+    color: #f59e0b; /* Icono en color ámbar */
+    font-size: 1.5rem;
+}
+
+.alert.alert-warning:hover {
+    background-color: #ffedd5; /* Fondo más claro al pasar el ratón */
+    transform: translateY(-2px); /* Efecto de elevación */
+}
+
+.alert.alert-warning strong {
+    font-weight: 700; /* Resaltar palabras clave en el mensaje */
+}
+
+/* Estilo para pantallas más pequeñas */
+@media (max-width: 768px) {
+    .alert.alert-warning {
+        font-size: 0.9rem;
+        padding: 12px;
+        gap: 8px;
+    }
+    
+    .alert.alert-warning i.fas.fa-exclamation-triangle {
+        font-size: 1.2rem;
+    }
+}

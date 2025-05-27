@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
         integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
     @stack('styles')
-
 </head>
 
 <body>
@@ -30,58 +29,8 @@
     <script type="module" src="{{ asset('assets/js/sat/sat-scraper.js') }}"></script>
     <script type="module" src="{{ asset('assets/js/sat/utils.js') }}"></script>
     <script type="module" src="{{ asset('assets/js/validaciones.js') }}"></script>
-    <script>
-        const menuToggle = document.getElementById('menu-toggle');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarOverlay = document.getElementById('sidebar-overlay');
-        let isMobile = window.innerWidth <= 992;
-        const userProfile = document.querySelector('.user-profile');
-
-        userProfile.addEventListener('click', function(e) {
-            e.stopPropagation();
-            userProfile.classList.toggle('active');
-        });
-
-        document.addEventListener('click', function(e) {
-            if (!userProfile.contains(e.target)) {
-                userProfile.classList.remove('active');
-            }
-        });
-
-        function checkMobile() {
-            isMobile = window.innerWidth <= 992;
-            if (!isMobile) {
-                sidebar.classList.remove('active');
-                sidebarOverlay.classList.remove('active');
-            }
-        }
-
-        menuToggle.addEventListener('click', () => {
-            if (isMobile) {
-                sidebar.classList.toggle('active');
-                sidebarOverlay.classList.toggle('active');
-            }
-        });
-
-        sidebarOverlay.addEventListener('click', () => {
-            sidebar.classList.remove('active');
-            sidebarOverlay.classList.remove('active');
-            ODA
-        });
-
-        document.querySelectorAll('.menu-item').forEach(item => {
-            item.addEventListener('click', () => {
-                if (isMobile) {
-                    sidebar.classList.remove('active');
-                    sidebarOverlay.classList.remove('active');
-                }
-            });
-        });
-
-        window.addEventListener('resize', checkMobile);
-
-        checkMobile();
-    </script>
+    <script type="module" src="{{ asset('assets/js/sidebar.js') }}"></script>
+    @yield('scripts')
     @stack('scripts')
 </body>
 

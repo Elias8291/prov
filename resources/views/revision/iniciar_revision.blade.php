@@ -32,10 +32,7 @@
                         {{ $tramite->fecha_finalizacion ? \Carbon\Carbon::parse($tramite->fecha_finalizacion)->format('d/m/Y H:i') : ($tramite->updated_at ? \Carbon\Carbon::parse($tramite->updated_at)->format('d/m/Y H:i') : 'No disponible') }}
                     </span>
                 </div>
-                <div class="info-box__item">
-                    <span class="info-box__label">Tiempo Restante</span>
-                    <span class="info-box__timer" id="countdown-timer">Calculando...</span>
-                </div>
+
             </div>
         </div>
 
@@ -95,11 +92,11 @@
                         </h4>
                         <div class="form-group horizontal-group">
                             <div class="half-width">
-                                <label class="form-label data-label">Tipo de Proveedor</label>
+                                <div class="form-label data-label">Tipo de Proveedor</div>
                                 <span class="data-field">{{ $componentParams['tipoPersona'] ?? 'No disponible' }}</span>
                             </div>
                             <div class="half-width">
-                                <label class="form-label data-label">RFC</label>
+                                <div class="form-label data-label">RFC</div>
                                 <span
                                     class="data-field">{{ $componentParams['datosPrevios']['rfc'] ?? 'No disponible' }}</span>
                             </div>
@@ -107,7 +104,7 @@
 
                         @if ($componentParams['mostrarCurp'])
                             <div class="form-group" id="curp-field">
-                                <label class="form-label data-label">CURP</label>
+                                <div class="form-label data-label">CURP</div>
                                 <span
                                     class="data-field">{{ $componentParams['datosPrevios']['curp'] ?? 'No disponible' }}</span>
                             </div>
@@ -115,25 +112,25 @@
 
                         <div class="form-group horizontal-group">
                             <div class="half-width form-group">
-                                <label class="form-label" for="razon_social">Razón Social</label>
+                                <div class="form-label">Razón Social</div>
                                 <span
                                     class="data-field">{{ $componentParams['datosPrevios']['razon_social'] ?? 'No disponible' }}</span>
                             </div>
                             <div class="half-width form-group">
-                                <label class="form-label" for="correo_electronico">Correo Electrónico</label>
+                                <div class="form-label">Correo Electrónico</div>
                                 <span
                                     class="data-field">{{ $componentParams['datosPrevios']['email'] ?? 'No disponible' }}</span>
                             </div>
                         </div>
 
                         <div class="form-group full-width">
-                            <label class="form-label" for="objeto_social">Objeto Social</label>
+                            <div class="form-label">Objeto Social</div>
                             <span
                                 class="data-field">{{ $componentParams['datosPrevios']['objeto_social'] ?? 'No disponible' }}</span>
                         </div>
 
                         <div class="form-group full-width">
-                            <label class="form-label">Sectores</label>
+                            <div class="form-label">Sectores</div>
                             <span class="data-field">
                                 @if (!empty($componentParams['actividadesSeleccionadas']))
                                     @foreach ($componentParams['actividadesSeleccionadas'] as $actividad)
@@ -149,7 +146,7 @@
                         </div>
 
                         <div class="form-group full-width">
-                            <label class="form-label">Actividades</label>
+                            <div class="form-label">Actividades</div>
                             <span class="data-field">
                                 @if (!empty($componentParams['actividadesSeleccionadas']))
                                     @foreach ($componentParams['actividadesSeleccionadas'] as $actividad)
@@ -165,7 +162,7 @@
                         </div>
 
                         <div class="form-group full-width">
-                            <label class="form-label">Actividades Seleccionadas</label>
+                            <div class="form-label">Actividades Seleccionadas</div>
                             <div class="actividades-container">
                                 @if (!empty($componentParams['actividadesSeleccionadas']))
                                     @foreach ($componentParams['actividadesSeleccionadas'] as $actividad)
@@ -182,12 +179,12 @@
 
                         <div class="horizontal-group">
                             <div class="half-width form-group">
-                                <label class="form-label" for="contacto_telefono">Teléfono de Contacto</label>
+                                <div class="form-label">Teléfono de Contacto</div>
                                 <span
                                     class="data-field">{{ $componentParams['datosPrevios']['telefono'] ?? 'No disponible' }}</span>
                             </div>
                             <div class="half-width form-group">
-                                <label class="form-label" for="contacto_web">Página Web (opcional)</label>
+                                <div class="form-label">Página Web (opcional)</div>
                                 <span
                                     class="data-field">{{ $componentParams['datosPrevios']['sitio_web'] ?? 'No disponible' }}</span>
                             </div>
@@ -197,25 +194,25 @@
                         <span>Persona encargada de recibir solicitudes y requerimientos</span>
 
                         <div class="form-group">
-                            <label class="form-label" for="contacto_nombre">Nombre Completo</label>
+                            <div class="form-label">Nombre Completo</div>
                             <span
                                 class="data-field">{{ $componentParams['datosPrevios']['contacto_nombre'] ?? 'No disponible' }}</span>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" for="contacto_cargo">Cargo o Puesto</label>
+                            <div class="form-label">Cargo o Puesto</div>
                             <span
                                 class="data-field">{{ $componentParams['datosPrevios']['contacto_cargo'] ?? 'No disponible' }}</span>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" for="contacto_correo">Correo Electrónico</label>
+                            <div class="form-label">Correo Electrónico</div>
                             <span
                                 class="data-field">{{ $componentParams['datosPrevios']['contacto_correo'] ?? 'No disponible' }}</span>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" for="contacto_telefono_2">Teléfono de Contacto</label>
+                            <div class="form-label">Teléfono de Contacto</div>
                             <span
                                 class="data-field">{{ $componentParams['datosPrevios']['contacto_telefono_2'] ?? 'No disponible' }}</span>
                         </div>
@@ -252,60 +249,60 @@
                         @endif
                         <div class="form-group horizontal-group">
                             <div class="half-width form-group">
-                                <label class="form-label data-label" for="codigo_postal">Código Postal</label>
-                                <span
-                                    class="data-field">{{ $componentParams['datosPrevios']['codigo_postal'] ?? 'No disponible' }}</span>
+                                <div class="form-label data-label">Código Postal</div>
+                                <span class="data-field"
+                                    data-codigo-postal="{{ $componentParams['datosPrevios']['codigo_postal'] ?? '' }}">{{ $componentParams['datosPrevios']['codigo_postal'] ?? 'No disponible' }}</span>
                             </div>
                             <div class="half-width form-group">
-                                <label class="form-label data-label" for="estado">Estado</label>
-                                <span
-                                    class="data-field">{{ $componentParams['datosPrevios']['estado'] ?? 'No disponible' }}</span>
-                            </div>
-                        </div>
-                        <div class="form-group horizontal-group">
-                            <div class="half-width form-group">
-                                <label class="form-label data-label" for="municipio">Municipio</label>
-                                <span
-                                    class="data-field">{{ $componentParams['datosPrevios']['municipio'] ?? 'No disponible' }}</span>
-                            </div>
-                            <div class="half-width form-group">
-                                <label class="form-label" for="colonia">Asentamiento</label>
-                                <span
-                                    class="data-field">{{ $componentParams['datosPrevios']['colonia'] ?? 'No disponible' }}</span>
+                                <div class="form-label data-label">Estado</div>
+                                <span class="data-field"
+                                    data-estado="{{ $componentParams['datosPrevios']['estado'] ?? '' }}">{{ $componentParams['datosPrevios']['estado'] ?? 'No disponible' }}</span>
                             </div>
                         </div>
                         <div class="form-group horizontal-group">
                             <div class="half-width form-group">
-                                <label class="form-label" for="calle">Calle</label>
-                                <span
-                                    class="data-field">{{ $componentParams['datosPrevios']['calle'] ?? 'No disponible' }}</span>
+                                <div class="form-label data-label">Municipio</div>
+                                <span class="data-field"
+                                    data-municipio="{{ $componentParams['datosPrevios']['municipio'] ?? '' }}">{{ $componentParams['datosPrevios']['municipio'] ?? 'No disponible' }}</span>
                             </div>
                             <div class="half-width form-group">
-                                <label class="form-label" for="numero_exterior">Número Exterior</label>
-                                <span
-                                    class="data-field">{{ $componentParams['datosPrevios']['numero_exterior'] ?? 'No disponible' }}</span>
+                                <div class="form-label">Asentamiento</div>
+                                <span class="data-field"
+                                    data-colonia="{{ $componentParams['datosPrevios']['colonia'] ?? '' }}">{{ $componentParams['datosPrevios']['colonia'] ?? 'No disponible' }}</span>
                             </div>
                         </div>
                         <div class="form-group horizontal-group">
                             <div class="half-width form-group">
-                                <label class="form-label" for="numero_interior">Número Interior (Opcional)</label>
-                                <span
-                                    class="data-field">{{ $componentParams['datosPrevios']['numero_interior'] ?? 'No disponible' }}</span>
+                                <div class="form-label">Calle</div>
+                                <span class="data-field"
+                                    data-calle="{{ $componentParams['datosPrevios']['calle'] ?? '' }}">{{ $componentParams['datosPrevios']['calle'] ?? 'No disponible' }}</span>
                             </div>
                             <div class="half-width form-group">
-                                <label class="form-label" for="entre_calle_1">Entre Calle 1</label>
-                                <span
-                                    class="data-field">{{ $componentParams['datosPrevios']['entre_calle_1'] ?? 'No disponible' }}</span>
+                                <div class="form-label">Número Exterior</div>
+                                <span class="data-field"
+                                    data-numero-exterior="{{ $componentParams['datosPrevios']['numero_exterior'] ?? '' }}">{{ $componentParams['datosPrevios']['numero_exterior'] ?? 'No disponible' }}</span>
+                            </div>
+                        </div>
+                        <div class="form-group horizontal-group">
+                            <div class="half-width form-group">
+                                <div class="form-label">Número Interior (Opcional)</div>
+                                <span class="data-field"
+                                    data-numero-interior="{{ $componentParams['datosPrevios']['numero_interior'] ?? '' }}">{{ $componentParams['datosPrevios']['numero_interior'] ?? 'No disponible' }}</span>
+                            </div>
+                            <div class="half-width form-group">
+                                <div class="form-label">Entre Calle 1</div>
+                                <span class="data-field"
+                                    data-entre-calle-1="{{ $componentParams['datosPrevios']['entre_calle_1'] ?? '' }}">{{ $componentParams['datosPrevios']['entre_calle_1'] ?? 'No disponible' }}</span>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="entre_calle_2">Entre Calle 2</label>
-                            <span
-                                class="data-field">{{ $componentParams['datosPrevios']['entre_calle_2'] ?? 'No disponible' }}</span>
+                            <div class="form-label">Entre Calle 2</div>
+                            <span class="data-field"
+                                data-entre-calle-2="{{ $componentParams['datosPrevios']['entre_calle_2'] ?? '' }}">{{ $componentParams['datosPrevios']['entre_calle_2'] ?? 'No disponible' }}</span>
                         </div>
 
                         <div class="form-group full-width">
-                            <label class="form-label">Croquis del Domicilio</label>
+                            <div class="form-label">Croquis del Domicilio</div>
                             <div id="map-container"
                                 style="height: 400px; width: 100%; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);">
                             </div>
@@ -313,7 +310,6 @@
                                 proporcionado.</span>
                         </div>
 
-                        <div class="commentmaybe
                         <div class="comment-section">
                             <label for="comment-form2">Comentarios sobre Domicilio</label>
                             <textarea class="comment-textarea" id="comment-form2" name="comment_form2"
@@ -549,17 +545,14 @@
                     <div class="form-section" id="form-step-6">
                         <h4><i class="fas fa-file-upload"></i> Documentos del Solicitante</h4>
                         <p class="form-description">A continuación, se muestran los documentos asociados al trámite del
-                            solicitante. Haga clic en un documento para revisarlo y agregar observaciones.</p>
+                            solicitante. Haga clic en 'Comenzar Revisión' para revisarlo y agregar observaciones.</p>
 
                         @if (!empty($componentParams['documentos']))
                             <div class="uploaded-files-grid">
                                 @foreach ($componentParams['documentos'] as $index => $documento)
                                     <div class="uploaded-file">
-                                        <a href="javascript:void(0);" class="file-link"
-                                            onclick="openDocumentModal('{{ $documento['ruta_archivo'] ?? '' }}', '{{ $documento['nombre'] ?? 'Documento sin nombre' }}', '{{ $documento['documento_id'] ?? $index }}', {{ $index }})">
-                                            <span
-                                                class="file-name">{{ $documento['nombre'] ?? 'Documento sin nombre' }}</span>
-                                        </a>
+                                        <span
+                                            class="file-name">{{ $documento['nombre'] ?? 'Documento sin nombre' }}</span>
                                         <span class="form-hint">
                                             Tipo: {{ $documento['tipo'] ?? 'No especificado' }}<br>
                                             Estado: {{ $documento['estado'] ?? 'No disponible' }}<br>
@@ -567,6 +560,10 @@
                                             {{ $documento['fecha_entrega'] ? \Carbon\Carbon::parse($documento['fecha_entrega'])->format('d/m/Y H:i') : 'No disponible' }}<br>
                                             Versión: {{ $documento['version_documento'] ?? 'No disponible' }}
                                         </span>
+                                        <button type="button" class="review-btn"
+                                            onclick="openDocumentModal('{{ $documento['ruta_archivo'] ?? '' }}', '{{ $documento['nombre'] ?? 'Documento sin nombre' }}', '{{ $documento['documento_id'] ?? $index }}', {{ $index }})">
+                                            Comenzar Revisión
+                                        </button>
                                         <input type="hidden" name="documentos[{{ $index }}][comment]"
                                             id="comment-doc-{{ $index }}" value="">
                                         <input type="hidden" name="documentos[{{ $index }}][approval]"
@@ -640,294 +637,323 @@
             </div>
         </div>
     </div>
+@section('scripts')
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&callback=initMap&loading=async">
+    </script>
+    <script src="{{ asset('assets/js/maps/maps.js') }}"></script>
+@endsection
+<script>
+    // CSRF Token para solicitudes AJAX
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
 
-    <script>
-        // Existing JavaScript for PDF viewer and other forms
-        function togglePdfViewer(pdfUrl, pdfTitle) {
-            const pdfViewer = document.getElementById('pdf-viewer-container');
-            const pdfFrame = document.getElementById('pdf-frame');
-            const pdfTitleElement = document.getElementById('pdf-title');
+    // Función para mostrar/ocultar el visor de PDF
+    function togglePdfViewer(pdfUrl, pdfTitle) {
+        const pdfViewer = document.getElementById('pdf-viewer-container');
+        const pdfFrame = document.getElementById('pdf-frame');
+        const pdfTitleElement = document.getElementById('pdf-title');
 
-            pdfFrame.src = pdfUrl;
-            pdfTitleElement.textContent = pdfTitle;
+        pdfFrame.src = pdfUrl;
+        pdfTitleElement.textContent = pdfTitle;
 
-            if (pdfViewer.style.display === 'none') {
-                pdfViewer.style.display = 'flex';
-                const formStep1 = document.getElementById('form-step-1');
-                if (formStep1) {
-                    const formHeight = formStep1.offsetHeight;
-                    pdfViewer.style.height = formHeight + 'px';
-                    const pdfViewerContent = document.querySelector('.pdf-viewer-content');
-                    if (pdfViewerContent) {
-                        pdfViewerContent.style.height = (formHeight - 60) + 'px';
-                    }
+        if (pdfViewer.style.display === 'none') {
+            pdfViewer.style.display = 'flex';
+            const formStep1 = document.getElementById('form-step-1');
+            if (formStep1) {
+                const formHeight = formStep1.offsetHeight;
+                pdfViewer.style.height = formHeight + 'px';
+                const pdfViewerContent = document.querySelector('.pdf-viewer-content');
+                if (pdfViewerContent) {
+                    pdfViewerContent.style.height = (formHeight - 60) + 'px';
                 }
-            } else {
-                pdfViewer.style.display = 'none';
             }
-        }
-
-        function closePdfViewer() {
-            const pdfViewer = document.getElementById('pdf-viewer-container');
+        } else {
             pdfViewer.style.display = 'none';
         }
+    }
 
-        // Document Modal Functions
-        let currentDocIndex = null;
+    // Función para cerrar el visor de PDF
+    function closePdfViewer() {
+        const pdfViewer = document.getElementById('pdf-viewer-container');
+        pdfViewer.style.display = 'none';
+    }
 
-        function openDocumentModal(pdfUrl, title, docId, index) {
-            const modal = document.getElementById('document-modal');
-            const iframe = document.getElementById('modal-iframe');
-            const titleElement = document.getElementById('modal-title');
-            const commentTextarea = document.getElementById('modal-comment');
-            const approvedBtn = document.querySelector('#document-modal .approval-btn.approved');
-            const notApprovedBtn = document.querySelector('#document-modal .approval-btn.not-approved');
+    // Document Modal Functions
+    let currentDocIndex = null;
 
-            currentDocIndex = index;
-            iframe.src = pdfUrl;
-            titleElement.textContent = title;
+    function openDocumentModal(pdfUrl, title, docId, index) {
+        const modal = document.getElementById('document-modal');
+        const iframe = document.getElementById('modal-iframe');
+        const titleElement = document.getElementById('modal-title');
+        const commentTextarea = document.getElementById('modal-comment');
+        const approvedBtn = document.querySelector('#document-modal .approval-btn.approved');
+        const notApprovedBtn = document.querySelector('#document-modal .approval-btn.not-approved');
 
-            // Load existing comment and approval status
-            const commentInput = document.getElementById(`comment-doc-${index}`);
-            const approvalInput = document.getElementById(`approval-doc-${index}`);
-            commentTextarea.value = commentInput ? commentInput.value : '';
-            approvedBtn.dataset.selected = approvalInput && approvalInput.value === 'approved' ? 'true' : 'false';
-            notApprovedBtn.dataset.selected = approvalInput && approvalInput.value === 'not-approved' ? 'true' : 'false';
-            approvedBtn.style.opacity = approvedBtn.dataset.selected === 'true' ? '1' : '0.5';
-            notApprovedBtn.style.opacity = notApprovedBtn.dataset.selected === 'true' ? '1' : '0.5';
+        currentDocIndex = index;
+        iframe.src = pdfUrl;
+        titleElement.textContent = title;
 
-            modal.style.display = 'flex';
-        }
+        // Cargar comentario existente y estado de aprobación
+        const commentInput = document.getElementById(`comment-doc-${index}`);
+        const approvalInput = document.getElementById(`approval-doc-${index}`);
+        commentTextarea.value = commentInput ? commentInput.value : '';
+        approvedBtn.dataset.selected = approvalInput && approvalInput.value === 'approved' ? 'true' : 'false';
+        notApprovedBtn.dataset.selected = approvalInput && approvalInput.value === 'not-approved' ? 'true' : 'false';
+        approvedBtn.style.opacity = approvedBtn.dataset.selected === 'true' ? '1' : '0.5';
+        notApprovedBtn.style.opacity = notApprovedBtn.dataset.selected === 'true' ? '1' : '0.5';
 
-        function closeDocumentModal() {
-            const modal = document.getElementById('document-modal');
-            const iframe = document.getElementById('modal-iframe');
-            const commentTextarea = document.getElementById('modal-comment');
-            const approvedBtn = document.querySelector('#document-modal .approval-btn.approved');
-            const notApprovedBtn = document.querySelector('#document-modal .approval-btn.not-approved');
+        modal.style.display = 'flex';
+    }
 
-            // Save comment and approval status
-            if (currentDocIndex !== null) {
-                const commentInput = document.getElementById(`comment-doc-${currentDocIndex}`);
-                const approvalInput = document.getElementById(`approval-doc-${currentDocIndex}`);
-                if (commentInput) commentInput.value = commentTextarea.value;
-                if (approvalInput) {
-                    approvalInput.value = approvedBtn.dataset.selected === 'true' ? 'approved' : (notApprovedBtn.dataset
-                        .selected === 'true' ? 'not-approved' : '');
-                }
+    function closeDocumentModal() {
+        const modal = document.getElementById('document-modal');
+        const iframe = document.getElementById('modal-iframe');
+        const commentTextarea = document.getElementById('modal-comment');
+        const approvedBtn = document.querySelector('#document-modal .approval-btn.approved');
+        const notApprovedBtn = document.querySelector('#document-modal .approval-btn.not-approved');
+
+        // Guardar comentario y estado de aprobación localmente
+        if (currentDocIndex !== null) {
+            const commentInput = document.getElementById(`comment-doc-${currentDocIndex}`);
+            const approvalInput = document.getElementById(`approval-doc-${currentDocIndex}`);
+            if (commentInput) commentInput.value = commentTextarea.value;
+            if (approvalInput) {
+                approvalInput.value = approvedBtn.dataset.selected === 'true' ? 'approved' : (notApprovedBtn.dataset
+                    .selected === 'true' ? 'not-approved' : '');
             }
-
-            modal.style.display = 'none';
-            iframe.src = '';
-            currentDocIndex = null;
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            // Approval Button Logic for Modal
-            const approvedBtn = document.querySelector('#document-modal .approval-btn.approved');
-            const notApprovedBtn = document.querySelector('#document-modal .approval-btn.not-approved');
+        modal.style.display = 'none';
+        iframe.src = '';
+        currentDocIndex = null;
+    }
 
-            if (approvedBtn && notApprovedBtn) {
+    // Función para enviar solicitud AJAX para actualizar estado del documento
+    function updateDocumentStatus(tramiteId, documentoId, approval, comment) {
+        console.log('Enviando solicitud AJAX:', {
+            url: `/revision/documentos/${tramiteId}/${documentoId}/update-status`,
+            tramiteId,
+            documentoId,
+            approval,
+            comment,
+            csrfToken
+        });
+
+        fetch(`/revision/documentos/${tramiteId}/${documentoId}/update-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                },
+                body: JSON.stringify({
+                    approval: approval,
+                    comment: comment,
+                }),
+            })
+            .then(response => {
+                console.log('Estado de respuesta:', response.status, 'Texto de estado:', response.statusText);
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error(`¡Error HTTP! Estado: ${response.status}, Respuesta: ${text}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Datos de respuesta:', data);
+                if (data.success) {
+                    alert(data.mensaje);
+                } else {
+                    alert('Error: ' + data.mensaje);
+                }
+            })
+            .catch(error => {
+                console.error('Error al actualizar documento:', error);
+                alert('Error al actualizar el documento: ' + error.message);
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Lógica de botones de aprobación para el modal
+        const approvedBtn = document.querySelector('#document-modal .approval-btn.approved');
+        const notApprovedBtn = document.querySelector('#document-modal .approval-btn.not-approved');
+        const commentTextarea = document.getElementById('modal-comment');
+
+        if (approvedBtn && notApprovedBtn) {
+            approvedBtn.addEventListener('click', () => {
+                approvedBtn.dataset.selected = 'true';
+                notApprovedBtn.dataset.selected = 'false';
+                approvedBtn.style.opacity = '1';
+                notApprovedBtn.style.opacity = '0.5';
+
+                // Enviar solicitud AJAX
+                const tramiteId = '{{ $tramite->id }}';
+                const documentoId = document.querySelector(
+                    `input[name="documentos[${currentDocIndex}][documento_id]"]`).value;
+                updateDocumentStatus(tramiteId, documentoId, 'approved', commentTextarea.value);
+            });
+
+            notApprovedBtn.addEventListener('click', () => {
+                approvedBtn.dataset.selected = 'false';
+                notApprovedBtn.dataset.selected = 'true';
+                approvedBtn.style.opacity = '0.5';
+                notApprovedBtn.style.opacity = '1';
+
+                // Enviar solicitud AJAX
+                const tramiteId = '{{ $tramite->id }}';
+                const documentoId = document.querySelector(
+                    `input[name="documentos[${currentDocIndex}][documento_id]"]`).value;
+                updateDocumentStatus(tramiteId, documentoId, 'not-approved', commentTextarea.value);
+            });
+        }
+
+        // Lógica de botones de aprobación para otros formularios
+        document.querySelectorAll('.approval-toggle').forEach(toggle => {
+            if (toggle.closest('#document-modal')) return; // Omitir toggles del modal
+            const approvedBtn = toggle.querySelector('.approval-btn.approved');
+            const notApprovedBtn = toggle.querySelector('.approval-btn.not-approved');
+            const hiddenInput = toggle.querySelector('input[type="hidden"]');
+
+            if (approvedBtn && notApprovedBtn && hiddenInput) {
                 approvedBtn.addEventListener('click', () => {
-                    approvedBtn.dataset.selected = 'true';
-                    notApprovedBtn.dataset.selected = 'false';
                     approvedBtn.style.opacity = '1';
                     notApprovedBtn.style.opacity = '0.5';
+                    hiddenInput.value = 'approved';
                 });
 
                 notApprovedBtn.addEventListener('click', () => {
-                    approvedBtn.dataset.selected = 'false';
-                    notApprovedBtn.dataset.selected = 'true';
                     approvedBtn.style.opacity = '0.5';
                     notApprovedBtn.style.opacity = '1';
+                    hiddenInput.value = 'not-approved';
                 });
             }
-
-            // Existing approval toggle logic for other forms
-            document.querySelectorAll('.approval-toggle').forEach(toggle => {
-                if (toggle.closest('#document-modal')) return; // Skip modal toggles
-                const approvedBtn = toggle.querySelector('.approval-btn.approved');
-                const notApprovedBtn = toggle.querySelector('.approval-btn.not-approved');
-                const hiddenInput = toggle.querySelector('input[type="hidden"]');
-
-                if (approvedBtn && notApprovedBtn && hiddenInput) {
-                    approvedBtn.addEventListener('click', () => {
-                        approvedBtn.style.opacity = '1';
-                        notApprovedBtn.style.opacity = '0.5';
-                        hiddenInput.value = 'approved';
-                    });
-
-                    notApprovedBtn.addEventListener('click', () => {
-                        approvedBtn.style.opacity = '0.5';
-                        notApprovedBtn.style.opacity = '1';
-                        hiddenInput.value = 'not-approved';
-                    });
-                }
-            });
-
-            // Existing countdown timer logic
-            const countdownElement = document.getElementById('countdown-timer');
-            const finalizationDate = new Date('{{ $tramite->fecha_finalizacion ?? $tramite->updated_at }}')
-                .getTime();
-            const tipoTramite = '{{ $tipo_tramite }}';
-            const deadlineDate = new Date(finalizationDate + (tipoTramite.toLowerCase() === 'inscripción' ? 3 : 7) *
-                24 * 60 * 60 * 1000);
-
-            function updateCountdown() {
-                const now = new Date().getTime();
-                const timeRemaining = deadlineDate - now;
-
-                if (timeRemaining <= 0) {
-                    countdownElement.textContent = '¡Tiempo Expirado!';
-                    countdownElement.classList.add('expired');
-                    return;
-                }
-
-                const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
-
-                countdownElement.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-                countdownElement.classList.remove('expired');
-            }
-
-            if (finalizationDate) {
-                updateCountdown();
-                setInterval(updateCountdown, 1000);
-            } else {
-                countdownElement.textContent = 'Fecha no disponible';
-            }
         });
-    </script>
-    <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCUqfgNQ2Q4AVy8OTNMfogJceDbA0FHZKs&callback=initMap"></script>
-    <script src="{{ asset('assets/js/maps/maps.js') }}"></script>
+    });
+</script>
+<style>
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
 
-    <style>
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
+    .modal-content {
+        background-color: #fff;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 1200px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
 
-        .modal-content {
-            background-color: #fff;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 1200px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #e5e7eb;
+        background-color: #f9fafb;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
 
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            border-bottom: 1px solid #e5e7eb;
-            background-color: #f9fafb;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-        }
+    .modal-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
 
-        .modal-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+    .modal-close-btn {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #6b7280;
+    }
 
-        .modal-close-btn {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #6b7280;
-        }
+    .modal-close-btn:hover {
+        color: #000;
+    }
 
-        .modal-close-btn:hover {
-            color: #000;
-        }
+    .modal-body {
+        display: flex;
+        padding: 20px;
+        gap: 20px;
+    }
 
-        .modal-body {
-            display: flex;
-            padding: 20px;
-            gap: 20px;
-        }
+    .modal-iframe-container {
+        flex: 3;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        overflow: hidden;
+    }
 
-        .modal-iframe-container {
-            flex: 3;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            overflow: hidden;
-        }
+    .modal-iframe {
+        width: 100%;
+        height: 600px;
+        border: none;
+    }
 
-        .modal-iframe {
-            width: 100%;
-            height: 600px;
-            border: none;
-        }
+    .modal-comment-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
 
-        .modal-comment-section {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
+    .modal-comment-section label {
+        font-size: 1rem;
+        font-weight: 500;
+    }
 
-        .modal-comment-section label {
-            font-size: 1rem;
-            font-weight: 500;
-        }
+    .modal-comment-section .comment-textarea {
+        width: 100%;
+        min-height: 200px;
+        padding: 10px;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        resize: vertical;
+    }
 
-        .modal-comment-section .comment-textarea {
-            width: 100%;
-            min-height: 200px;
-            padding: 10px;
-            border: 1px solid #e5e7eb;
-            border-radius: 4px;
-            resize: vertical;
-        }
+    .modal-comment-section .approval-toggle {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
 
-        .modal-comment-section .approval-toggle {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
+    .modal-comment-section .approval-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
 
-        .modal-comment-section .approval-btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
+    .modal-comment-section .approval-btn.approved {
+        background-color: #22c55e;
+        color: #fff;
+    }
 
-        .modal-comment-section .approval-btn.approved {
-            background-color: #22c55e;
-            color: #fff;
-        }
+    .modal-comment-section .approval-btn.not-approved {
+        background-color: #ef4444;
+        color: #fff;
+    }
 
-        .modal-comment-section .approval-btn.not-approved {
-            background-color: #ef4444;
-            color: #fff;
-        }
-
-        .modal-comment-section .approval-btn:hover {
-            opacity: 0.9;
-        }
-    </style>
+    .modal-comment-section .approval-btn:hover {
+        opacity: 0.9;
+    }
+</style>
 @endsection

@@ -9,7 +9,7 @@ class DocumentoSolicitante extends Model
 {
     use HasFactory;
 
-    protected $table = 'documento_solicitante'; 
+    protected $table = 'documento_solicitante';
 
     protected $fillable = [
         'tramite_id',
@@ -18,6 +18,7 @@ class DocumentoSolicitante extends Model
         'estado',
         'version_documento',
         'ruta_archivo',
+        'observaciones',
     ];
 
     public function tramite()

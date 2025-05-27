@@ -166,7 +166,7 @@ class RegisterController extends Controller
                 'tramite_id' => $tramite->id,
                 'documento_id' => $documento->id,
                 'fecha_entrega' => now(),
-                'estado' => 'Pendiente',
+                'estado' => 'Aprobado',
                 'version_documento' => 1,
                 'ruta_archivo' => $rutaEncriptada,
                 'created_at' => now(),

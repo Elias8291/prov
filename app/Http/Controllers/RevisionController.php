@@ -9,15 +9,13 @@ use App\Models\Solicitante;
 use App\Models\DetalleTramite;
 use App\Models\Sector;
 use App\Models\ActividadSolicitante;
-use App\Models\RepresentanteLegal;
-use App\Models\InstrumentoNotarial;
 use App\Http\Controllers\Formularios\DocumentosController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Formularios\DomicilioController;
 use App\Http\Controllers\Formularios\ConstitucionController;
 use App\Http\Controllers\Formularios\AccionistasController;
-use DateTime;
-use Carbon\Carbon;
+use App\Http\Controllers\Formularios\ApoderadoLegalController;
+use App\Http\Controllers\Formularios\DatosGeneralesController;
 
 class RevisionController extends Controller
 {
@@ -48,12 +46,7 @@ class RevisionController extends Controller
     {
         setlocale(LC_TIME, 'es_ES.UTF-8', 'es_MX.UTF-8', 'Spanish_Spain', 'Spanish_Mexico');
 
-        $monthNames = [
-            1 => 'enero', 2 => 'febrero', 3 => 'marzo', 4 => 'abril',
-            5 => 'mayo', 6 => 'junio', 7 => 'julio', 8 => 'agosto',
-            9 => 'septiembre', 10 => 'octubre', 11 => 'noviembre', 12 => 'diciembre',
-        ];
-
+        // Asegurar que obtenemos un objeto único de Tramite y no una colección
         $tramite = Tramite::with([
             'solicitante',
             'solicitante.usuario',
@@ -65,6 +58,7 @@ class RevisionController extends Controller
 
         $sectores = Sector::all();
 
+        // Obtener actividades seleccionadas
         $actividadesSeleccionadas = ActividadSolicitante::where('tramite_id', $tramite->id)
             ->with('actividad.sector')
             ->get()
@@ -77,34 +71,12 @@ class RevisionController extends Controller
             })
             ->toArray();
 
+        // Reutilizar controladores existentes para obtener datos
         $domicilioController = new DomicilioController();
         $addressData = $domicilioController->getAddressData($tramite);
 
-        $duplicateAddressWarning = null;
-        if ($tramite->detalleTramite && $tramite->detalleTramite->direccion) {
-            $currentAddress = $tramite->detalleTramite->direccion;
-            $matchingTramites = Tramite::where('estado', 'Aprobado')
-                ->where('id', '!=', $tramite->id)
-                ->whereHas('detalleTramite.direccion', function ($query) use ($currentAddress) {
-                    $query->where('codigo_postal', $currentAddress->codigo_postal)
-                        ->where('calle', $currentAddress->calle)
-                        ->where('numero_exterior', $currentAddress->numero_exterior)
-                        ->where(function ($q) use ($currentAddress) {
-                            $q->where('numero_interior', $currentAddress->numero_interior)
-                              ->orWhereNull('numero_interior');
-                        })
-                        ->where('asentamiento_id', $currentAddress->asentamiento_id);
-                })
-                ->with(['solicitante', 'detalleTramite.direccion'])
-                ->get();
-
-            if ($matchingTramites->isNotEmpty()) {
-                $solicitanteNames = $matchingTramites->map(function ($t) {
-                    return $t->detalleTramite->razon_social ?? ($t->solicitante->usuario->nombre ?? 'Sin Nombre');
-                })->implode(', ');
-                $duplicateAddressWarning = "Advertencia: Esta dirección ya está registrada para un trámite aprobado por: {$solicitanteNames}.";
-            }
-        }
+        // Verificar duplicidad de direcciones
+        $duplicateAddressWarning = $this->checkDuplicateAddress($tramite);
 
         $constitucionController = new ConstitucionController();
         $incorporationData = $constitucionController->getIncorporationData($tramite);
@@ -112,58 +84,18 @@ class RevisionController extends Controller
         $accionistasController = new AccionistasController();
         $accionistas = $accionistasController->getShareholdersData($tramite);
 
+        // Usar ApoderadoLegalController para obtener datos del representante legal
+        $apoderadoController = new ApoderadoLegalController();
+        $legalRepresentativeData = $apoderadoController->getDatosApoderadoLegal($tramite);
+
         $documentosController = new DocumentosController();
         $documentosResponse = $documentosController->get(new Request(['tramiteId' => $tramite->id]), $tramite->id);
-
         $documentos = [];
         if ($documentosResponse->getStatusCode() === 200) {
             $documentos = $documentosResponse->getData(true)['documentos'];
         }
 
-        $legalRepresentativeData = [];
-        if ($tramite->detalleTramite && $tramite->detalleTramite->representanteLegal) {
-            $representanteLegal = $tramite->detalleTramite->representanteLegal;
-            $instrumentoNotarial = $representanteLegal->instrumentoNotarial;
-
-            if (setlocale(LC_TIME, 'es_ES.UTF-8', 'es_MX.UTF-8', 'Spanish_Spain', 'Spanish_Mexico')) {
-                $fechaEscritura = $instrumentoNotarial->fecha
-                    ? (new DateTime($instrumentoNotarial->fecha))->format('j \d\e F \d\e Y')
-                    : 'No disponible';
-                $fechaInscripcion = $instrumentoNotarial->fecha_registro
-                    ? (new DateTime($instrumentoNotarial->fecha_registro))->format('j \d\e F \d\e Y')
-                    : 'No disponible';
-            } else {
-                $fechaEscritura = $instrumentoNotarial->fecha
-                    ? (new DateTime($instrumentoNotarial->fecha))->format('j \d\e ' . $monthNames[(new DateTime($instrumentoNotarial->fecha))->format('n')] . ' \d\e Y')
-                    : 'No disponible';
-                $fechaInscripcion = $instrumentoNotarial->fecha_registro
-                    ? (new DateTime($instrumentoNotarial->fecha_registro))->format('j \d\e ' . $monthNames[(new DateTime($instrumentoNotarial->fecha_registro))->format('n')] . ' \d\e Y')
-                    : 'No disponible';
-            }
-
-            $legalRepresentativeData = [
-                'nombre_apoderado' => $representanteLegal->nombre ?? 'No disponible',
-                'numero_escritura_apoderado' => $instrumentoNotarial->numero_escritura ?? 'No disponible',
-                'fecha_escritura_apoderado' => $fechaEscritura,
-                'nombre_notario_apoderado' => $instrumentoNotarial->nombre_notario ?? 'No disponible',
-                'numero_notario_apoderado' => $instrumentoNotarial->numero_notario ?? 'No disponible',
-                'entidad_federativa_apoderado' => $instrumentoNotarial->estado ? $instrumentoNotarial->estado->nombre : 'No disponible',
-                'numero_registro_apoderado' => $instrumentoNotarial->registro_mercantil ?? 'No disponible',
-                'fecha_inscripcion_apoderado' => $fechaInscripcion,
-            ];
-        } else {
-            $legalRepresentativeData = [
-                'nombre_apoderado' => 'No disponible',
-                'numero_escritura_apoderado' => 'No disponible',
-                'fecha_escritura_apoderado' => 'No disponible',
-                'nombre_notario_apoderado' => 'No disponible',
-                'numero_notario_apoderado' => 'No disponible',
-                'entidad_federativa_apoderado' => 'No disponible',
-                'numero_registro_apoderado' => 'No disponible',
-                'fecha_inscripcion_apoderado' => 'No disponible',
-            ];
-        }
-
+        // Construir datosPrevios usando los datos del trámite directamente
         $datosPrevios = array_merge([
             'razon_social' => $tramite->detalleTramite?->razon_social ?? 'No disponible',
             'email' => $tramite->detalleTramite?->email ?? 'No disponible',
@@ -206,6 +138,86 @@ class RevisionController extends Controller
         ]);
     }
 
+    /**
+     * Verifica si existe una dirección duplicada para un trámite aprobado
+     *
+     * @param Tramite $tramite El trámite a verificar
+     * @return string|null Mensaje de advertencia o null si no hay duplicados
+     */
+   private function checkDuplicateAddress(Tramite $tramite): ?string
+    {
+        if ($tramite->detalleTramite && $tramite->detalleTramite->direccion) {
+            $currentAddress = $tramite->detalleTramite->direccion;
+
+            // Coincidencias exactas
+            $exactMatches = Tramite::where('estado', 'Aprobado')
+                ->where('id', '!=', $tramite->id)
+                ->whereHas('detalleTramite.direccion', function ($query) use ($currentAddress) {
+                    $query->where('codigo_postal', $currentAddress->codigo_postal)
+                        ->where('calle', $currentAddress->calle)
+                        ->where('numero_exterior', $currentAddress->numero_exterior)
+                        ->where(function ($q) use ($currentAddress) {
+                            $q->where('numero_interior', $currentAddress->numero_interior)
+                              ->orWhereNull('numero_interior');
+                        })
+                        ->where('asentamiento_id', $currentAddress->asentamiento_id);
+                })
+                ->with(['solicitante', 'detalleTramite.direccion'])
+                ->get();
+
+            // Coincidencias similares (mismo código postal, calle y asentamiento)
+            $similarMatches = Tramite::where('estado', 'Aprobado')
+                ->where('id', '!=', $tramite->id)
+                ->whereHas('detalleTramite.direccion', function ($query) use ($currentAddress) {
+                    $query->where('codigo_postal', $currentAddress->codigo_postal)
+                        ->where('calle', $currentAddress->calle)
+                        ->where('asentamiento_id', $currentAddress->asentamiento_id);
+                })
+                ->with(['solicitante', 'detalleTramite.direccion'])
+                ->get();
+
+            $messages = [];
+
+            // Procesar coincidencias exactas
+            if ($exactMatches->isNotEmpty()) {
+                $count = $exactMatches->count();
+                $solicitanteNames = $exactMatches->map(function ($t) {
+                    $name = $t->detalleTramite->razon_social ?? ($t->solicitante->usuario->nombre ?? 'Sin Nombre');
+                    return "- Proveedor: $name (Dirección: {$t->detalleTramite->direccion->calle} {$t->detalleTramite->direccion->numero_exterior} " . 
+                           ($t->detalleTramite->direccion->numero_interior ?? '') . ")";
+                })->implode("\n");
+                $messages[] = $count > 1 
+                    ? "Coincidencia exacta: Esta dirección está registrada en $count trámites aprobados:\n$solicitanteNames"
+                    : "Coincidencia exacta: Esta dirección está registrada en un trámite aprobado:\n$solicitanteNames";
+            }
+
+            // Procesar coincidencias similares (excluyendo exactas)
+            $similarMatches = $similarMatches->filter(function ($t) use ($exactMatches) {
+                return !$exactMatches->contains('id', $t->id);
+            });
+
+            // Umbral para considerar una dirección "frecuente"
+            $frequencyThreshold = 3;
+            if ($similarMatches->isNotEmpty() || $exactMatches->count() >= $frequencyThreshold) {
+                $totalMatches = $similarMatches->count() + $exactMatches->count();
+                if ($totalMatches >= $frequencyThreshold) {
+                    $solicitanteNames = $similarMatches->map(function ($t) {
+                        $name = $t->detalleTramite->razon_social ?? ($t->solicitante->usuario->nombre ?? 'Sin Nombre');
+                        return "- Proveedor: $name (Dirección: {$t->detalleTramite->direccion->calle} {$t->detalleTramite->direccion->numero_exterior} " . 
+                               ($t->detalleTramite->direccion->numero_interior ?? '') . ")";
+                    })->implode("\n");
+                    $messages[] = "Advertencia de dirección frecuente: La combinación de calle, código postal y asentamiento aparece en $totalMatches trámites aprobados, lo que podría indicar un posible riesgo (ej. empresas fantasma):\n$solicitanteNames";
+                }
+            }
+
+            if (!empty($messages)) {
+                return implode("\n\n", $messages);
+            }
+        }
+        
+        return null;
+    }
+
     public function procesar(Request $request, $tramiteId)
     {
         $tramite = Tramite::findOrFail($tramiteId);
@@ -217,6 +229,4 @@ class RevisionController extends Controller
 
         return redirect()->route('revision.index')->with('success', 'Revisión procesada correctamente.');
     }
-
-   
 }

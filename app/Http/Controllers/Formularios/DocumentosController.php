@@ -63,7 +63,7 @@ class DocumentosController extends Controller
         $documentos = DocumentoSolicitante::where('tramite_id', $tramiteId)
             ->with('documento')
             ->get()
-            ->map(fn ($doc) => [
+            ->map(fn($doc) => [
                 'id' => $doc->id,
                 'documento_id' => $doc->documento_id,
                 'nombre' => $doc->documento->nombre,
@@ -103,6 +103,11 @@ class DocumentosController extends Controller
             : [
                 'tramiteId' => 'required|exists:tramite,id',
             ];
+
+        if ($method === 'update') {
+            $rules['tramiteId'] = 'required|exists:tramite,id';
+            $rules['documento_id'] = 'required|exists:documento,id';
+        }
 
         $request->merge(['tramiteId' => $tramiteId]);
         $request->validate($rules);
@@ -159,5 +164,63 @@ class DocumentosController extends Controller
                 'ruta_archivo' => Crypt::encryptString($ruta),
             ]
         );
+    }
+
+ public function updateDocumentStatus(Request $request, $tramiteId, $documentoId)
+    {
+        $request->validate([
+            'approval' => 'required|in:approved,not-approved',
+            'comment' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            Log::info('Updating document status:', [
+                'tramiteId' => $tramiteId,
+                'documentoId' => $documentoId,
+                'approval' => $request->input('approval'),
+                'comment' => $request->input('comment')
+            ]);
+
+            $docSolicitante = DocumentoSolicitante::where('tramite_id', $tramiteId)
+                ->where('documento_id', $documentoId)
+                ->firstOrFail();
+            $docSolicitante->estado = $request->input('approval') === 'approved' ? 'Aprobado' : 'Rechazado';
+            $docSolicitante->observaciones = $request->input('comment');
+            $docSolicitante->save();
+
+            return response()->json([
+                'success' => true,
+                'mensaje' => 'Documento actualizado correctamente.',
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::error('Document not found:', ['tramiteId' => $tramiteId, 'documentoId' => $documentoId]);
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Documento no encontrado.',
+            ], 404);
+        } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Database error updating document status:', [
+                'message' => $e->getMessage(),
+                'tramiteId' => $tramiteId,
+                'documentoId' => $documentoId,
+                'approval' => $request->input('approval')
+            ]);
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Error al actualizar el documento: ' . $e->getMessage(),
+            ], 500);
+        } catch (\Exception $e) {
+            Log::error('Unexpected error updating document status:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'tramiteId' => $tramiteId,
+                'documentoId' => $documentoId,
+                'approval' => $request->input('approval')
+            ]);
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Error inesperado al actualizar el documento: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

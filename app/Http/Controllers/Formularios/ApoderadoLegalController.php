@@ -10,6 +10,7 @@ use App\Models\RepresentanteLegal;
 use App\Models\InstrumentoNotarial;
 use Illuminate\Support\Facades\DB;
 use DateTime;
+use Carbon\Carbon;
 
 class ApoderadoLegalController extends Controller
 {
@@ -142,9 +143,8 @@ class ApoderadoLegalController extends Controller
      * @param Tramite $tramite El trámite del cual obtener los datos del apoderado legal
      * @return array Los datos del apoderado legal formateados
      */
-    public function getDatosApoderadoLegal(Tramite $tramite): array
+   public function getDatosApoderadoLegal(Tramite $tramite): array
     {
-        // Inicializar con datos por defecto
         $legalRepresentativeData = [
             'nombre_apoderado' => 'No disponible',
             'numero_escritura_apoderado' => 'No disponible',
@@ -156,49 +156,30 @@ class ApoderadoLegalController extends Controller
             'fecha_inscripcion_apoderado' => 'No disponible',
         ];
 
-        // Verificar si el trámite tiene detalle y representante legal
         if (!$tramite->detalleTramite || !$tramite->detalleTramite->representanteLegal) {
             return $legalRepresentativeData;
         }
-        
+
         $representanteLegal = $tramite->detalleTramite->representanteLegal;
         $instrumentoNotarial = $representanteLegal->instrumentoNotarial;
-        
+
         if (!$instrumentoNotarial) {
             return $legalRepresentativeData;
         }
 
-        // Definir los nombres de los meses en español
-        $monthNames = [
-            1 => 'enero', 2 => 'febrero', 3 => 'marzo', 4 => 'abril',
-            5 => 'mayo', 6 => 'junio', 7 => 'julio', 8 => 'agosto',
-            9 => 'septiembre', 10 => 'octubre', 11 => 'noviembre', 12 => 'diciembre',
-        ];
-        
-        // Formatear fechas en español
-        $formatFecha = function($fecha) use ($monthNames) {
-            if (!$fecha) return 'No disponible';
-            
-            // Intentar usar strftime si está disponible (PHP < 8.1)
-            if (function_exists('strftime') && setlocale(LC_TIME, 'es_ES.UTF-8', 'es_MX.UTF-8', 'Spanish_Spain', 'Spanish_Mexico')) {
-                return strftime('%d \d\e %B \d\e %Y', strtotime($fecha));
-            } else {
-                // Alternativa usando DateTime
-                $date = new DateTime($fecha);
-                return $date->format('j \d\e ') . $monthNames[(int)$date->format('n')] . $date->format(' \d\e Y');
-            }
-        };
-
-        // Llenar los datos con la información disponible
         return [
             'nombre_apoderado' => $this->safeString($representanteLegal->nombre, 'No disponible'),
             'numero_escritura_apoderado' => $this->safeString($instrumentoNotarial->numero_escritura, 'No disponible'),
-            'fecha_escritura_apoderado' => $formatFecha($instrumentoNotarial->fecha),
+            'fecha_escritura_apoderado' => $instrumentoNotarial->fecha
+                ? Carbon::parse($instrumentoNotarial->fecha)->translatedFormat('j \d\e F \d\e Y')
+                : 'No disponible',
             'nombre_notario_apoderado' => $this->safeString($instrumentoNotarial->nombre_notario, 'No disponible'),
             'numero_notario_apoderado' => $this->safeString($instrumentoNotarial->numero_notario, 'No disponible'),
             'entidad_federativa_apoderado' => $instrumentoNotarial->estado ? $instrumentoNotarial->estado->nombre : 'No disponible',
             'numero_registro_apoderado' => $this->safeString($instrumentoNotarial->registro_mercantil, 'No disponible'),
-            'fecha_inscripcion_apoderado' => $formatFecha($instrumentoNotarial->fecha_registro),
+            'fecha_inscripcion_apoderado' => $instrumentoNotarial->fecha_registro
+                ? Carbon::parse($instrumentoNotarial->fecha_registro)->translatedFormat('j \d\e F \d\e Y')
+                : 'No disponible',
         ];
     }
     
