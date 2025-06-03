@@ -29,54 +29,88 @@ class RevisionController extends Controller
                     WHEN tipo_tramite = "Renovación" THEN DATE_ADD(fecha_finalizacion, INTERVAL 48 HOUR)
                     WHEN tipo_tramite = "Actualización" THEN DATE_ADD(fecha_finalizacion, INTERVAL 72 HOUR)
                     ELSE DATE_ADD(fecha_finalizacion, INTERVAL 72 HOUR)
-                END as limite_revision
+                END as limite_revision,
+                TIMESTAMPDIFF(MINUTE, NOW(), 
+                    CASE 
+                        WHEN tipo_tramite = "Inscripción" THEN DATE_ADD(fecha_finalizacion, INTERVAL 72 HOUR)
+                        WHEN tipo_tramite = "Renovación" THEN DATE_ADD(fecha_finalizacion, INTERVAL 48 HOUR)
+                        WHEN tipo_tramite = "Actualización" THEN DATE_ADD(fecha_finalizacion, INTERVAL 72 HOUR)
+                        ELSE DATE_ADD(fecha_finalizacion, INTERVAL 72 HOUR)
+                    END
+                ) as minutos_restantes
             ');
 
         // Por defecto muestra los trámites terminados
         $estado_finalizacion = $request->get('estado_finalizacion', 'terminado');
+        $prioridad = $request->get('prioridad');
         
         if ($estado_finalizacion === 'terminado') {
-            $query->whereNotNull('fecha_finalizacion')
-                  ->orderByRaw('limite_revision ASC'); // Prioriza por tiempo límite más cercano
+            $query->whereNotNull('fecha_finalizacion');
         } else {
             $query->whereNull('fecha_finalizacion');
         }
+
+        // Filtrar por prioridad basado en las horas restantes
+        if ($prioridad) {
+            switch ($prioridad) {
+                case 'critica':
+                    $query->having('minutos_restantes', '<=', 12 * 60)
+                          ->having('minutos_restantes', '>', 0);
+                    break;
+                case 'alta':
+                    $query->having('minutos_restantes', '<=', 24 * 60)
+                          ->having('minutos_restantes', '>', 12 * 60);
+                    break;
+                case 'media':
+                    $query->having('minutos_restantes', '<=', 48 * 60)
+                          ->having('minutos_restantes', '>', 24 * 60);
+                    break;
+                case 'normal':
+                    $query->having('minutos_restantes', '>', 48 * 60);
+                    break;
+                case 'vencido':
+                    $query->having('minutos_restantes', '<=', 0);
+                    break;
+            }
+        }
+
+        // Ordenar por tiempo restante (los más urgentes primero)
+        $query->orderBy('minutos_restantes', 'ASC');
 
         if ($request->has('estado_tramite') && !empty($request->estado_tramite)) {
             $query->where('estado', $request->estado_tramite);
         }
 
-        $solicitudes = $query->orderBy('created_at', 'desc')
-            ->paginate(15)
-            ->appends($request->query());
+        $solicitudes = $query->paginate(15)->appends($request->query());
 
-        // Calcular tiempo restante para cada solicitud terminada
+        // Calcular tiempo restante para cada solicitud con más detalle
         foreach ($solicitudes as $solicitud) {
             if ($solicitud->fecha_finalizacion) {
-                $now = now();
-                $limite = \Carbon\Carbon::parse($solicitud->limite_revision);
+                $now = \Carbon\Carbon::now();
+                $tiempoLimite = $solicitud->tipo_tramite === 'Renovación' ? 48 : 72;
+                $fechaLimite = \Carbon\Carbon::parse($solicitud->fecha_finalizacion)->addHours($tiempoLimite);
                 
-                if ($now->gt($limite)) {
-                    $solicitud->tiempo_restante = [
-                        'vencido' => true,
-                        'horas' => 0,
-                        'minutos' => 0,
-                        'limite_horas' => $solicitud->tipo_tramite === 'Renovación' ? 48 : 72
-                    ];
-                } else {
-                    $diff = $now->diff($limite);
-                    $solicitud->tiempo_restante = [
-                        'vencido' => false,
-                        'horas' => ($diff->days * 24) + $diff->h,
-                        'minutos' => $diff->i,
-                        'limite_horas' => $solicitud->tipo_tramite === 'Renovación' ? 48 : 72
-                    ];
-                }
+                // Calcular la diferencia total en minutos
+                $minutosRestantes = $now->diffInMinutes($fechaLimite, false);
+                
+                // Convertir a horas y minutos
+                $horasRestantes = floor(max(0, $minutosRestantes) / 60);
+                $minutosRestantesFinal = max(0, $minutosRestantes % 60);
+                
+                $solicitud->tiempo_restante = [
+                    'vencido' => $minutosRestantes <= 0,
+                    'horas' => $horasRestantes,
+                    'minutos' => $minutosRestantesFinal,
+                    'limite_horas' => $tiempoLimite,
+                    'fecha_limite' => $fechaLimite->format('Y-m-d H:i:s'),
+                    'minutos_totales' => $minutosRestantes // Útil para debugging
+                ];
             }
         }
 
         return view('revision.index', [
             'solicitudes' => $solicitudes,
+            'prioridad' => $prioridad
         ]);
     }
 

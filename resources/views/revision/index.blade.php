@@ -18,15 +18,45 @@
 
             <div class="filters-container">
                 <div class="filter-buttons">
-                    <a href="{{ route('revision.index', ['estado_finalizacion' => 'pendiente']) }}" 
-                       class="btn-filter {{ request('estado_finalizacion', 'terminado') === 'pendiente' ? 'active' : '' }}">
+                    <a href="{{ route('revision.index', ['estado_finalizacion' => 'pendiente', 'prioridad' => request('prioridad')]) }}" 
+                       class="btn-filter {{ request('estado_finalizacion') === 'pendiente' ? 'active' : '' }}">
                         En Proceso
                     </a>
-                    <a href="{{ route('revision.index', ['estado_finalizacion' => 'terminado']) }}" 
+                    <a href="{{ route('revision.index', ['estado_finalizacion' => 'terminado', 'prioridad' => request('prioridad')]) }}" 
                        class="btn-filter {{ request('estado_finalizacion', 'terminado') === 'terminado' ? 'active' : '' }}">
                         Terminados
                     </a>
                 </div>
+            </div>
+        </div>
+
+        <div class="priority-filters">
+            <span class="filter-label">Filtrar por tiempo:</span>
+            <div class="filter-chips">
+                <a href="{{ route('revision.index', ['estado_finalizacion' => request('estado_finalizacion')]) }}" 
+                   class="filter-chip {{ !request('prioridad') ? 'active' : '' }}">
+                    <i class="fas fa-list"></i> Todos
+                </a>
+                <a href="{{ route('revision.index', ['estado_finalizacion' => request('estado_finalizacion'), 'prioridad' => 'critica']) }}" 
+                   class="filter-chip critica {{ request('prioridad') === 'critica' ? 'active' : '' }}">
+                    <i class="fas fa-exclamation-triangle"></i> Crítica (≤12h)
+                </a>
+                <a href="{{ route('revision.index', ['estado_finalizacion' => request('estado_finalizacion'), 'prioridad' => 'alta']) }}" 
+                   class="filter-chip alta {{ request('prioridad') === 'alta' ? 'active' : '' }}">
+                    <i class="fas fa-arrow-up"></i> Alta (≤24h)
+                </a>
+                <a href="{{ route('revision.index', ['estado_finalizacion' => request('estado_finalizacion'), 'prioridad' => 'media']) }}" 
+                   class="filter-chip media {{ request('prioridad') === 'media' ? 'active' : '' }}">
+                    <i class="fas fa-arrow-right"></i> Media (≤48h)
+                </a>
+                <a href="{{ route('revision.index', ['estado_finalizacion' => request('estado_finalizacion'), 'prioridad' => 'normal']) }}" 
+                   class="filter-chip normal {{ request('prioridad') === 'normal' ? 'active' : '' }}">
+                    <i class="fas fa-check"></i> Normal (>48h)
+                </a>
+                <a href="{{ route('revision.index', ['estado_finalizacion' => request('estado_finalizacion'), 'prioridad' => 'vencido']) }}" 
+                   class="filter-chip vencido {{ request('prioridad') === 'vencido' ? 'active' : '' }}">
+                    <i class="fas fa-exclamation-circle"></i> Vencido
+                </a>
             </div>
         </div>
 
@@ -280,6 +310,108 @@
         .tiempo-chip.normal {
             background-color: #16a34a;
             color: white;
+        }
+
+        .priority-filters {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1rem 0;
+            padding: 0.75rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .filter-label {
+            font-size: 0.9rem;
+            color: #6b7280;
+            white-space: nowrap;
+        }
+
+        .filter-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+            color: #374151;
+            background: #f3f4f6;
+            border-radius: 16px;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .filter-chip:hover {
+            background: #e5e7eb;
+            text-decoration: none;
+            color: currentColor;
+        }
+
+        .filter-chip.active {
+            background: white;
+            border-color: currentColor;
+            font-weight: 500;
+        }
+
+        .filter-chip i {
+            font-size: 0.8rem;
+        }
+
+        .filter-chip.critica {
+            color: #dc2626;
+        }
+        .filter-chip.critica.active {
+            background: #fee2e2;
+        }
+
+        .filter-chip.alta {
+            color: #ea580c;
+        }
+        .filter-chip.alta.active {
+            background: #ffedd5;
+        }
+
+        .filter-chip.media {
+            color: #ca8a04;
+        }
+        .filter-chip.media.active {
+            background: #fef9c3;
+        }
+
+        .filter-chip.normal {
+            color: #16a34a;
+        }
+        .filter-chip.normal.active {
+            background: #dcfce7;
+        }
+
+        .filter-chip.vencido {
+            color: #dc2626;
+        }
+        .filter-chip.vencido.active {
+            background: #fee2e2;
+        }
+
+        @media (max-width: 768px) {
+            .priority-filters {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .filter-chips {
+                width: 100%;
+                justify-content: flex-start;
+            }
         }
     </style>
 
