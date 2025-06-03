@@ -48,11 +48,10 @@
             </div>
         @endif
 
-        <div class="split-container">
-            <div class="form-container">
-                <!-- Formulario 1: Datos Generales (Siempre visible) -->
-                <form id="formulario1" method="POST" action="{{ $componentParams['action'] }}"
-                    enctype="multipart/form-data">
+        <!-- Formulario 1: Datos Generales -->
+        <div class="section-container">
+            <div class="form-side">
+                <form id="formulario1" method="POST" action="{{ $componentParams['action'] }}" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="seccion" value="1">
                     <input type="hidden" name="action" value="next">
@@ -75,7 +74,7 @@
                             @endphp
                             @if ($constanciaDoc && !empty($constanciaDoc['ruta_archivo']))
                                 <a href="javascript:void(0);" class="pdf-icon" title="Ver Constancia de Situación Fiscal"
-                                    onclick="togglePdfViewer('{{ $constanciaDoc['ruta_archivo'] }}', '{{ $constanciaDoc['nombre'] ?? 'Constancia de Situación Fiscal' }}')">
+                                    onclick="togglePdfViewer('{{ $constanciaDoc['ruta_archivo'] }}', '{{ $constanciaDoc['nombre'] ?? 'Constancia de Situación Fiscal' }}', 'pdf-viewer-1')">
                                     <i class="fas fa-file-pdf"></i>
                                 </a>
                             @else
@@ -83,7 +82,7 @@
                             @endif
                             @if ($componentParams['tipoPersona'] === 'Física' && $identificacionDoc && !empty($identificacionDoc['ruta_archivo']))
                                 <a href="javascript:void(0);" class="pdf-icon" title="Ver Identificación Oficial"
-                                    onclick="togglePdfViewer('{{ $identificacionDoc['ruta_archivo'] }}', '{{ $identificacionDoc['nombre'] ?? 'Identificación Oficial' }}')">
+                                    onclick="togglePdfViewer('{{ $identificacionDoc['ruta_archivo'] }}', '{{ $identificacionDoc['nombre'] ?? 'Identificación Oficial' }}', 'pdf-viewer-1')">
                                     <i class="fas fa-id-card"></i>
                                 </a>
                             @elseif ($componentParams['tipoPersona'] === 'Física')
@@ -231,15 +230,41 @@
                         </div>
                     </div>
                 </form>
+            </div>
+            <div class="pdf-side" id="pdf-viewer-1">
+                <div class="pdf-viewer-header">
+                    <div class="pdf-viewer-title">
+                        <i class="fas fa-file-pdf"></i>
+                        <span class="pdf-title">Constancia de Situación Fiscal</span>
+                    </div>
+                    <button class="pdf-toggle-btn" onclick="closePdfViewer('pdf-viewer-1')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="pdf-viewer-content">
+                    <iframe class="pdf-frame" src=""></iframe>
+                </div>
+            </div>
+        </div>
 
-                <!-- Formulario 2: Domicilio (Siempre visible) -->
-                <form id="formulario2" action="{{ $componentParams['action'] }}" method="POST"
-                    enctype="multipart/form-data">
+        <!-- Formulario 2: Domicilio -->
+        <div class="section-container">
+            <div class="form-side">
+                <form id="formulario2" action="{{ $componentParams['action'] }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="action" value="next">
                     <input type="hidden" name="seccion" value="2">
                     <div class="form-section" id="form-step-2">
-                        <h4><i class="fas fa-map-marker-alt"></i> Domicilio</h4>
+                        <h4><i class="fas fa-map-marker-alt"></i> Domicilio
+                            @if ($constanciaDoc && !empty($constanciaDoc['ruta_archivo']))
+                                <a href="javascript:void(0);" class="pdf-icon" title="Ver Constancia de Situación Fiscal"
+                                    onclick="togglePdfViewer('{{ $constanciaDoc['ruta_archivo'] }}', '{{ $constanciaDoc['nombre'] ?? 'Constancia de Situación Fiscal' }}', 'pdf-viewer-2')">
+                                    <i class="fas fa-file-pdf"></i>
+                                </a>
+                            @else
+                                <span class="form-hint">Constancia de Situación Fiscal no disponible</span>
+                            @endif
+                        </h4>
                         <!-- Display Duplicate Address Warning -->
                         @if ($duplicate_address_warning)
                             <div class="alert alert-warning" style="margin-bottom: 20px;">
@@ -324,91 +349,143 @@
                         </div>
                     </div>
                 </form>
+            </div>
+            <div class="pdf-side" id="pdf-viewer-2">
+                <div class="pdf-viewer-header">
+                    <div class="pdf-viewer-title">
+                        <i class="fas fa-file-pdf"></i>
+                        <span class="pdf-title">Constancia de Situación Fiscal</span>
+                    </div>
+                    <button class="pdf-toggle-btn" onclick="closePdfViewer('pdf-viewer-2')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="pdf-viewer-content">
+                    <iframe class="pdf-frame" src=""></iframe>
+                </div>
+            </div>
+        </div>
 
-                <!-- Formulario 3: Datos de Constitución (Solo Persona Moral) -->
-                @if ($componentParams['tipoPersona'] === 'Moral')
-                    <form id="formulario3" action="{{ $componentParams['action'] }}" method="POST"
-                        enctype="multipart/form-data">
-                        @csrf
-                        <input type="hidden" name="action" value="next">
-                        <input type="hidden" name="seccion" value="3">
-                        <div class="form-section" id="form-step-3">
-                            <h4><i class="fas fa-building"></i> Datos de Constitución (Persona Moral)</h4>
-                            <div class="form-group horizontal-group">
-                                <div class="half-width form-group">
-                                    <label class="form-label data-label" for="numero_escritura">Número de
-                                        Escritura</label>
-                                    <span
-                                        class="data-field">{{ $componentParams['datosPrevios']['numero_escritura'] ?? 'No disponible' }}</span>
-                                </div>
-                                <div class="half-width form-group">
-                                    <label class="form-label data-label" for="nombre_notario">Nombre del Notario</label>
-                                    <span
-                                        class="data-field">{{ $componentParams['datosPrevios']['nombre_notario'] ?? 'No disponible' }}</span>
-                                </div>
+        <!-- Formulario 3: Datos de Constitución (Solo Persona Moral) -->
+        @if ($componentParams['tipoPersona'] === 'Moral')
+        <div class="section-container">
+            <div class="form-side">
+                <form id="formulario3" action="{{ $componentParams['action'] }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="action" value="next">
+                    <input type="hidden" name="seccion" value="3">
+                    <div class="form-section" id="form-step-3">
+                        <h4><i class="fas fa-building"></i> Datos de Constitución (Persona Moral)
+                            @if ($constanciaDoc && !empty($constanciaDoc['ruta_archivo']))
+                                <a href="javascript:void(0);" class="pdf-icon" title="Ver Constancia de Situación Fiscal"
+                                    onclick="togglePdfViewer('{{ $constanciaDoc['ruta_archivo'] }}', '{{ $constanciaDoc['nombre'] ?? 'Constancia de Situación Fiscal' }}', 'pdf-viewer-3')">
+                                    <i class="fas fa-file-pdf"></i>
+                                </a>
+                            @else
+                                <span class="form-hint">Constancia de Situación Fiscal no disponible</span>
+                            @endif
+                        </h4>
+                        <div class="form-group horizontal-group">
+                            <div class="half-width form-group">
+                                <label class="form-label data-label" for="numero_escritura">Número de
+                                    Escritura</label>
+                                <span
+                                    class="data-field">{{ $componentParams['datosPrevios']['numero_escritura'] ?? 'No disponible' }}</span>
                             </div>
-                            <div class="form-group horizontal-group">
-                                <div class="half-width form-group">
-                                    <label class="form-label data-label" for="entidad_federativa">Entidad
-                                        Federativa</label>
-                                    <span
-                                        class="data-field">{{ $componentParams['datosPrevios']['entidad_federativa'] ?? 'No disponible' }}</span>
-                                </div>
-                                <div class="half-width form-group">
-                                    <label class="form-label data-label" for="fecha_constitucion">Fecha de
-                                        Constitución</label>
-                                    <span
-                                        class="data-field">{{ $componentParams['datosPrevios']['fecha_constitucion'] ?? 'No disponible' }}</span>
-                                </div>
-                            </div>
-                            <div class="form-group horizontal-group">
-                                <div class="half-width form-group">
-                                    <label class="form-label data-label" for="numero_notario">Número de Notario</label>
-                                    <span
-                                        class="data-field">{{ $componentParams['datosPrevios']['numero_notario'] ?? 'No disponible' }}</span>
-                                </div>
-                            </div>
-                            <h4><i class="fas fa-file-contract"></i> Datos de Inscripción en el Registro Público</h4>
-                            <div class="form-group horizontal-group">
-                                <div class="half-width form-group">
-                                    <label class="form-label data-label" for="numero_registro">Número de Registro o Folio
-                                        Mercantil</label>
-                                    <span
-                                        class="data-field">{{ $componentParams['datosPrevios']['numero_registro'] ?? 'No disponible' }}</span>
-                                </div>
-                                <div class="half-width form-group">
-                                    <label class="form-label data-label" for="fecha_inscripcion">Fecha de
-                                        Inscripción</label>
-                                    <span
-                                        class="data-field">{{ $componentParams['datosPrevios']['fecha_inscripcion'] ?? 'No disponible' }}</span>
-                                </div>
-                            </div>
-
-                            <div class="comment-section">
-                                <label for="comment-form3">Comentarios sobre Datos de Constitución</label>
-                                <textarea class="comment-textarea" id="comment-form3" name="comment_form3"
-                                    placeholder="Escribe tus observaciones aquí..."></textarea>
-                                <div class="approval-toggle">
-                                    <button type="button" class="approval-btn approved" data-status="approved"><i
-                                            class="fas fa-check approval-icon"></i> Aprobado</button>
-                                    <button type="button" class="approval-btn not-approved"
-                                        data-status="not-approved"><i class="fas fa-times approval-icon"></i> No
-                                        Aprobado</button>
-                                </div>
+                            <div class="half-width form-group">
+                                <label class="form-label data-label" for="nombre_notario">Nombre del Notario</label>
+                                <span
+                                    class="data-field">{{ $componentParams['datosPrevios']['nombre_notario'] ?? 'No disponible' }}</span>
                             </div>
                         </div>
-                    </form>
-                @endif
+                        <div class="form-group horizontal-group">
+                            <div class="half-width form-group">
+                                <label class="form-label data-label" for="entidad_federativa">Entidad
+                                    Federativa</label>
+                                <span
+                                    class="data-field">{{ $componentParams['datosPrevios']['entidad_federativa'] ?? 'No disponible' }}</span>
+                            </div>
+                            <div class="half-width form-group">
+                                <label class="form-label data-label" for="fecha_constitucion">Fecha de
+                                    Constitución</label>
+                                <span
+                                    class="data-field">{{ $componentParams['datosPrevios']['fecha_constitucion'] ?? 'No disponible' }}</span>
+                            </div>
+                        </div>
+                        <div class="form-group horizontal-group">
+                            <div class="half-width form-group">
+                                <label class="form-label data-label" for="numero_notario">Número de Notario</label>
+                                <span
+                                    class="data-field">{{ $componentParams['datosPrevios']['numero_notario'] ?? 'No disponible' }}</span>
+                            </div>
+                        </div>
+                        <h4><i class="fas fa-file-contract"></i> Datos de Inscripción en el Registro Público</h4>
+                        <div class="form-group horizontal-group">
+                            <div class="half-width form-group">
+                                <label class="form-label data-label" for="numero_registro">Número de Registro o Folio
+                                    Mercantil</label>
+                                <span
+                                    class="data-field">{{ $componentParams['datosPrevios']['numero_registro'] ?? 'No disponible' }}</span>
+                            </div>
+                            <div class="half-width form-group">
+                                <label class="form-label data-label" for="fecha_inscripcion">Fecha de
+                                    Inscripción</label>
+                                <span
+                                    class="data-field">{{ $componentParams['datosPrevios']['fecha_inscripcion'] ?? 'No disponible' }}</span>
+                            </div>
+                        </div>
 
-                <!-- Formulario 4: Socios o Accionistas (Solo Persona Moral) -->
-                @if ($componentParams['tipoPersona'] === 'Moral')
-                    <form id="formulario4" action="{{ $componentParams['action'] }}" method="POST"
-                        enctype="multipart/form-data">
+                        <div class="comment-section">
+                            <label for="comment-form3">Comentarios sobre Datos de Constitución</label>
+                            <textarea class="comment-textarea" id="comment-form3" name="comment_form3"
+                                placeholder="Escribe tus observaciones aquí..."></textarea>
+                            <div class="approval-toggle">
+                                <button type="button" class="approval-btn approved" data-status="approved"><i
+                                        class="fas fa-check approval-icon"></i> Aprobado</button>
+                                <button type="button" class="approval-btn not-approved"
+                                    data-status="not-approved"><i class="fas fa-times approval-icon"></i> No
+                                    Aprobado</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="pdf-side" id="pdf-viewer-3">
+                <div class="pdf-viewer-header">
+                    <div class="pdf-viewer-title">
+                        <i class="fas fa-file-pdf"></i>
+                        <span class="pdf-title">Constancia de Situación Fiscal</span>
+                    </div>
+                    <button class="pdf-toggle-btn" onclick="closePdfViewer('pdf-viewer-3')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="pdf-viewer-content">
+                    <iframe class="pdf-frame" src=""></iframe>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        <!-- Formulario 4: Socios o Accionistas (Solo Persona Moral) -->
+        @if ($componentParams['tipoPersona'] === 'Moral')
+            <div class="section-container">
+                <div class="form-side">
+                    <form id="formulario4" action="{{ $componentParams['action'] }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="action" value="next">
                         <input type="hidden" name="seccion" value="4">
                         <div class="form-section" id="form-step-4">
-                            <h4><i class="fas fa-user-friends"></i> Socios o Accionistas</h4>
+                            <h4><i class="fas fa-user-friends"></i> Socios o Accionistas
+                                @if ($constanciaDoc && !empty($constanciaDoc['ruta_archivo']))
+                                    <a href="javascript:void(0);" class="pdf-icon" title="Ver Constancia de Situación Fiscal"
+                                        onclick="togglePdfViewer('{{ $constanciaDoc['ruta_archivo'] }}', '{{ $constanciaDoc['nombre'] ?? 'Constancia de Situación Fiscal' }}', 'pdf-viewer-4')">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </a>
+                                @else
+                                    <span class="form-hint">Constancia de Situación Fiscal no disponible</span>
+                                @endif
+                            </h4>
                             @if (!empty($accionistas))
                                 @foreach ($accionistas as $index => $accionista)
                                     <div class="form-group">
@@ -454,17 +531,43 @@
                             </div>
                         </div>
                     </form>
-                @endif
+                </div>
+                <div class="pdf-side" id="pdf-viewer-4">
+                    <div class="pdf-viewer-header">
+                        <div class="pdf-viewer-title">
+                            <i class="fas fa-file-pdf"></i>
+                            <span class="pdf-title">Constancia de Situación Fiscal</span>
+                        </div>
+                        <button class="pdf-toggle-btn" onclick="closePdfViewer('pdf-viewer-4')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="pdf-viewer-content">
+                        <iframe class="pdf-frame" src=""></iframe>
+                    </div>
+                </div>
+            </div>
+        @endif
 
-                <!-- Formulario 5: Datos del Apoderado o Representante Legal (Solo Persona Moral) -->
-                @if ($componentParams['tipoPersona'] === 'Moral')
-                    <form id="formulario5" action="{{ $componentParams['action'] }}" method="POST"
-                        enctype="multipart/form-data">
+        <!-- Formulario 5: Datos del Apoderado o Representante Legal (Solo Persona Moral) -->
+        @if ($componentParams['tipoPersona'] === 'Moral')
+            <div class="section-container">
+                <div class="form-side">
+                    <form id="formulario5" action="{{ $componentParams['action'] }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="action" value="next">
                         <input type="hidden" name="seccion" value="5">
                         <div class="form-section" id="form-step-5">
-                            <h4><i class="fas fa-user-tie"></i> Datos del Apoderado o Representante Legal</h4>
+                            <h4><i class="fas fa-user-tie"></i> Datos del Apoderado o Representante Legal
+                                @if ($constanciaDoc && !empty($constanciaDoc['ruta_archivo']))
+                                    <a href="javascript:void(0);" class="pdf-icon" title="Ver Constancia de Situación Fiscal"
+                                        onclick="togglePdfViewer('{{ $constanciaDoc['ruta_archivo'] }}', '{{ $constanciaDoc['nombre'] ?? 'Constancia de Situación Fiscal' }}', 'pdf-viewer-5')">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </a>
+                                @else
+                                    <span class="form-hint">Constancia de Situación Fiscal no disponible</span>
+                                @endif
+                            </h4>
                             <div class="form-group horizontal-group">
                                 <div class="half-width form-group">
                                     <label class="form-label data-label" for="nombre-apoderado">Nombre</label>
@@ -534,11 +637,28 @@
                             </div>
                         </div>
                     </form>
-                @endif
+                </div>
+                <div class="pdf-side" id="pdf-viewer-5">
+                    <div class="pdf-viewer-header">
+                        <div class="pdf-viewer-title">
+                            <i class="fas fa-file-pdf"></i>
+                            <span class="pdf-title">Constancia de Situación Fiscal</span>
+                        </div>
+                        <button class="pdf-toggle-btn" onclick="closePdfViewer('pdf-viewer-5')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="pdf-viewer-content">
+                        <iframe class="pdf-frame" src=""></iframe>
+                    </div>
+                </div>
+            </div>
+        @endif
 
-                <!-- Formulario 6: Documentos del Solicitante (Siempre visible) -->
-                <form id="formulario6" action="{{ $componentParams['action'] }}" method="POST"
-                    enctype="multipart/form-data">
+        <!-- Formulario 6: Documentos del Solicitante (Siempre visible) -->
+        <div class="section-container">
+            <div class="form-side">
+                <form id="formulario6" action="{{ $componentParams['action'] }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="action" value="upload_documents">
                     <input type="hidden" name="seccion" value="6">
@@ -580,61 +700,25 @@
                         @endif
                     </div>
                 </form>
-                <div class="form-actions">
-                    <a href="{{ route('revision.index') }}" class="btn btn-secondary">Volver</a>
-                    <button type="submit" form="formulario6" class="btn btn-primary">Guardar</button>
-                </div>
             </div>
-
-            <!-- PDF Viewer Container -->
-            <div class="pdf-viewer-container" id="pdf-viewer-container" style="display: none;">
+            <div class="pdf-side" id="pdf-viewer-6">
                 <div class="pdf-viewer-header">
                     <div class="pdf-viewer-title">
                         <i class="fas fa-file-pdf"></i>
-                        <span id="pdf-title">Constancia de Situación Fiscal</span>
+                        <span class="pdf-title">Constancia de Situación Fiscal</span>
                     </div>
-                    <button class="pdf-toggle-btn" onclick="closePdfViewer()">
+                    <button class="pdf-toggle-btn" onclick="closePdfViewer('pdf-viewer-6')">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
                 <div class="pdf-viewer-content">
-                    <iframe id="pdf-frame" class="pdf-frame" src=""></iframe>
+                    <iframe class="pdf-frame" src=""></iframe>
                 </div>
             </div>
-
-            <!-- Document Modal -->
-            <div class="modal" id="document-modal" style="display: none;">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <div class="modal-title">
-                            <i class="fas fa-file-pdf"></i>
-                            <span id="modal-title">Documento</span>
-                        </div>
-                        <button class="modal-close-btn" onclick="closeDocumentModal()">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="modal-iframe-container">
-                            <iframe id="modal-iframe" class="modal-iframe" src=""></iframe>
-                        </div>
-                        <div class="modal-comment-section">
-                            <label for="modal-comment">Observaciones</label>
-                            <textarea class="comment-textarea" id="modal-comment" placeholder="Escribe tus observaciones aquí..."></textarea>
-                            <div class="approval-toggle">
-                                <button type="button" class="approval-btn approved" data-status="approved"
-                                    data-selected="false">
-                                    <i class="fas fa-check approval-icon"></i> Aprobado
-                                </button>
-                                <button type="button" class="approval-btn not-approved" data-status="not-approved"
-                                    data-selected="false">
-                                    <i class="fas fa-times approval-icon"></i> No Aprobado
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        </div>
+        <div class="form-actions">
+            <a href="{{ route('revision.index') }}" class="btn btn-secondary">Volver</a>
+            <button type="submit" form="formulario6" class="btn btn-primary">Guardar</button>
         </div>
     </div>
 @section('scripts')
@@ -648,34 +732,27 @@
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
 
     // Función para mostrar/ocultar el visor de PDF
-    function togglePdfViewer(pdfUrl, pdfTitle) {
-        const pdfViewer = document.getElementById('pdf-viewer-container');
-        const pdfFrame = document.getElementById('pdf-frame');
-        const pdfTitleElement = document.getElementById('pdf-title');
+    function togglePdfViewer(pdfUrl, pdfTitle, viewerId) {
+        const pdfViewer = document.getElementById(viewerId);
+        const pdfFrame = pdfViewer.querySelector('.pdf-frame');
+        const pdfTitleElement = pdfViewer.querySelector('.pdf-title');
+
+        // Cerrar todos los visores PDF primero
+        document.querySelectorAll('.pdf-side').forEach(viewer => {
+            viewer.style.display = 'none';
+        });
 
         pdfFrame.src = pdfUrl;
         pdfTitleElement.textContent = pdfTitle;
-
-        if (pdfViewer.style.display === 'none') {
-            pdfViewer.style.display = 'flex';
-            const formStep1 = document.getElementById('form-step-1');
-            if (formStep1) {
-                const formHeight = formStep1.offsetHeight;
-                pdfViewer.style.height = formHeight + 'px';
-                const pdfViewerContent = document.querySelector('.pdf-viewer-content');
-                if (pdfViewerContent) {
-                    pdfViewerContent.style.height = (formHeight - 60) + 'px';
-                }
-            }
-        } else {
-            pdfViewer.style.display = 'none';
-        }
+        pdfViewer.style.display = 'flex';
     }
 
     // Función para cerrar el visor de PDF
-    function closePdfViewer() {
-        const pdfViewer = document.getElementById('pdf-viewer-container');
+    function closePdfViewer(viewerId) {
+        const pdfViewer = document.getElementById(viewerId);
+        const pdfFrame = pdfViewer.querySelector('.pdf-frame');
         pdfViewer.style.display = 'none';
+        pdfFrame.src = '';
     }
 
     // Document Modal Functions
@@ -954,6 +1031,91 @@
 
     .modal-comment-section .approval-btn:hover {
         opacity: 0.9;
+    }
+
+    /* Estilos para los iconos PDF en los títulos */
+    h4 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .pdf-icon {
+        color: #dc2626;
+        font-size: 1.2rem;
+        text-decoration: none;
+        transition: color 0.3s ease;
+        cursor: pointer;
+    }
+
+    .pdf-icon:hover {
+        color: #991b1b;
+    }
+
+    .form-hint {
+        font-size: 0.8rem;
+        color: #6b7280;
+        margin-left: 10px;
+    }
+
+    .section-container {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 30px;
+        width: 100%;
+    }
+
+    .form-side {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .pdf-side {
+        flex: 1;
+        display: none;
+        flex-direction: column;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        background: white;
+        height: fit-content;
+        min-width: 0;
+    }
+
+    .pdf-viewer-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #e5e7eb;
+        background-color: #f9fafb;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+
+    .pdf-viewer-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .pdf-toggle-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #6b7280;
+    }
+
+    .pdf-viewer-content {
+        height: 600px;
+        width: 100%;
+    }
+
+    .pdf-frame {
+        width: 100%;
+        height: 100%;
+        border: none;
     }
 </style>
 @endsection
