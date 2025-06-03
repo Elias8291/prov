@@ -51,6 +51,7 @@
                         <th>Tipo</th>
                         <th>Trámite</th>
                         <th>Estado</th>
+                        <th>Tiempo para Revisar</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -78,6 +79,45 @@
                                 </span>
                             </td>
                             <td class="text-center">
+                                @if($solicitud->fecha_finalizacion)
+                                    @if(isset($solicitud->tiempo_restante))
+                                        @if($solicitud->tiempo_restante['vencido'])
+                                            <span class="tiempo-chip vencido">
+                                                <i class="fas fa-exclamation-circle"></i> Vencido
+                                            </span>
+                                        @else
+                                            @php
+                                                $horasRestantes = $solicitud->tiempo_restante['horas'];
+                                                $prioridad = '';
+                                                if ($horasRestantes <= 12) {
+                                                    $prioridad = 'critica';
+                                                } elseif ($horasRestantes <= 24) {
+                                                    $prioridad = 'alta';
+                                                } elseif ($horasRestantes <= 48) {
+                                                    $prioridad = 'media';
+                                                } else {
+                                                    $prioridad = 'normal';
+                                                }
+                                            @endphp
+                                            <span class="tiempo-chip {{ $prioridad }}">
+                                                @if($prioridad === 'critica')
+                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                @elseif($prioridad === 'alta')
+                                                    <i class="fas fa-arrow-up"></i>
+                                                @elseif($prioridad === 'media')
+                                                    <i class="fas fa-arrow-right"></i>
+                                                @else
+                                                    <i class="fas fa-check"></i>
+                                                @endif
+                                                {{ $solicitud->tiempo_restante['horas'] }}h {{ $solicitud->tiempo_restante['minutos'] }}m
+                                            </span>
+                                        @endif
+                                    @endif
+                                @else
+                                    <span>-</span>
+                                @endif
+                            </td>
+                            <td class="text-center">
                                 <div class="action-buttons">
                                     <a href="{{ route('revision.show', $solicitud->id) }}" class="btn-action view-btn" title="Ver detalles" data-id="{{ $solicitud->id }}">
                                         <i class="fas fa-eye"></i>
@@ -90,7 +130,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center">No hay solicitudes pendientes de revisión</td>
+                            <td colspan="7" class="text-center">No hay solicitudes pendientes de revisión</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -203,6 +243,42 @@
 
         .btn-action:hover {
             opacity: 0.9;
+            color: white;
+        }
+
+        .tiempo-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .tiempo-chip.vencido {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        .tiempo-chip.critica {
+            background-color: #dc2626;
+            color: white;
+        }
+
+        .tiempo-chip.alta {
+            background-color: #ea580c;
+            color: white;
+        }
+
+        .tiempo-chip.media {
+            background-color: #eab308;
+            color: white;
+        }
+
+        .tiempo-chip.normal {
+            background-color: #16a34a;
             color: white;
         }
     </style>
