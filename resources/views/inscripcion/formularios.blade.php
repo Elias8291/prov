@@ -6,17 +6,25 @@
     <div class="form-background-container">
         <div class="inner-form-container">
             <div class="progress-container">
+
                 <div class="progress-info">
                     <span class="progress-percent">{{ $porcentaje }}%</span>
                     <span class="progress-text">Completado</span>
                     <span class="progress-text persona-type-text">
                         Formulario para persona: <span class="persona-type-value">{{ $tipoPersona }}</span>
                     </span>
+                    @if (isset($tramite) && in_array($tramite->tipo_tramite, ['Inscripcion', 'Renovacion']) && isset($remainingHours))
+                        <div class="progress-text persona-type-text remaining-hours">
+                            <span>{{ $remainingHours }} horas {{ $remainingMinutes }} minutos restantes de 72 para completar
+                                tu {{ $tramite->tipo_tramite }}</span>
+                        </div>
+                    @endif
                 </div>
                 <div class="progress-bar">
                     <div class="progress-fill" id="progressFill" style="width: {{ $porcentaje }}%;"
                         data-target="{{ $porcentaje }}"></div>
                 </div>
+
             </div>
             <div class="progress-tracker">
                 @foreach ($seccionesInfo as $i => $titulo)
@@ -252,5 +260,36 @@
                 sectorSelect.val(@json(old('sectores'))).trigger('change');
             @endif
         });
+
+        @if (isset($tramite) &&
+                in_array($tramite->tipo_tramite, ['Inscripcion', 'Renovacion']) &&
+                isset($remainingHours) &&
+                ($remainingHours > 0 || $remainingMinutes > 0))
+            const startTime = new Date('{{ $tramite->fecha_inicio }}').getTime();
+            const totalTimeLimitMs = 72 * 60 * 60 * 1000; // 72 horas en milisegundos
+            const countdownElement = document.querySelector('.remaining-hours span');
+            const countdownContainer = document.querySelector('.remaining-hours');
+
+            function updateCountdown() {
+                const now = new Date().getTime();
+                const timePassedMs = now - startTime; // Tiempo transcurrido en milisegundos
+                const remainingTimeMs = Math.max(0, totalTimeLimitMs - timePassedMs); // Tiempo restante
+                const remainingHours = Math.floor(remainingTimeMs / (1000 * 60 * 60));
+                const remainingMinutes = Math.floor((remainingTimeMs % (1000 * 60 * 60)) / (1000 * 60));
+                const remainingSeconds = Math.floor((remainingTimeMs % (1000 * 60)) / 1000);
+
+                if (remainingTimeMs > 0) {
+                    countdownElement.textContent =
+                        `${remainingHours} horas ${remainingMinutes} minutos ${remainingSeconds} segundos restantes de 72 para completar tu {{ $tramite->tipo_tramite }}`;
+                    countdownContainer.setAttribute('data-remaining-hours', remainingHours);
+                } else {
+                    countdownElement.textContent = 'Tiempo expirado para completar tu {{ $tramite->tipo_tramite }}';
+                    countdownContainer.setAttribute('data-remaining-hours', 0);
+                    clearInterval(countdownInterval); 
+                }
+            }
+            updateCountdown();
+            const countdownInterval = setInterval(updateCountdown, 1000);
+        @endif
     </script>
 @endpush

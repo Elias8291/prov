@@ -12,216 +12,277 @@
         }
         
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: #1e293b;
             line-height: 1.6;
-            padding: 20px;
+            padding: 40px 20px;
+            min-height: 100vh;
         }
         
         .email-container {
-            max-width: 600px;
+            max-width: 580px;
             margin: 0 auto;
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        
+
+        
+        .content {
+            padding: 48px 40px;
+            text-align: center;
+        }
+        
+        .illustration {
+            width: 200px;
+            height: 160px;
+            margin: 0 auto 40px;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
             overflow: hidden;
         }
         
-        .header {
-            background: linear-gradient(135deg, #8B0000, #A52A2A);
-            color: white;
-            padding: 30px 20px;
-            text-align: center;
+        .illustration::before {
+            content: '📧';
+            font-size: 64px;
             position: relative;
+            z-index: 2;
         }
         
-        .header::before {
+        .illustration::after {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="3" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="80" r="2" fill="rgba(255,255,255,0.1)"/></svg>');
-            opacity: 0.3;
+            background: radial-gradient(circle at center, rgba(139, 0, 0, 0.1) 0%, transparent 70%);
         }
         
-        .logo-section {
-            position: relative;
-            z-index: 2;
+        .main-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 16px;
+            letter-spacing: -0.03em;
         }
         
-        .government-title {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 5px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-        }
-        
-        .subtitle {
-            font-size: 14px;
-            opacity: 0.9;
-            font-weight: 300;
-        }
-        
-        .content {
-            padding: 40px 30px;
-        }
-        
-        .greeting {
-            font-size: 28px;
-            color: #8B0000;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-        
-        .message {
+        .description {
             font-size: 16px;
-            margin-bottom: 25px;
-            color: #555;
+            color: #64748b;
+            margin-bottom: 32px;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
         }
         
-        .verification-section {
-            text-align: center;
-            margin: 35px 0;
-            padding: 25px;
-            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-            border-radius: 8px;
-            border-left: 4px solid #8B0000;
+        .cta-section {
+            margin: 40px 0;
         }
         
         .verify-button {
             display: inline-block;
-            background: linear-gradient(135deg, #8B0000, #A52A2A);
+            background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
             color: white;
-            padding: 15px 35px;
+            padding: 16px 32px;
             text-decoration: none;
-            border-radius: 25px;
-            font-weight: bold;
+            border-radius: 12px;
+            font-weight: 600;
             font-size: 16px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(139, 0, 0, 0.3);
+            letter-spacing: -0.01em;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 20px rgba(139, 0, 0, 0.25);
+            border: none;
+            cursor: pointer;
         }
         
         .verify-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(139, 0, 0, 0.4);
+            box-shadow: 0 8px 30px rgba(139, 0, 0, 0.35);
         }
         
-        .warning {
-            background-color: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 6px;
-            padding: 20px;
-            margin: 25px 0;
-            color: #856404;
+        .verify-button:active {
+            transform: translateY(0);
         }
         
-        .warning-icon {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            background-color: #ffc107;
+        .security-notice {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1px solid #f59e0b;
+            border-radius: 16px;
+            padding: 24px;
+            margin: 32px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .security-notice::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+        }
+        
+        .notice-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .notice-icon {
+            width: 24px;
+            height: 24px;
+            background: #f59e0b;
             border-radius: 50%;
-            text-align: center;
-            line-height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: white;
             font-weight: bold;
-            margin-right: 10px;
+            font-size: 14px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .notice-text {
+            color: #92400e;
+            font-size: 14px;
+            line-height: 1.5;
+            text-align: left;
+        }
+        
+        .additional-info {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 32px;
+            line-height: 1.5;
         }
         
         .footer {
-            background-color: #f8f9fa;
-            padding: 25px 30px;
-            border-top: 1px solid #dee2e6;
+            background: #f8fafc;
+            padding: 32px 40px;
+            border-top: 1px solid #e2e8f0;
             text-align: center;
-            font-size: 14px;
-            color: #6c757d;
         }
         
         .footer-logo {
-            margin-bottom: 15px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 16px;
+            font-size: 16px;
         }
         
         .footer-text {
-            margin-bottom: 10px;
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 8px;
+            line-height: 1.4;
         }
         
-        .divider {
-            height: 2px;
-            background: linear-gradient(90deg, #8B0000, #A52A2A, #8B0000);
-            margin: 20px 0;
+        .footer-links {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .footer-link {
+            color: #8B0000;
+            text-decoration: none;
+            font-size: 12px;
+            margin: 0 8px;
+        }
+        
+        .footer-link:hover {
+            text-decoration: underline;
         }
         
         @media (max-width: 600px) {
             body {
-                padding: 10px;
+                padding: 20px 10px;
             }
             
             .content {
-                padding: 25px 20px;
+                padding: 32px 24px;
             }
             
-            .greeting {
-                font-size: 24px;
+            .main-title {
+                font-size: 26px;
             }
             
             .verify-button {
-                padding: 12px 25px;
-                font-size: 14px;
+                padding: 14px 24px;
+                font-size: 15px;
+            }
+            
+            .illustration {
+                width: 160px;
+                height: 130px;
+            }
+            
+            .illustration::before {
+                font-size: 48px;
             }
         }
     </style>
 </head>
 <body>
     <div class="email-container">
-        <div class="header">
-            <div class="logo-section">
-                <div class="government-title">GOBIERNO DEL ESTADO DE OAXACA</div>
-                <div class="subtitle">Sistema de Verificación de Identidad</div>
-            </div>
-        </div>
+
         
         <div class="content">
-            <h1 class="greeting">Hola, {{ $user->nombre }}</h1>
+            <div class="illustration"></div>
             
-            <div class="divider"></div>
+            <h1 class="main-title">Confirma tu dirección de correo</h1>
             
-            <p class="message">
-                Gracias por registrarte en nuestro sistema. Para completar tu registro y garantizar la seguridad de tu cuenta, es necesario verificar tu dirección de correo electrónico.
+            <p class="description">
+                Gracias por iniciar su registro en el sistema del Padrón de Proveedores de la Secretaría de Administración de Oaxaca.
             </p>
             
-            <div class="verification-section">
-                <p style="margin-bottom: 20px; font-weight: 600; color: #8B0000;">
-                    Haz clic en el siguiente botón para verificar tu cuenta:
-                </p>
+            <p class="description">
+                Para completar su registro y garantizar la seguridad de su cuenta, necesitamos confirmar su dirección de correo electrónico.
+            </p>
+            
+            <div class="cta-section">
                 <a href="{{ $verificationUrl }}" class="verify-button">
-                    Verificar Correo Electrónico
+                    Sí, verificar mi correo
                 </a>
             </div>
             
-            <div class="warning">
-                <span class="warning-icon">!</span>
-                <strong>Importante:</strong> Este enlace expirará en 5 minutos por motivos de seguridad. Si no verificas tu cuenta dentro de este tiempo, todos los datos asociados serán eliminados automáticamente del sistema.
+            <div class="security-notice">
+                <div class="notice-content">
+                    <div class="notice-icon">!</div>
+                    <div class="notice-text">
+                        <strong>Importante para tu seguridad:</strong> Este enlace expirará en 72 horas por motivos de seguridad. Si no verificas tu cuenta dentro de este tiempo, todos los datos asociados serán eliminados automáticamente del sistema para proteger tu información.
+                    </div>
+                </div>
             </div>
             
-            <p class="message">
+            <p class="additional-info">
                 Si no te registraste en nuestro sistema, puedes ignorar este correo electrónico de forma segura. Tu información no será procesada ni almacenada.
             </p>
         </div>
         
         <div class="footer">
-            <div class="footer-logo">
-                <strong>GOBIERNO DEL ESTADO DE OAXACA</strong>
+            <div class="footer-logo">SECRETARÍA DE ADMINISTRACIÓN DE OAXACA</div>
+            <div class="footer-text">
+                Padrón de Proveedores - Sistema de Registro
+            </div>
+            <div class="footer-text">
+                Página web: www.administracion.oaxaca.gob.mx
             </div>
             <div class="footer-text">
                 Este es un correo electrónico automático, por favor no respondas a este mensaje.
-            </div>
-            <div class="footer-text">
-                Para soporte técnico, contacta al área de sistemas correspondiente.
             </div>
         </div>
     </div>

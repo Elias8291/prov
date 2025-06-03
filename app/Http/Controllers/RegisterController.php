@@ -94,11 +94,14 @@ class RegisterController extends Controller
 
             $secureData = Session::get($secureDataKey);
 
-            $existingUser = User::where('rfc', $secureData['rfc'])->first();
-            if ($existingUser) {
+            $existingUser = User::where('rfc', $secureData['rfc'])
+                ->orWhere('correo', $request->email)
+                ->first();
+
+            if ($existingUser && $existingUser->fecha_verificacion_correo) {
                 $this->storeTempFile($request);
                 return redirect('/')
-                    ->withErrors(['register' => 'El RFC ' . $secureData['rfc'] . ' ya está registrado.'])
+                    ->withErrors(['register' => 'El RFC o correo electrónico ya está registrado y verificado.'])
                     ->withInput($request->except('password', 'password_confirmation'))
                     ->with('show_register', true);
             }
@@ -107,50 +110,124 @@ class RegisterController extends Controller
 
             $verificationToken = Str::random(64);
 
-            $direccion = Direccion::create([
-                'codigo_postal' => $secureData['cp'],
-                'asentamiento_id' => null,
-                'calle' => $secureData['direccion'],
-            ]);
+            if ($existingUser) {
+                // Update existing unverified user
+                Log::info('Actualizando usuario existente no verificado', ['user_id' => $existingUser->id]);
+                
+                $existingUser->update([
+                    'nombre' => $secureData['nombre'],
+                    'correo' => $request->email,
+                    'rfc' => $secureData['rfc'],
+                    'password' => Hash::make($request->password),
+                    'verification_token' => $verificationToken,
+                    'updated_at' => now(),
+                ]);
 
-            $user = User::create([
-                'nombre' => $secureData['nombre'],
-                'correo' => $request->email,
-                'rfc' => $secureData['rfc'],
-                'password' => Hash::make($request->password),
-                'estado' => 'pendiente',
-                'verification_token' => $verificationToken,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+                $solicitante = Solicitante::where('usuario_id', $existingUser->id)->first();
+                if ($solicitante) {
+                    $solicitante->update([
+                        'tipo_persona' => $secureData['tipo_persona'],
+                        'curp' => $secureData['curp'],
+                        'rfc' => $secureData['rfc'],
+                        'updated_at' => now(),
+                    ]);
+                } else {
+                    $solicitante = Solicitante::create([
+                        'usuario_id' => $existingUser->id,
+                        'tipo_persona' => $secureData['tipo_persona'],
+                        'curp' => $secureData['curp'],
+                        'rfc' => $secureData['rfc'],
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
 
-            $solicitante = Solicitante::create([
-                'usuario_id' => $user->id,
-                'tipo_persona' => $secureData['tipo_persona'],
-                'curp' => $secureData['curp'],
-                'rfc' => $secureData['rfc'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+                $tramite = Tramite::where('solicitante_id', $solicitante->id)->first();
+                if ($tramite) {
+                    $tramite->update([
+                        'updated_at' => now(),
+                    ]);
+                } else {
+                    $tramite = Tramite::create([
+                        'solicitante_id' => $solicitante->id,
+                        'tipo_tramite' => 'Inscripcion',
+                        'estado' => 'Pendiente',
+                        'progreso_tramite' => 0,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
 
-            $tramite = Tramite::create([
-                'solicitante_id' => $solicitante->id,
-                'tipo_tramite' => 'Inscripcion',
-                'estado' => 'Pendiente',
-                'progreso_tramite' => 0,
-                'fecha_inicio' => now(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+                $detalleTramite = DetalleTramite::where('tramite_id', $tramite->id)->first();
+                if ($detalleTramite) {
+                    $detalleTramite->update([
+                        'razon_social' => $secureData['nombre'],
+                        'email' => $request->email,
+                        'updated_at' => now(),
+                    ]);
+                } else {
+                    $direccion = Direccion::create([
+                        'codigo_postal' => $secureData['cp'],
+                        'asentamiento_id' => null,
+                        'calle' => $secureData['direccion'],
+                    ]);
 
-            $detalleTramite = DetalleTramite::create([
-                'tramite_id' => $tramite->id,
-                'razon_social' => $secureData['nombre'],
-                'email' => $request->email,
-                'direccion_id' => $direccion->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+                    $detalleTramite = DetalleTramite::create([
+                        'tramite_id' => $tramite->id,
+                        'razon_social' => $secureData['nombre'],
+                        'email' => $request->email,
+                        'direccion_id' => $direccion->id,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            } else {
+                // Create new user
+                $direccion = Direccion::create([
+                    'codigo_postal' => $secureData['cp'],
+                    'asentamiento_id' => null,
+                    'calle' => $secureData['direccion'],
+                ]);
+
+                $user = User::create([
+                    'nombre' => $secureData['nombre'],
+                    'correo' => $request->email,
+                    'rfc' => $secureData['rfc'],
+                    'password' => Hash::make($request->password),
+                    'estado' => 'pendiente',
+                    'verification_token' => $verificationToken,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                $solicitante = Solicitante::create([
+                    'usuario_id' => $user->id,
+                    'tipo_persona' => $secureData['tipo_persona'],
+                    'curp' => $secureData['curp'],
+                    'rfc' => $secureData['rfc'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                $tramite = Tramite::create([
+                    'solicitante_id' => $solicitante->id,
+                    'tipo_tramite' => 'Inscripcion',
+                    'estado' => 'Pendiente',
+                    'progreso_tramite' => 0,
+                    'fecha_inicio' => now(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                $detalleTramite = DetalleTramite::create([
+                    'tramite_id' => $tramite->id,
+                    'razon_social' => $secureData['nombre'],
+                    'email' => $request->email,
+                    'direccion_id' => $direccion->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
 
             $documento = Documento::where('nombre', 'Constancia de Situación Fiscal')->first();
             if (!$documento) {
@@ -162,20 +239,35 @@ class RegisterController extends Controller
             $ruta = $archivo->storeAs('documentos_solicitante/' . $tramite->id, $nombreArchivo, 'public');
             $rutaEncriptada = Crypt::encryptString($ruta);
 
-            DocumentoSolicitante::create([
-                'tramite_id' => $tramite->id,
-                'documento_id' => $documento->id,
-                'fecha_entrega' => now(),
-                'estado' => 'Aprobado',
-                'version_documento' => 1,
-                'ruta_archivo' => $rutaEncriptada,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            $existingDocumentoSolicitante = DocumentoSolicitante::where('tramite_id', $tramite->id)
+                ->where('documento_id', $documento->id)
+                ->first();
 
+            if ($existingDocumentoSolicitante) {
+                $existingDocumentoSolicitante->update([
+                    'fecha_entrega' => now(),
+                    'estado' => 'Aprobado',
+                    'version_documento' => $existingDocumentoSolicitante->version_documento + 1,
+                    'ruta_archivo' => $rutaEncriptada,
+                    'updated_at' => now(),
+                ]);
+            } else {
+                DocumentoSolicitante::create([
+                    'tramite_id' => $tramite->id,
+                    'documento_id' => $documento->id,
+                    'fecha_entrega' => now(),
+                    'estado' => 'Aprobado',
+                    'version_documento' => 1,
+                    'ruta_archivo' => $rutaEncriptada,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            $user = $existingUser ?? $user;
             $verificationUrl = URL::temporarySignedRoute(
                 'verify.email',
-                now()->addMinutes(5),
+                now()->addHours(72), // Set to 72 hours for email verification
                 ['user_id' => $user->id, 'token' => $verificationToken]
             );
 
@@ -317,5 +409,4 @@ class RegisterController extends Controller
             Log::info('Archivo temporal almacenado: ' . $tempPath);
         }
     }
-    
 }

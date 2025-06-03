@@ -63,9 +63,8 @@ class SolicitanteController extends Controller
         // Crear o buscar trámite pendiente, inicia en progreso_tramite 0 (términos)
         $tramite = Tramite::firstOrCreate(
             ['solicitante_id' => $solicitante->id, 'estado' => 'Pendiente'],
-            ['progreso_tramite' => 0, 'tipo_tramite' => 'Inscripcion']
+            ['progreso_tramite' => 0, 'tipo_tramite' => 'Inscripcion', 'fecha_inicio' => now()]
         );
-
         // Avanzar a la sección 1 (Datos generales)
         $tramite->progreso_tramite = 1;
         $tramite->save();

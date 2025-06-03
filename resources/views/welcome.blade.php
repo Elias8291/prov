@@ -7,28 +7,28 @@
             <div class="carousel">
                 <div class="carousel-inner">
                     <div class="carousel-item active">
-                        <img src="{{ asset('assets/imagenes/carrousel1.png') }}" alt="Imagen 1">
+                        <img src="{{ asset('assets/imagenes/carrousel_1.webp') }}" alt="Imagen 1">
                         <div class="carousel-text">
                             <h2>Inscripción Simplificada</h2>
                             <p>Regístrate en minutos y comienza a participar en licitaciones públicas de manera ágil y segura.</p>
                         </div>
                     </div>
                     <div class="carousel-item">
-                        <img src="{{ asset('assets/imagenes/carrousel2.png') }}" alt="Imagen 2">
+                        <img src="{{ asset('assets/imagenes/carrousel_2.webp') }}" alt="Imagen 2">
                         <div class="carousel-text">
                             <h2>Renovación sin Complicaciones</h2>
                             <p>Mantén tus datos actualizados fácilmente y renueva tu registro cuando lo necesites.</p>
                         </div>
                     </div>
                     <div class="carousel-item">
-                        <img src="{{ asset('assets/imagenes/carrousel3.png') }}" alt="Imagen 3">
+                        <img src="{{ asset('assets/imagenes/carrousel3.webp') }}" alt="Imagen 3">
                         <div class="carousel-text">
                             <h2>Validación de Documentos</h2>
                             <p>Nuestros operadores verifica tus documentos rápidamente para que puedas comenzar a operar.</p>
                         </div>
                     </div>
                     <div class="carousel-item">
-                        <img src="{{ asset('assets/imagenes/carrousel4.png') }}" alt="Imagen 4">
+                        <img src="{{ asset('assets/imagenes/carrousel4.webp') }}" alt="Imagen 4">
                         <div class="carousel-text">
                             <h2>Seguimiento en Tiempo Real</h2>
                             <p>Consulta el estado de tu registro, documentos y procesos desde cualquier lugar.</p>
@@ -67,5 +67,11 @@
         </div>
     </div>
 </div>
+ <x-custom-modal
+        modal-id="registrationSuccessModal"
+        title="¡Registro Exitoso!"
+        message="{{ session('message') ?? '¡Usuario registrado correctamente! Por favor, revisa tu correo electrónico para confirmar tu cuenta. Tienes <strong>72 horas</strong> para completar la confirmación.' }}"
+        :show-modal="session('show_success_modal', false)"
+    />
 @endsection
 
