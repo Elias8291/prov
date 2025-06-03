@@ -21,24 +21,27 @@ class RevisionController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Tramite::with(['solicitante', 'solicitante.usuario', 'detalleTramite'])
-            ->whereBetween('progreso_tramite', [0, 7])
-            ->whereNull('fecha_finalizacion');
+        $query = Tramite::with(['solicitante', 'solicitante.usuario', 'detalleTramite']);
 
-        if ($request->has('progreso') && !empty($request->progreso)) {
-            $query->where('progreso_tramite', $request->progreso);
+        // Por defecto muestra los trámites terminados si no hay filtro
+        $estado_finalizacion = $request->get('estado_finalizacion', 'terminado');
+        
+        if ($estado_finalizacion === 'terminado') {
+            $query->whereNotNull('fecha_finalizacion');
+        } else {
+            $query->whereNull('fecha_finalizacion');
         }
 
         if ($request->has('estado_tramite') && !empty($request->estado_tramite)) {
             $query->where('estado', $request->estado_tramite);
         }
 
-        $solicitudesPendientes = $query->orderBy('created_at', 'desc')
+        $solicitudes = $query->orderBy('created_at', 'desc')
             ->paginate(15)
             ->appends($request->query());
 
         return view('revision.index', [
-            'solicitudes' => $solicitudesPendientes,
+            'solicitudes' => $solicitudes,
         ]);
     }
 

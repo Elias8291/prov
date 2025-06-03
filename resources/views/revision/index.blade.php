@@ -15,6 +15,19 @@
                 <i class="fas fa-search search-icon"></i>
                 <input type="text" class="search-input" placeholder="Buscar por nombre o RFC...">
             </div>
+
+            <div class="filters-container">
+                <div class="filter-buttons">
+                    <a href="{{ route('revision.index', ['estado_finalizacion' => 'pendiente']) }}" 
+                       class="btn-filter {{ request('estado_finalizacion', 'terminado') === 'pendiente' ? 'active' : '' }}">
+                        En Proceso
+                    </a>
+                    <a href="{{ route('revision.index', ['estado_finalizacion' => 'terminado']) }}" 
+                       class="btn-filter {{ request('estado_finalizacion', 'terminado') === 'terminado' ? 'active' : '' }}">
+                        Terminados
+                    </a>
+                </div>
+            </div>
         </div>
 
         @if (session('success'))
@@ -38,7 +51,6 @@
                         <th>Tipo</th>
                         <th>Trámite</th>
                         <th>Estado</th>
-                        <th>Fecha Inicio</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -65,11 +77,7 @@
                                     {{ $solicitud->estado ?: 'No asignado' }}
                                 </span>
                             </td>
-                            <td>
-                                <div>{{ \Carbon\Carbon::parse($solicitud->fecha_inicio)->format('d M Y') }}</div>
-                                <div class="time-small">{{ \Carbon\Carbon::parse($solicitud->fecha_inicio)->format('H:i') }}</div>
-                            </td>
-                            <td>
+                            <td class="text-center">
                                 <div class="action-buttons">
                                     <a href="{{ route('revision.show', $solicitud->id) }}" class="btn-action view-btn" title="Ver detalles" data-id="{{ $solicitud->id }}">
                                         <i class="fas fa-eye"></i>
@@ -82,7 +90,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center">No hay solicitudes pendientes de revisión</td>
+                            <td colspan="6" class="text-center">No hay solicitudes pendientes de revisión</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -116,10 +124,16 @@
             color: #333;
         }
 
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
         .search-container {
             position: relative;
             max-width: 300px;
-            margin-bottom: 20px;
         }
 
         .search-input {
@@ -136,6 +150,60 @@
             top: 50%;
             transform: translateY(-50%);
             color: #666;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-filter {
+            padding: 8px 16px;
+            background-color: #f0f0f0;
+            color: #666;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-filter.active {
+            background-color: var(--primary-color, #007bff);
+            color: white;
+        }
+
+        .btn-filter:hover {
+            opacity: 0.9;
+            text-decoration: none;
+            color: currentColor;
+        }
+
+        .text-center {
+            text-align: center !important;
+        }
+
+        .action-buttons {
+            display: inline-flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            background-color: var(--primary-color, #007bff);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-action:hover {
+            opacity: 0.9;
+            color: white;
         }
     </style>
 
