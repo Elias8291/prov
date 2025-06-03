@@ -328,11 +328,42 @@
 
                         <div class="form-group full-width">
                             <div class="form-label">Croquis del Domicilio</div>
-                            <div id="map-container"
-                                style="height: 400px; width: 100%; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);">
+                            <div class="map-wrapper">
+                                <div id="map-container" class="map-view"></div>
+                                <div class="map-overlay">
+                                    <div class="map-info-toggle">
+                                        <button type="button" onclick="toggleMapInfo()" class="map-toggle-btn">
+                                            <i class="fas fa-info-circle"></i> Ver Información
+                                        </button>
+                                    </div>
+                                    <div id="map-info-panel" class="map-info-panel">
+                                        <div class="info-row">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <span>{{ $componentParams['datosPrevios']['calle'] ?? 'No disponible' }} 
+                                                {{ $componentParams['datosPrevios']['numero_exterior'] ?? '' }}
+                                                {{ $componentParams['datosPrevios']['numero_interior'] ? 'Int. ' . $componentParams['datosPrevios']['numero_interior'] : '' }}
+                                            </span>
+                                        </div>
+                                        <div class="info-row">
+                                            <i class="fas fa-road"></i>
+                                            <span>Entre {{ $componentParams['datosPrevios']['entre_calle_1'] ?? 'No disponible' }} y 
+                                                {{ $componentParams['datosPrevios']['entre_calle_2'] ?? 'No disponible' }}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <i class="fas fa-map"></i>
+                                            <span>Col. {{ $componentParams['datosPrevios']['colonia'] ?? 'No disponible' }}, 
+                                                CP {{ $componentParams['datosPrevios']['codigo_postal'] ?? 'No disponible' }}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <i class="fas fa-city"></i>
+                                            <span>{{ $componentParams['datosPrevios']['municipio'] ?? 'No disponible' }}, 
+                                                {{ $componentParams['datosPrevios']['estado'] ?? 'No disponible' }}</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <span class="form-hint">Mapa interactivo que muestra la ubicación del domicilio
-                                proporcionado.</span>
+                            <span class="form-hint">Mapa interactivo que muestra la ubicación del domicilio proporcionado. 
+                                Haga clic en "Ver Información" para mostrar/ocultar los detalles de la dirección.</span>
                         </div>
 
                         <div class="comment-section">
@@ -906,6 +937,11 @@
             }
         });
     });
+
+    function toggleMapInfo() {
+        const infoPanel = document.getElementById('map-info-panel');
+        infoPanel.classList.toggle('active');
+    }
 </script>
 <style>
     .modal {
@@ -1116,6 +1152,93 @@
         width: 100%;
         height: 100%;
         border: none;
+    }
+
+    .map-wrapper {
+        position: relative;
+        width: 100%;
+        height: 400px;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .map-view {
+        width: 100%;
+        height: 100%;
+        border: 1px solid #e5e7eb;
+    }
+
+    .map-overlay {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 1000;
+        max-width: 400px;
+    }
+
+    .map-info-toggle {
+        margin-bottom: 10px;
+    }
+
+    .map-toggle-btn {
+        background-color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .map-toggle-btn:hover {
+        background-color: #f3f4f6;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .map-info-panel {
+        background-color: white;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        display: none;
+    }
+
+    .map-info-panel.active {
+        display: block;
+        animation: slideDown 0.3s ease;
+    }
+
+    .info-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-row i {
+        color: #dc2626;
+        width: 20px;
+        text-align: center;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 </style>
 @endsection
