@@ -18,18 +18,19 @@
 
             <div class="filters-container">
                 <div class="filter-buttons">
-                    <a href="{{ route('revision.index', ['estado_finalizacion' => 'pendiente', 'prioridad' => request('prioridad')]) }}" 
-                       class="btn-filter {{ request('estado_finalizacion') === 'pendiente' ? 'active' : '' }}">
-                        En Proceso
-                    </a>
                     <a href="{{ route('revision.index', ['estado_finalizacion' => 'terminado', 'prioridad' => request('prioridad')]) }}" 
                        class="btn-filter {{ request('estado_finalizacion', 'terminado') === 'terminado' ? 'active' : '' }}">
                         Terminados
+                    </a>
+                    <a href="{{ route('revision.index', ['estado_finalizacion' => 'pendiente', 'prioridad' => request('prioridad')]) }}" 
+                       class="btn-filter {{ request('estado_finalizacion') === 'pendiente' ? 'active' : '' }}">
+                        En Proceso
                     </a>
                 </div>
             </div>
         </div>
 
+        @if(request('estado_finalizacion', 'terminado') === 'terminado')
         <div class="priority-filters">
             <span class="filter-label">Filtrar por tiempo:</span>
             <div class="filter-chips">
@@ -59,6 +60,7 @@
                 </a>
             </div>
         </div>
+        @endif
 
         @if (session('success'))
             <div class="alert alert-success" id="successAlert">

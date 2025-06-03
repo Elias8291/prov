@@ -22,60 +22,64 @@ class RevisionController extends Controller
     public function index(Request $request)
     {
         $query = Tramite::with(['solicitante', 'solicitante.usuario', 'detalleTramite'])
-            ->select('tramite.*')
-            ->selectRaw('
-                CASE 
-                    WHEN tipo_tramite = "Inscripción" THEN DATE_ADD(fecha_finalizacion, INTERVAL 72 HOUR)
-                    WHEN tipo_tramite = "Renovación" THEN DATE_ADD(fecha_finalizacion, INTERVAL 48 HOUR)
-                    WHEN tipo_tramite = "Actualización" THEN DATE_ADD(fecha_finalizacion, INTERVAL 72 HOUR)
-                    ELSE DATE_ADD(fecha_finalizacion, INTERVAL 72 HOUR)
-                END as limite_revision,
-                TIMESTAMPDIFF(MINUTE, NOW(), 
-                    CASE 
-                        WHEN tipo_tramite = "Inscripción" THEN DATE_ADD(fecha_finalizacion, INTERVAL 72 HOUR)
-                        WHEN tipo_tramite = "Renovación" THEN DATE_ADD(fecha_finalizacion, INTERVAL 48 HOUR)
-                        WHEN tipo_tramite = "Actualización" THEN DATE_ADD(fecha_finalizacion, INTERVAL 72 HOUR)
-                        ELSE DATE_ADD(fecha_finalizacion, INTERVAL 72 HOUR)
-                    END
-                ) as minutos_restantes
-            ');
+            ->select('tramite.*');
 
         // Por defecto muestra los trámites terminados
         $estado_finalizacion = $request->get('estado_finalizacion', 'terminado');
         $prioridad = $request->get('prioridad');
         
         if ($estado_finalizacion === 'terminado') {
-            $query->whereNotNull('fecha_finalizacion');
-        } else {
-            $query->whereNull('fecha_finalizacion');
-        }
+            $query->whereNotNull('fecha_finalizacion')
+                ->selectRaw('
+                    CASE 
+                        WHEN tipo_tramite = "Inscripción" THEN DATE_ADD(fecha_finalizacion, INTERVAL 72 HOUR)
+                        WHEN tipo_tramite = "Renovación" THEN DATE_ADD(fecha_finalizacion, INTERVAL 48 HOUR)
+                        WHEN tipo_tramite = "Actualización" THEN DATE_ADD(fecha_finalizacion, INTERVAL 72 HOUR)
+                        ELSE DATE_ADD(fecha_finalizacion, INTERVAL 72 HOUR)
+                    END as limite_revision,
+                    TIMESTAMPDIFF(MINUTE, NOW(), 
+                        CASE 
+                            WHEN tipo_tramite = "Inscripción" THEN DATE_ADD(fecha_finalizacion, INTERVAL 72 HOUR)
+                            WHEN tipo_tramite = "Renovación" THEN DATE_ADD(fecha_finalizacion, INTERVAL 48 HOUR)
+                            WHEN tipo_tramite = "Actualización" THEN DATE_ADD(fecha_finalizacion, INTERVAL 72 HOUR)
+                            ELSE DATE_ADD(fecha_finalizacion, INTERVAL 72 HOUR)
+                        END
+                    ) as minutos_restantes
+                ');
 
-        // Filtrar por prioridad basado en las horas restantes
-        if ($prioridad) {
-            switch ($prioridad) {
-                case 'critica':
-                    $query->having('minutos_restantes', '<=', 12 * 60)
-                          ->having('minutos_restantes', '>', 0);
-                    break;
-                case 'alta':
-                    $query->having('minutos_restantes', '<=', 24 * 60)
-                          ->having('minutos_restantes', '>', 12 * 60);
-                    break;
-                case 'media':
-                    $query->having('minutos_restantes', '<=', 48 * 60)
-                          ->having('minutos_restantes', '>', 24 * 60);
-                    break;
-                case 'normal':
-                    $query->having('minutos_restantes', '>', 48 * 60);
-                    break;
-                case 'vencido':
-                    $query->having('minutos_restantes', '<=', 0);
-                    break;
+            // Filtrar por prioridad basado en las horas restantes solo para trámites terminados
+            if ($prioridad) {
+                switch ($prioridad) {
+                    case 'critica':
+                        $query->having('minutos_restantes', '<=', 12 * 60)
+                              ->having('minutos_restantes', '>', 0);
+                        break;
+                    case 'alta':
+                        $query->having('minutos_restantes', '<=', 24 * 60)
+                              ->having('minutos_restantes', '>', 12 * 60);
+                        break;
+                    case 'media':
+                        $query->having('minutos_restantes', '<=', 48 * 60)
+                              ->having('minutos_restantes', '>', 24 * 60);
+                        break;
+                    case 'normal':
+                        $query->having('minutos_restantes', '>', 48 * 60);
+                        break;
+                    case 'vencido':
+                        $query->having('minutos_restantes', '<=', 0);
+                        break;
+                }
             }
-        }
 
-        // Ordenar por tiempo restante (los más urgentes primero)
-        $query->orderBy('minutos_restantes', 'ASC');
+            // Ordenar por tiempo restante (los más urgentes primero) solo para trámites terminados
+            $query->orderBy('minutos_restantes', 'ASC');
+        } else {
+            // Para trámites en proceso, solo mostrar los que no tienen fecha de finalización
+            $query->whereNull('fecha_finalizacion');
+            
+            // Ordenar por fecha de creación más reciente
+            $query->orderBy('created_at', 'DESC');
+        }
 
         if ($request->has('estado_tramite') && !empty($request->estado_tramite)) {
             $query->where('estado', $request->estado_tramite);
@@ -83,28 +87,30 @@ class RevisionController extends Controller
 
         $solicitudes = $query->paginate(15)->appends($request->query());
 
-        // Calcular tiempo restante para cada solicitud con más detalle
-        foreach ($solicitudes as $solicitud) {
-            if ($solicitud->fecha_finalizacion) {
-                $now = \Carbon\Carbon::now();
-                $tiempoLimite = $solicitud->tipo_tramite === 'Renovación' ? 48 : 72;
-                $fechaLimite = \Carbon\Carbon::parse($solicitud->fecha_finalizacion)->addHours($tiempoLimite);
-                
-                // Calcular la diferencia total en minutos
-                $minutosRestantes = $now->diffInMinutes($fechaLimite, false);
-                
-                // Convertir a horas y minutos
-                $horasRestantes = floor(max(0, $minutosRestantes) / 60);
-                $minutosRestantesFinal = max(0, $minutosRestantes % 60);
-                
-                $solicitud->tiempo_restante = [
-                    'vencido' => $minutosRestantes <= 0,
-                    'horas' => $horasRestantes,
-                    'minutos' => $minutosRestantesFinal,
-                    'limite_horas' => $tiempoLimite,
-                    'fecha_limite' => $fechaLimite->format('Y-m-d H:i:s'),
-                    'minutos_totales' => $minutosRestantes // Útil para debugging
-                ];
+        // Calcular tiempo restante solo para trámites terminados
+        if ($estado_finalizacion === 'terminado') {
+            foreach ($solicitudes as $solicitud) {
+                if ($solicitud->fecha_finalizacion) {
+                    $now = \Carbon\Carbon::now();
+                    $tiempoLimite = $solicitud->tipo_tramite === 'Renovación' ? 48 : 72;
+                    $fechaLimite = \Carbon\Carbon::parse($solicitud->fecha_finalizacion)->addHours($tiempoLimite);
+                    
+                    // Calcular la diferencia total en minutos
+                    $minutosRestantes = $now->diffInMinutes($fechaLimite, false);
+                    
+                    // Convertir a horas y minutos
+                    $horasRestantes = floor(max(0, $minutosRestantes) / 60);
+                    $minutosRestantesFinal = max(0, $minutosRestantes % 60);
+                    
+                    $solicitud->tiempo_restante = [
+                        'vencido' => $minutosRestantes <= 0,
+                        'horas' => $horasRestantes,
+                        'minutos' => $minutosRestantesFinal,
+                        'limite_horas' => $tiempoLimite,
+                        'fecha_limite' => $fechaLimite->format('Y-m-d H:i:s'),
+                        'minutos_totales' => $minutosRestantes
+                    ];
+                }
             }
         }
 
