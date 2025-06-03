@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', function() {
     // Botones para cambiar de formulario
     document.getElementById('goToLoginBtn').addEventListener('click', function() {
@@ -28,6 +27,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Botón de regreso desde registro
+    let backFromRegisterBtn = document.getElementById('backFromRegisterBtn');
+    if(backFromRegisterBtn){
+        backFromRegisterBtn.addEventListener('click', function() {
+            document.querySelectorAll('.form-page').forEach(f => f.classList.remove('active'));
+            document.getElementById('welcomeForm').classList.add('active');
+        });
+    }
 });
 
 

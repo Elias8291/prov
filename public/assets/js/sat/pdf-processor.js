@@ -249,20 +249,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.password-toggle').forEach((toggle) => {
         toggle.addEventListener('click', function () {
             const input = this.parentElement.querySelector('input');
-            const icon = this.querySelector('.password-toggle-icon');
+            const eyeIcon = this.querySelector('.eye-icon');
+            const eyeSlashIcon = this.querySelector('.eye-slash-icon');
+            
             if (input.type === 'password') {
                 input.type = 'text';
-                icon.innerHTML = `
-                    <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M3 3l18 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                `;
+                eyeIcon.style.display = 'none';
+                eyeSlashIcon.style.display = 'block';
             } else {
                 input.type = 'password';
-                icon.innerHTML = `
-                    <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                `;
+                eyeIcon.style.display = 'block';
+                eyeSlashIcon.style.display = 'none';
             }
         });
     });

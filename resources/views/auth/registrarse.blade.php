@@ -14,6 +14,14 @@
     @endif
 
     <div class="form-page register-form inactive" id="registerFormStep1">
+        <button class="back-btn" id="backFromRegisterBtn">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" />
+            </svg>
+            Atrás
+        </button>
+
         <img src="{{ asset('assets/imagenes/logoAdminsitracion.png') }}" alt="Logo" class="logo-img">
         <h1>Regístrate</h1>
         <p>Registro en el <span class="system-name">Padrón de Proveedores de Oaxaca</span></p>
