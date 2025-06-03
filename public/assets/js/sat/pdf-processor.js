@@ -82,7 +82,7 @@ async function secureExtractedData(pdfData, satData) {
                 .join(' ') || '',
         };
 
-        const response = await fetch('/secure-registration-data', {
+        const response = await fetch('/register/secure-registration-data', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -130,25 +130,29 @@ function updatePDFDataPreview(pdfData, satData) {
     const viewSatDataBtn = document.getElementById('viewSatDataBtn');
     if (viewSatDataBtn) {
         viewSatDataBtn.disabled = !satData || satData.extractedData.length === 0;
-        viewSatDataBtn.addEventListener(
-            'click',
-            async () => {
-                const loading = document.getElementById('sat-data-loading');
-                if (loading) loading.style.display = 'block';
-                viewSatDataBtn.disabled = true;
-                try {
-                    console.log('Intentando mostrar modal con satData:', satData);
-                    showSATDataModal(satData, pdfData.qrUrl);
-                } catch (error) {
-                    console.error('Error al mostrar modal:', error);
-                    showError(`Error al mostrar datos SAT: ${error.message}`);
-                } finally {
-                    if (loading) loading.style.display = 'none';
-                    viewSatDataBtn.disabled = !satData || satData.extractedData.length === 0;
-                }
-            },
-            { once: true }
-        );
+        
+        // Primero removemos cualquier evento click previo para evitar duplicados
+        viewSatDataBtn.removeEventListener('click', viewSatDataBtn.satDataClickHandler);
+        
+        // Definimos el manejador del evento
+        viewSatDataBtn.satDataClickHandler = async () => {
+            const loading = document.getElementById('sat-data-loading');
+            if (loading) loading.style.display = 'block';
+            viewSatDataBtn.disabled = true;
+            try {
+                console.log('Intentando mostrar modal con satData:', satData);
+                await showSATDataModal(satData, pdfData.qrUrl);
+            } catch (error) {
+                console.error('Error al mostrar modal:', error);
+                showError(`Error al mostrar datos SAT: ${error.message}`);
+            } finally {
+                if (loading) loading.style.display = 'none';
+                viewSatDataBtn.disabled = !satData || satData.extractedData.length === 0;
+            }
+        };
+        
+        // Agregamos el nuevo event listener
+        viewSatDataBtn.addEventListener('click', viewSatDataBtn.satDataClickHandler);
     }
 
     if (emailInput) {

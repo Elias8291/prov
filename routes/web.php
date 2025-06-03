@@ -47,7 +47,7 @@ Route::middleware(['guest'])->group(function () {
 Route::prefix('register')->group(function () {
     Route::get('/', [RegisterController::class, 'showRegistrationForm'])->name('register.form');
     Route::post('/', [RegisterController::class, 'register'])->name('register');
-    Route::post('/secure-data', [RegisterController::class, 'secureData'])->name('secure.registration.data');
+    Route::post('/secure-registration-data', [RegisterController::class, 'secureData'])->name('secure.registration.data');
     Route::get('/verify-email/{user_id}', [RegisterController::class, 'verifyEmail'])->name('verify.email');
 });
 
